@@ -142,7 +142,9 @@ export default function App() {
   const [dark,setDark]=useState(()=>localStorage.getItem('forge-theme')!=='light')
   const [mobileOpen,setMobileOpen]=useState(false)
   useEffect(()=>{document.documentElement.dataset.theme=dark?'dark':'light';localStorage.setItem('forge-theme',dark?'dark':'light')},[dark])
-  useEffect(()=>window.scrollTo({top:0,behavior:'smooth'}),[active])
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [active])
   const title=useMemo(()=>navItems.find(x=>x.id===active)?.label || 'AI Mentor',[active])
   let view
   if(active==='home') view=<Dashboard navigate={setActive}/>
