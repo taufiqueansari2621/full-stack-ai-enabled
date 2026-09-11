@@ -4,6 +4,17 @@
 
 This repository is not a list of tutorials. It is a **52-week engineering system** that combines frontend, backend, databases, system design, AI engineering, DSA, portfolio work, and interview preparation.
 
+## Interactive platform
+
+The repository now includes **Forge**, a responsive React and TypeScript learning workspace that turns the roadmap into an interactive experience.
+
+```bash
+npm install
+npm run dev
+```
+
+Create an optimized production build with `npm run build`. The current product prototype includes the learning dashboard, visual roadmap, multi-level lesson experience, event-loop visualizer, project workshop, smart review queue, interview simulator, progress views, and an AI mentor workspace. Progress and theme preferences are designed for local-first use while the backend is developed.
+
 ## Target outcome
 
 By the end of the roadmap, you should be able to:
@@ -168,4 +179,3 @@ Do not replace the remote of a parent or unrelated repository. Verify first with
 ## Progress rule
 
 Consistency beats collecting resources. Every week should leave evidence: code, tests, a design, a written explanation, a recorded answer, or a deployed increment.
-

@@ -12,3 +12,6 @@ __pycache__/
 .pytest_cache/
 .idea/
 .vscode/
+*.tsbuildinfo
+vite.config.js
+vite.config.d.ts
