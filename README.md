@@ -15,6 +15,8 @@ npm run dev
 
 Create an optimized production build with `npm run build`. The current product prototype includes the learning dashboard, visual roadmap, multi-level lesson experience, event-loop visualizer, project workshop, smart review queue, interview simulator, progress views, and an AI mentor workspace. Progress and theme preferences are designed for local-first use while the backend is developed.
 
+Development is guided by the project-specific [Six-File Product Context](context/README.md), including product scope, architecture, UI language, code standards, workflow rules, current progress, and the ordered [build plan](context/specs/00-build-plan.md).
+
 ## Target outcome
 
 By the end of the roadmap, you should be able to:
