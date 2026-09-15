@@ -67,8 +67,39 @@ try {
   await clickText("Complete roadmap");
   await page.click('button[aria-label="Open Orientation & Developer Setup"]');
   await expectText("Computer & Software Basics");
+  await clickText("Git and GitHub");
+  await expectText("Version control mental model");
+  const activeGitTopic = await page.evaluate(
+    () =>
+      document.querySelector(".related-topic-groups button.active b")
+        ?.textContent === "Git and GitHub",
+  );
+  if (!activeGitTopic)
+    throw new Error("The selected related topic was not highlighted");
+  await clickText("Next subtopic");
+  const activeGitSubtopic = await page.evaluate(() =>
+    document
+      .querySelector(".subtopic-list button.active")
+      ?.textContent?.replace(/\s+/g, " ")
+      .includes("Repository and initialization"),
+  );
+  if (!activeGitSubtopic)
+    throw new Error("The Git subtopic navigator did not advance");
+  await clickText("Orientation & Developer Setup · Developer Setup");
   await clickText("How computers execute instructions");
   await expectText("Today’s goal");
+  await clickText("Next subtopic");
+  const activeFoundationSubtopic = await page.evaluate(() =>
+    document
+      .querySelector(".lesson-subtopic-menu button.active")
+      ?.textContent?.replace(/\s+/g, " ")
+      .includes("Programs turn algorithms into action"),
+  );
+  if (!activeFoundationSubtopic)
+    throw new Error("The foundation lesson did not advance a subtopic");
+  await clickText("Trace a tiny program");
+  await clickText("Next lesson");
+  await expectText("How the web works");
 
   await clickText("Practice");
   await expectText("Train the skill");
@@ -86,6 +117,63 @@ try {
   await page.reload({ waitUntil: "networkidle0" });
   await clickText("Practice");
   await expectText("1 saved attempts");
+
+  await clickText("Quizzes");
+  await clickText("Start assessment");
+  const quizAnswers = [
+    "RAM",
+    "URL → DNS → connection → HTTP request → response → render",
+    "body",
+    "A native button",
+    "Client validation can be bypassed",
+    "Content, padding, and border",
+    "The content no longer fits or reads well",
+    "Ends the call and provides a value to its caller",
+    "filter",
+    "Queued microtasks",
+  ];
+  for (let index = 0; index < quizAnswers.length; index += 1) {
+    await clickText(quizAnswers[index]);
+    await clickText(
+      index === quizAnswers.length - 1 ? "Submit assessment" : "Next",
+    );
+  }
+  await expectText("PASSED");
+  const quizResults = await page.evaluate(
+    (id) =>
+      JSON.parse(localStorage.getItem(`forge-learning-state-v1:${id}`))
+        .quizResults,
+    activeProfileId,
+  );
+  if (quizResults.length !== 1 || quizResults[0].score !== 100)
+    throw new Error("Foundation assessment result was not persisted");
+
+  await clickText("Certificates");
+  await expectText("Requirements incomplete");
+  await page.evaluate((id) => {
+    const key = `forge-learning-state-v1:${id}`;
+    const state = JSON.parse(localStorage.getItem(key));
+    state.completedLessons = [
+      "day-1-computers",
+      "day-2-web",
+      "day-3-html",
+      "day-4-semantic-html",
+      "day-5-css",
+      "day-6-javascript",
+    ];
+    localStorage.setItem(key, JSON.stringify(state));
+  }, activeProfileId);
+  await page.reload({ waitUntil: "networkidle0" });
+  await clickText("Issue certificate");
+  await expectText("Credential ID");
+  const certificates = await page.evaluate(
+    (id) =>
+      JSON.parse(localStorage.getItem(`forge-learning-state-v1:${id}`))
+        .certificates,
+    activeProfileId,
+  );
+  if (certificates.length !== 1)
+    throw new Error("Eligible foundation certificate was not persisted");
 
   await clickText("Knowledge");
   await clickText("New note");
@@ -158,7 +246,9 @@ try {
   if (
     resetState.xp !== 0 ||
     resetState.completedLessons.length ||
-    resetState.practiceAttempts.length
+    resetState.practiceAttempts.length ||
+    resetState.quizResults.length ||
+    resetState.certificates.length
   )
     throw new Error(
       "Reset all did not return the active learner to a clean Day 1 state",
@@ -195,7 +285,7 @@ try {
 
   if (errors.length) throw new Error(`Browser errors: ${errors.join(" | ")}`);
   console.log(
-    "Smoke test passed: dashboard, practice persistence, knowledge, projects, reviews, interview, search, and mobile layout.",
+    "Smoke test passed: topic/subtopic navigation, dashboard, persistence, assessments, certificates, projects, interview, search, and mobile layout.",
   );
 } finally {
   await browser.close();

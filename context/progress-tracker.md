@@ -49,6 +49,19 @@ Update this file after every meaningful verified implementation change.
 - Audited curriculum coverage: 280 catalog topics, 6 deeply authored lessons, and 274 former outline-only gaps.
 - Replaced all 274 outline-only pages with guided topic lessons containing phase-specific mental models, examples, production/quality guidance, deliberate practice, checkpoints, notes, completion, and previous/next navigation.
 - Updated phase and overall roadmap progress to include stable IDs for every catalog topic and verified a formerly uncovered TypeScript lesson in the browser flow.
+- Expanded the shared 280-topic lesson experience with explicit beginner, intermediate, advanced, and professional teaching layers.
+- Added accessible concept-flow diagrams, common-mistake and professional-practice comparisons, graded practice framing, four interview levels, and durable revision summaries to every guided catalog lesson.
+- Added topic-specific instructional records for all 13 Orientation, 19 Web Fundamentals, and 32 JavaScript topics.
+- Each covered topic now has an accurate definition, concrete importance, ordered mechanics, realistic scenario, focused exercise, and code example where appropriate, layered into the shared beginner-to-professional lesson experience.
+- Added dedicated Quizzes and Certificates workspaces to navigation, routes, and global search.
+- Added a persistent 10-question foundation assessment with answer review, 80% pass threshold, weak-topic remediation, retry, XP, and attempt history.
+- Added an evidence-gated local Foundation Certificate of Completion requiring all six lessons and a passed assessment, with unique credential ID and print / Save PDF support.
+- Replaced decorative dashboard activity bars, streak days, skill percentages, and coach claims with values derived from the active learner's stored evidence.
+- Added a persistent related-topic navigator to catalog lessons with a clear active state, completion indicators, and phase-wide movement across module boundaries.
+- Added selectable in-lesson subtopics with explanations, concrete examples, practice tasks, and Previous/Next controls that advance through subtopics before moving to the next topic.
+- Expanded Git and GitHub into 11 professional learning steps and added detailed sequences for the terminal, DNS/HTTP, forms, and JavaScript arrays, with topic-aware learning sequences for the rest of the catalog.
+- Added active subtopic navigation and always-available Previous/Next progression to the six foundation lessons so completed lessons are no longer navigation dead ends.
+- Persisted the selected catalog or foundation subtopic as the learner's current learning position.
 
 ## In Progress
 
@@ -56,7 +69,7 @@ Update this file after every meaningful verified implementation change.
 
 ## Next Up
 
-1. Fully populate Orientation and Web Fundamentals, then expand JavaScript lesson depth and practice coverage.
+1. Add topic-specific instructional records for TypeScript Systems and Frontend Engineering.
 2. Decompose legacy prototype-only components out of `src/App.tsx`.
 3. Add focused component and state-repository tests alongside the expanded browser smoke coverage.
 
@@ -87,6 +100,6 @@ Update this file after every meaningful verified implementation change.
 
 ## Session Notes
 
-- Latest verified state: profile onboarding, logout/login restoration, learner-scoped persistence, and mobile layout are covered by the browser smoke flow.
-- Headless Chrome confirmed the core learning workflows and local persistence work at desktop and mobile widths.
+- Latest verified state: profile onboarding, logout/login restoration, learner-scoped persistence, topic/subtopic navigation, cross-lesson progression, and mobile layout are covered by the browser smoke flow.
+- Headless Chrome confirmed active Git topic/subtopic states, foundation subtopic progression, cross-lesson Next navigation, core learning workflows, and local persistence at desktop and mobile widths.
 - Preserve the current visual identity while improving architecture and real behavior.

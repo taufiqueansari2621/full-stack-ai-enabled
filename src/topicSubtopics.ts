@@ -1,0 +1,303 @@
+export type LearningSubtopic = {
+  id: string;
+  title: string;
+  explanation: string;
+  example: string;
+  practice: string;
+};
+const item = (
+  id: string,
+  title: string,
+  explanation: string,
+  example: string,
+  practice: string,
+): LearningSubtopic => ({ id, title, explanation, example, practice });
+
+const subtopics: Record<string, LearningSubtopic[]> = {
+  "orientation:Terminal and file system": [
+    item(
+      "shell",
+      "Terminal, shell, and command",
+      "The terminal is the text interface; the shell reads your command, expands it, finds a program, and reports its output and exit status.",
+      "$ command --option argument",
+      "Run pwd, explain the returned path, and identify which part is the command.",
+    ),
+    item(
+      "navigation",
+      "Paths and navigation",
+      "An absolute path starts at the file-system root. A relative path starts at the process’s current working directory.",
+      "pwd\ncd projects/forge\ncd ..",
+      "Move between three nested folders using relative paths, then return using an absolute path.",
+    ),
+    item(
+      "files",
+      "Creating and inspecting files",
+      "Directories organize entries; files store bytes. CLI tools can create, list, copy, move, and inspect them without a graphical file manager.",
+      "mkdir sandbox\ntouch sandbox/notes.md\nls -la sandbox",
+      "Create a safe sandbox folder and predict every entry before listing it.",
+    ),
+    item(
+      "streams",
+      "Standard input, output, and error",
+      "Processes normally receive input and expose separate output and error streams. Pipes connect one program’s output to another program’s input.",
+      "command | formatter",
+      "Describe the data flowing through one safe read-only pipeline.",
+    ),
+    item(
+      "permissions",
+      "Users and permissions",
+      "The OS checks the process identity and file permissions before allowing reads, writes, or execution.",
+      "ls -l",
+      "Inspect a file’s permission display and identify owner, group, and other access.",
+    ),
+    item(
+      "environment",
+      "Environment and PATH",
+      "Environment variables provide process configuration. PATH is the ordered list of directories the shell searches for executable commands.",
+      "printenv PATH\nwhich node",
+      "Find the Node executable without changing the environment.",
+    ),
+    item(
+      "safety",
+      "Command-line safety",
+      "Before a destructive command, resolve the exact target, inspect it, avoid broad globs or unresolved variables, and prefer recoverable operations.",
+      "pwd\ngit status\n# inspect before changing",
+      "Write a safe preflight checklist for moving or deleting a project artifact.",
+    ),
+  ],
+  "orientation:Git and GitHub": [
+    item(
+      "vcs",
+      "Version control mental model",
+      "Git stores immutable snapshots connected by parent relationships. A branch is a movable name pointing to a commit; GitHub is a remote collaboration service around Git repositories.",
+      "working tree → staging area → commit history → remote",
+      "Explain why Git and GitHub are related but not the same product.",
+    ),
+    item(
+      "repository",
+      "Repository and initialization",
+      "A repository contains project files plus Git metadata. git init creates local metadata; cloning copies an existing repository and its history.",
+      "git init\ngit status",
+      "Initialize a disposable project and identify the current branch and untracked files.",
+    ),
+    item(
+      "three-trees",
+      "Working tree, index, and commit",
+      "The working tree is what you edit. The index stages the exact next snapshot. A commit permanently records that staged snapshot with metadata and a parent.",
+      'git diff\ngit add src/app.ts\ngit diff --staged\ngit commit -m "Add learner route"',
+      "Change two files but stage only one; explain where each change exists.",
+    ),
+    item(
+      "inspect",
+      "Status, diff, and log",
+      "git status summarizes state, diff shows line changes, and log shows commit history. Inspecting these before changing history prevents accidental loss.",
+      "git status --short\ngit diff\ngit log --oneline -5",
+      "Use all three commands and describe the different question each answers.",
+    ),
+    item(
+      "branches",
+      "Branches and isolated work",
+      "A branch gives a line of work its own movable pointer. Creating a branch does not duplicate every file; commits make the histories diverge.",
+      "git switch -c feature/quiz-history",
+      "Create a feature branch, make one commit, and draw both branch pointers.",
+    ),
+    item(
+      "merge",
+      "Merging and conflicts",
+      "A merge combines reachable history. A conflict occurs when Git cannot safely choose between competing changes; the developer resolves content and verifies the result.",
+      "git merge feature/quiz-history\n# resolve markers, test, then commit",
+      "Create a harmless conflict in a disposable repository and document the resolution steps.",
+    ),
+    item(
+      "remotes",
+      "Remotes, fetch, pull, and push",
+      "A remote is a named repository location. fetch downloads references without integrating them; pull fetches then integrates; push uploads local commits when accepted.",
+      "git fetch origin\ngit log HEAD..origin/main\ngit push origin feature/quiz-history",
+      "Explain why fetch is safer than immediately pulling when you first want to inspect remote work.",
+    ),
+    item(
+      "github",
+      "GitHub pull-request workflow",
+      "A pull request proposes branch changes for automated checks, discussion, review, and controlled merge. It is a collaboration record, not a Git commit type.",
+      "branch → push → pull request → checks/review → merge",
+      "Write a pull-request description containing problem, solution, verification, screenshots, and risks.",
+    ),
+    item(
+      "ignore",
+      "Ignoring generated and sensitive files",
+      ".gitignore prevents intentionally untracked paths from being added. It does not remove files already tracked and must never be the only secret-protection control.",
+      "node_modules/\ndist/\n.env\n!.env.example",
+      "Create an ignore file and verify ignored files with git status --ignored.",
+    ),
+    item(
+      "undo",
+      "Safe undo and recovery",
+      "Different states require different tools: restore an unstaged file, unstage an index entry, revert a shared commit, or recover a reachable commit through reflog. Destructive resets require exceptional care.",
+      "git restore --staged file\ngit revert <shared-commit>\ngit reflog",
+      "Given four mistakes, choose a recovery operation without erasing unrelated work.",
+    ),
+    item(
+      "professional",
+      "Professional Git hygiene",
+      "Small outcome-focused commits, reviewed diffs, current branches, passing checks, protected main branches, and non-secret history make collaboration reliable.",
+      'git status\ngit diff --check\nnpm test\ngit commit -m "Persist quiz attempts"',
+      "Split a mixed change into two logical commits and explain the review benefit.",
+    ),
+  ],
+  "orientation:DNS, URLs and HTTP": [
+    item(
+      "url",
+      "URL anatomy",
+      "A URL can contain scheme, hostname, port, path, query, and fragment. Each part answers how and where a resource is addressed.",
+      "https://shop.example:443/products?q=book#reviews",
+      "Label every component and explain which parts are sent in the HTTP request.",
+    ),
+    item(
+      "dns",
+      "DNS resolution",
+      "DNS is a distributed naming system. Resolvers query cached or authoritative records to turn a hostname into an address a client can contact.",
+      "example.com → resolver → authoritative record → IP address",
+      "Trace a cache miss and explain why DNS does not contain the web page itself.",
+    ),
+    item(
+      "request",
+      "HTTP request",
+      "A request contains method, target, headers, and sometimes a body. The method communicates intent but server authorization still decides what is permitted.",
+      'POST /orders HTTP/1.1\nContent-Type: application/json\n\n{"productId":42}',
+      "Design GET and POST requests and compare their safe retry behavior.",
+    ),
+    item(
+      "response",
+      "HTTP response",
+      "A response contains a status code, headers, and optional body. Status classes distinguish informational, successful, redirect, client-error, and server-error outcomes.",
+      "HTTP/1.1 201 Created\nLocation: /orders/91",
+      "Choose status codes for creation, invalid input, missing authentication, forbidden access, missing data, conflict, and unexpected failure.",
+    ),
+    item(
+      "headers",
+      "Headers and representation",
+      "Headers describe representation, caching, authentication, content negotiation, cookies, and other message metadata.",
+      "Content-Type: application/json\nCache-Control: private, max-age=60",
+      "Explain why Content-Type must match how the body is parsed.",
+    ),
+    item(
+      "https",
+      "HTTPS and TLS",
+      "HTTPS is HTTP over a TLS-protected connection that authenticates the server and protects traffic from reading or undetected modification in transit.",
+      "DNS → TCP/QUIC → TLS → HTTP",
+      "Explain what HTTPS protects and why it does not make a malicious server trustworthy.",
+    ),
+    item(
+      "debug",
+      "Debugging HTTP",
+      "Start with the exact request URL and method, then inspect status, headers, response body, timing, redirects, CORS, and application parsing.",
+      "Browser DevTools → Network → request → response",
+      "Diagnose one failed API call using evidence from every Network panel section.",
+    ),
+  ],
+  "web:Forms and validation": [
+    item(
+      "controls",
+      "Controls, names, and values",
+      "Successful named controls produce form data. Input type determines native keyboard, parsing, and validation behavior.",
+      '<input name="email" type="email">',
+      "Build a form and inspect its FormData entries.",
+    ),
+    item(
+      "labels",
+      "Labels and instructions",
+      "Every control needs a persistent accessible label; instructions and format expectations should appear before the user submits.",
+      '<label for="email">Email</label>',
+      "Test label clicking and inspect the control’s accessible name.",
+    ),
+    item(
+      "native",
+      "Native constraints",
+      "required, minlength, maxlength, pattern, min, max, and input types provide early feedback but do not replace server validation.",
+      '<input type="password" minlength="12" required>',
+      "Test empty, boundary, and malformed values without custom JavaScript.",
+    ),
+    item(
+      "errors",
+      "Accessible errors",
+      "Errors should identify the problem, explain correction, remain associated with the field, and be announced when added dynamically.",
+      "Email: Enter an address like name@example.com",
+      "Rewrite five vague errors into actionable messages.",
+    ),
+    item(
+      "server",
+      "Server validation",
+      "The server revalidates all untrusted input, enforces authorization, and returns structured field or form errors.",
+      "422 Unprocessable Content → { errors: { email: 'Already used' } }",
+      "Map a structured server error back to the correct field without losing entered values.",
+    ),
+    item(
+      "states",
+      "Submission states",
+      "A resilient form exposes idle, invalid, submitting, success, and failure states and prevents accidental duplicate actions.",
+      "idle → submitting → success | recoverable error",
+      "Implement state transitions and restore focus after an error.",
+    ),
+  ],
+  "javascript:Arrays": [
+    item(
+      "create",
+      "Creation, indexes, and length",
+      "Arrays are zero-indexed sequences. length is one greater than the highest conventional index, not a count of defined values in sparse arrays.",
+      "const items = ['a','b'];\nitems[0]; // 'a'",
+      "Trace valid and out-of-range access without throwing.",
+    ),
+    item(
+      "mutation",
+      "Mutation methods",
+      "push, pop, shift, unshift, and splice change the original array. Mutation may be valid locally but is dangerous when callers expect preserved input.",
+      "const copy=[...items]; copy.push(next);",
+      "Compare returned values and references for each mutation method.",
+    ),
+    item(
+      "slice",
+      "Copying and slicing",
+      "slice returns a shallow selected copy; spread and Array.from also create shallow arrays, so nested objects remain shared.",
+      "const page = items.slice(start,end);",
+      "Change a nested object through a shallow copy and explain the shared reference.",
+    ),
+    item(
+      "transform",
+      "map, filter, and reduce",
+      "map transforms every element, filter keeps matching elements, and reduce combines a sequence into an accumulator.",
+      "const total=items.filter(i=>i.active).reduce((sum,i)=>sum+i.price,0);",
+      "Implement a data pipeline and state each intermediate type.",
+    ),
+    item(
+      "search",
+      "find, some, and every",
+      "find returns the first matching value; some tests whether any item matches; every tests whether all match.",
+      "const invalid = users.find(user=>!user.email);",
+      "Choose the correct method for five product requirements.",
+    ),
+    item(
+      "sort",
+      "Sorting safely",
+      "sort mutates the array and compares strings by default. Numeric or domain ordering needs a comparator and often a copy first.",
+      "const ranked=[...scores].sort((a,b)=>b-a);",
+      "Sort objects stably by two fields without mutating the source.",
+    ),
+    item(
+      "nested",
+      "Nested arrays and flattening",
+      "Nested sequences model grids and groups. flat or flatMap can reduce nesting when the domain no longer needs group boundaries.",
+      "const allTags=posts.flatMap(post=>post.tags);",
+      "Process a matrix and explain row/column indexes.",
+    ),
+    item(
+      "performance",
+      "Complexity and large arrays",
+      "Repeated scans, front insertion, unnecessary copying, and nested iteration can dominate large workloads. Measure realistic data before optimizing.",
+      "const byId=new Map(items.map(item=>[item.id,item]));",
+      "Replace repeated find calls with an index and compare construction cost to lookup savings.",
+    ),
+  ],
+};
+
+export const getTopicSubtopics = (phaseId: string, topic: string) =>
+  subtopics[`${phaseId}:${topic}`];

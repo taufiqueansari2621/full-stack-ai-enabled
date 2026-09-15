@@ -29,6 +29,24 @@ export type InterviewResult = {
   createdAt: string;
 };
 
+export type QuizResult = {
+  id: string;
+  quizId: string;
+  score: number;
+  correct: number;
+  total: number;
+  weakTopics: string[];
+  completedAt: string;
+};
+
+export type CertificateRecord = {
+  id: string;
+  certificateId: string;
+  credentialId: string;
+  issuedAt: string;
+  score: number;
+};
+
 export type ForgeState = {
   version: 1;
   xp: number;
@@ -38,6 +56,8 @@ export type ForgeState = {
   knowledge: KnowledgeEntry[];
   projectTasks: Record<string, string[]>;
   interviewResults: InterviewResult[];
+  quizResults: QuizResult[];
+  certificates: CertificateRecord[];
   activityDates: string[];
   weeklyGoalMinutes: number;
   learnedMinutes: number;
@@ -63,6 +83,8 @@ const createInitialState = (): ForgeState => ({
   knowledge: [],
   projectTasks: {},
   interviewResults: [],
+  quizResults: [],
+  certificates: [],
   activityDates: [],
   weeklyGoalMinutes: 450,
   learnedMinutes: 0,
@@ -113,6 +135,12 @@ function loadState(learnerId: string): ForgeState {
           : initialState.projectTasks,
       interviewResults: Array.isArray(candidate.interviewResults)
         ? candidate.interviewResults
+        : [],
+      quizResults: Array.isArray(candidate.quizResults)
+        ? candidate.quizResults
+        : [],
+      certificates: Array.isArray(candidate.certificates)
+        ? candidate.certificates
         : [],
       activityDates: isStringArray(candidate.activityDates)
         ? candidate.activityDates
@@ -257,6 +285,43 @@ export function useForgeStore(learnerId: string) {
     [touchActivity],
   );
 
+  const saveQuiz = useCallback(
+    (result: Omit<QuizResult, "id" | "completedAt">) =>
+      setState((current) =>
+        touchActivity({
+          ...current,
+          xp: current.xp + (result.score >= 80 ? 150 : 25),
+          learnedMinutes: current.learnedMinutes + 15,
+          quizResults: [
+            ...current.quizResults,
+            { ...result, id: newId(), completedAt: new Date().toISOString() },
+          ].slice(-50),
+        }),
+      ),
+    [touchActivity],
+  );
+
+  const earnCertificate = useCallback(
+    (record: Omit<CertificateRecord, "id" | "issuedAt">) =>
+      setState((current) => {
+        if (
+          current.certificates.some(
+            (item) => item.certificateId === record.certificateId,
+          )
+        )
+          return current;
+        return touchActivity({
+          ...current,
+          xp: current.xp + 300,
+          certificates: [
+            ...current.certificates,
+            { ...record, id: newId(), issuedAt: new Date().toISOString() },
+          ],
+        });
+      }),
+    [touchActivity],
+  );
+
   const resetProgress = useCallback(() => setState(createInitialState()), []);
 
   const setLearningPosition = useCallback(
@@ -340,6 +405,8 @@ export function useForgeStore(learnerId: string) {
     deleteKnowledge,
     toggleProjectTask,
     saveInterview,
+    saveQuiz,
+    earnCertificate,
     setLearningPosition,
     resetProgress,
   };

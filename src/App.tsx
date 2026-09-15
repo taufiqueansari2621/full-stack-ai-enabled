@@ -51,8 +51,6 @@ import {
   projectCards,
   reviewItems,
   roadmapNodes,
-  skills,
-  weeklyActivity,
   type NavId,
 } from "./data";
 import {
@@ -76,17 +74,20 @@ import {
 } from "./curriculumCatalog";
 import { CatalogTopicLesson } from "./CatalogTopicLesson";
 import { catalogLessonId } from "./topicIds";
+import { CertificatesPage, QuizzesPage } from "./Assessments";
 
 const navItems: { id: NavId; label: string; icon: typeof Home }[] = [
   { id: "home", label: "Home", icon: Home },
   { id: "learn", label: "Learn", icon: BookOpen },
   { id: "roadmap", label: "Roadmap", icon: Network },
   { id: "practice", label: "Practice", icon: Code2 },
+  { id: "quizzes", label: "Quizzes", icon: CircleHelp },
   { id: "projects", label: "Projects", icon: FolderKanban },
   { id: "interview", label: "Interview", icon: BriefcaseBusiness },
   { id: "knowledge", label: "Knowledge", icon: BrainCircuit },
   { id: "reviews", label: "Reviews", icon: TimerReset },
   { id: "progress", label: "Progress", icon: BarChart3 },
+  { id: "certificates", label: "Certificates", icon: Award },
 ];
 
 function ProgressRing({
@@ -131,15 +132,26 @@ function ProgressRing({
   );
 }
 
-function MiniBars() {
+function MiniBars({ activityDates }: { activityDates: string[] }) {
+  const dates = Array.from({ length: 7 }, (_, index) => {
+    const date = new Date();
+    date.setDate(date.getDate() - (6 - index));
+    return date;
+  });
   return (
     <div className="mini-bars" aria-label="Weekly learning activity">
-      {weeklyActivity.map((height, i) => (
-        <div key={i}>
-          <span style={{ height: `${height}%` }} />
-          <small>{["M", "T", "W", "T", "F", "S", "S"][i]}</small>
-        </div>
-      ))}
+      {dates.map((date) => {
+        const key = date.toISOString().slice(0, 10),
+          active = activityDates.includes(key);
+        return (
+          <div key={key}>
+            <span style={{ height: active ? "85%" : "8%" }} />
+            <small>
+              {date.toLocaleDateString(undefined, { weekday: "narrow" })}
+            </small>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -322,6 +334,58 @@ function Dashboard({
   store: ForgeStore;
   profile: LearnerProfile;
 }) {
+  const recentDays = Array.from({ length: 7 }, (_, index) => {
+    const date = new Date();
+    date.setDate(date.getDate() - (6 - index));
+    return date;
+  });
+  const phaseScore = (phaseId: string) => {
+    const phase = curriculumPhases.find((item) => item.id === phaseId);
+    if (!phase) return 0;
+    const ids = phase.modules.flatMap((module) =>
+      module.topics.map(
+        (topic) =>
+          curriculumLessons.find((lesson) => lesson.title === topic)?.id ??
+          catalogLessonId(phase.id, module.id, topic),
+      ),
+    );
+    return ids.length
+      ? Math.round(
+          (ids.filter((id) => store.state.completedLessons.includes(id))
+            .length /
+            ids.length) *
+            100,
+        )
+      : 0;
+  };
+  const skillSignals = [
+    {
+      name: "JavaScript",
+      score: phaseScore("javascript"),
+      color: "var(--teal)",
+    },
+    {
+      name: "TypeScript",
+      score: phaseScore("typescript"),
+      color: "var(--blue)",
+    },
+    { name: "Frontend", score: phaseScore("frontend"), color: "var(--violet)" },
+    { name: "Backend", score: phaseScore("backend"), color: "var(--amber)" },
+    {
+      name: "System design",
+      score: phaseScore("system-design"),
+      color: "var(--rose)",
+    },
+    {
+      name: "AI engineering",
+      score: Math.round(
+        (phaseScore("llm") + phaseScore("rag") + phaseScore("agents")) / 3,
+      ),
+      color: "var(--green)",
+    },
+  ];
+  const strongest = [...skillSignals].sort((a, b) => b.score - a.score)[0],
+    focus = skillSignals.find((item) => item.score < 100) ?? skillSignals[0];
   return (
     <div className="page dashboard-page">
       <section className="welcome-row">
@@ -408,12 +472,21 @@ function Dashboard({
             <em>{store.metrics.streak ? "Keep going!" : "Start today"}</em>
           </div>
           <div className="week-dots">
-            {["M", "T", "W", "T", "F", "S", "S"].map((d, i) => (
-              <div key={i} className={i < 6 ? "done" : "today"}>
-                <span>{i < 6 ? <Check size={13} /> : ""}</span>
-                <small>{d}</small>
-              </div>
-            ))}
+            {recentDays.map((date, i) => {
+              const key = date.toISOString().slice(0, 10),
+                done = store.state.activityDates.includes(key);
+              return (
+                <div
+                  key={key}
+                  className={done ? "done" : i === 6 ? "today" : ""}
+                >
+                  <span>{done ? <Check size={13} /> : ""}</span>
+                  <small>
+                    {date.toLocaleDateString(undefined, { weekday: "narrow" })}
+                  </small>
+                </div>
+              );
+            })}
           </div>
           <div className="streak-message">
             <Sparkles size={15} />
@@ -449,7 +522,7 @@ function Dashboard({
             </h3>
             <small className="positive">Tracked in this browser</small>
           </div>
-          <MiniBars />
+          <MiniBars activityDates={store.state.activityDates} />
         </article>
         <article className="stat-card panel">
           <div className="stat-icon violet-bg">
@@ -580,7 +653,7 @@ function Dashboard({
             </button>
           </div>
           <div className="skill-list">
-            {skills.map((s) => (
+            {skillSignals.map((s) => (
               <div key={s.name}>
                 <span>{s.name}</span>
                 <div className="skill-bar">
@@ -595,8 +668,10 @@ function Dashboard({
             <div>
               <b>Coach insight</b>
               <span>
-                Your JavaScript understanding is strong. Focus on implementing
-                TypeScript generics without notes this week.
+                {strongest.score
+                  ? `${strongest.name} currently has your strongest completion evidence at ${strongest.score}%. `
+                  : "Complete lessons and assessments to create your first skill signal. "}
+                Next focus: {focus.name} at {focus.score}%.
               </span>
             </div>
           </div>
@@ -681,18 +756,25 @@ function RoadmapPage({
     if (selectedModule)
       return (
         <CatalogTopicLesson
+          key={`${selected.id}:${selectedModule.id}:${topicPreview.topic}`}
           phase={selected}
           module={selectedModule}
           topic={topicPreview.topic}
           position={topicPreview.position}
           store={store}
           onBack={() => setTopicPreview(null)}
-          onSelect={(topic, position) => {
+          onSelect={(nextModule, topic, position) => {
             const lesson = curriculumLessons.find(
               (item) => item.title === topic,
             );
             if (lesson) openLesson(topic);
-            else setTopicPreview({ ...topicPreview, topic, position });
+            else
+              setTopicPreview({
+                module: nextModule.title,
+                topic,
+                position,
+                topics: nextModule.topics,
+              });
           }}
         />
       );
@@ -1741,6 +1823,11 @@ function SearchOverlay({
       page: "practice" as NavId,
     },
     {
+      title: "Foundation path assessment",
+      meta: "Quiz · 10 questions",
+      page: "quizzes" as NavId,
+    },
+    {
       title: "Intelligent Search Dashboard",
       meta: "Project P05",
       page: "projects" as NavId,
@@ -1759,6 +1846,11 @@ function SearchOverlay({
       title: "Notes and mistake journal",
       meta: "Knowledge base",
       page: "knowledge" as NavId,
+    },
+    {
+      title: "Certificates of Completion",
+      meta: "Evidence-based credentials",
+      page: "certificates" as NavId,
     },
   ].filter(
     (item) =>
@@ -2156,11 +2248,13 @@ function LearningWorkspace({
     "learn",
     "roadmap",
     "practice",
+    "quizzes",
     "projects",
     "interview",
     "knowledge",
     "reviews",
     "progress",
+    "certificates",
     "mentor",
   ];
   const routeFromPath =
@@ -2250,10 +2344,14 @@ function LearningWorkspace({
     );
   else if (active === "practice")
     view = <PracticePage store={store} notify={notify} />;
+  else if (active === "quizzes")
+    view = <QuizzesPage store={store} notify={notify} />;
   else if (active === "knowledge")
     view = <KnowledgePage store={store} notify={notify} />;
   else if (active === "progress")
     view = <ProgressPage store={store} navigate={setActive} />;
+  else if (active === "certificates")
+    view = <CertificatesPage store={store} profile={profile} notify={notify} />;
   else view = <MentorPage store={store} navigate={setActive} />;
   return (
     <div className="app-shell">

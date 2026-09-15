@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import {
+  ArrowLeft,
   ArrowRight,
   BookOpen,
   Check,
@@ -33,6 +34,14 @@ export function CurriculumLearning({
   const [index, setIndex] = useState(savedIndex);
   const [selected, setSelected] = useState("");
   const [checked, setChecked] = useState(false);
+  const [activeSection, setActiveSection] = useState(() =>
+    Math.max(
+      0,
+      curriculumLessons[savedIndex].tutorial.findIndex(
+        (section) => section.heading === store.state.currentPosition.section,
+      ),
+    ),
+  );
   const lesson = curriculumLessons[index];
   const completed = store.state.completedLessons.includes(lesson.id);
   const correct = checked && selected === lesson.quiz.answer;
@@ -44,6 +53,7 @@ export function CurriculumLearning({
       100,
   );
   const next = curriculumLessons[index + 1];
+  const previous = curriculumLessons[index - 1];
   const completedIds = useMemo(
     () => new Set(store.state.completedLessons),
     [store.state.completedLessons],
@@ -57,15 +67,44 @@ export function CurriculumLearning({
         course: "Full-Stack + AI",
         module: lesson.phase,
         lesson: lesson.title,
-        section: `Day ${lesson.day} · Tutorial`,
+        section:
+          lesson.tutorial[activeSection]?.heading ??
+          `Day ${lesson.day} · Tutorial`,
       }),
-    [lesson, setLearningPosition],
+    [activeSection, lesson, setLearningPosition],
   );
+  useEffect(() => {
+    const sections = lesson.tutorial
+      .map((_, sectionIndex) =>
+        document.getElementById(`lesson-subtopic-${sectionIndex}`),
+      )
+      .filter((section): section is HTMLElement => Boolean(section));
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries.find((entry) => entry.isIntersecting);
+        if (!visible) return;
+        const sectionIndex = Number(
+          visible.target.getAttribute("data-subtopic-index"),
+        );
+        if (Number.isFinite(sectionIndex)) setActiveSection(sectionIndex);
+      },
+      { rootMargin: "-20% 0px -60% 0px", threshold: 0 },
+    );
+    sections.forEach((section) => observer.observe(section));
+    return () => observer.disconnect();
+  }, [lesson]);
   const open = (nextIndex: number) => {
     setIndex(nextIndex);
     setSelected("");
     setChecked(false);
+    setActiveSection(0);
     window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+  const openSection = (sectionIndex: number) => {
+    setActiveSection(sectionIndex);
+    document
+      .getElementById(`lesson-subtopic-${sectionIndex}`)
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
   const submit = () => {
     if (!selected) return;
@@ -85,7 +124,15 @@ export function CurriculumLearning({
   const finish = () => {
     store.completeLesson(lesson.id);
     notify(`Day ${lesson.day} completed — progress saved`);
-    if (next) window.setTimeout(() => open(index + 1), 500);
+  };
+  const goPrevious = () => {
+    if (activeSection > 0) openSection(activeSection - 1);
+    else if (previous) open(index - 1);
+  };
+  const goNext = () => {
+    if (activeSection < lesson.tutorial.length - 1)
+      openSection(activeSection + 1);
+    else if (next) open(index + 1);
   };
 
   return (
@@ -110,8 +157,8 @@ export function CurriculumLearning({
         </div>
       </section>
       <div className="curriculum-layout">
-        <aside className="day-list panel" aria-label="Course lessons">
-          <span className="eyebrow">START FROM ZERO</span>
+        <aside className="day-list panel" aria-label="Related lessons">
+          <span className="eyebrow">RELATED LESSONS</span>
           <h2>Foundation course</h2>
           {curriculumLessons.map((item, i) => (
             <button
@@ -128,6 +175,22 @@ export function CurriculumLearning({
               </div>
             </button>
           ))}
+          <div className="lesson-subtopic-menu">
+            <span>INSIDE THIS LESSON</span>
+            {lesson.tutorial.map((section, sectionIndex) => (
+              <button
+                key={section.heading}
+                className={sectionIndex === activeSection ? "active" : ""}
+                aria-current={
+                  sectionIndex === activeSection ? "step" : undefined
+                }
+                onClick={() => openSection(sectionIndex)}
+              >
+                <span>{String(sectionIndex + 1).padStart(2, "0")}</span>
+                {section.heading}
+              </button>
+            ))}
+          </div>
         </aside>
         <main className="lesson-document">
           <section className="lesson-overview panel">
@@ -162,7 +225,12 @@ export function CurriculumLearning({
             </div>
           </section>
           {lesson.tutorial.map((section, i) => (
-            <section className="lesson-section panel" key={section.heading}>
+            <section
+              className={`lesson-section panel ${i === activeSection ? "active-subtopic" : ""}`}
+              id={`lesson-subtopic-${i}`}
+              data-subtopic-index={i}
+              key={section.heading}
+            >
               <span className="section-number">
                 {String(i + 1).padStart(2, "0")}
               </span>
@@ -256,26 +324,62 @@ export function CurriculumLearning({
             </ul>
           </section>
           <footer className="lesson-completion panel">
-            <div>
-              <CheckCircle2 />
+            <button
+              className="lesson-step-button"
+              disabled={!activeSection && !previous}
+              onClick={goPrevious}
+            >
+              <ArrowLeft />
               <span>
-                <b>
-                  {completed
-                    ? `Day ${lesson.day} completed`
-                    : `Complete Day ${lesson.day}`}
-                </b>
                 <small>
-                  {next ? `Next: ${next.title}` : "Foundation course complete"}
+                  {activeSection ? "Previous subtopic" : "Previous lesson"}
                 </small>
+                <b>
+                  {activeSection
+                    ? lesson.tutorial[activeSection - 1].heading
+                    : (previous?.title ?? "Start of course")}
+                </b>
               </span>
+            </button>
+            <div className="lesson-completion-main">
+              <div className="completion-copy">
+                <CheckCircle2 />
+                <span>
+                  <b>
+                    {completed
+                      ? `Day ${lesson.day} completed`
+                      : `Complete Day ${lesson.day}`}
+                  </b>
+                  <small>Your progress is saved to this profile</small>
+                </span>
+              </div>
+              <button
+                className="primary-button"
+                disabled={completed}
+                onClick={finish}
+              >
+                {completed ? "Completed" : "Mark lesson complete"}
+                <Check />
+              </button>
             </div>
             <button
-              className="primary-button"
-              disabled={completed}
-              onClick={finish}
+              className="lesson-step-button next"
+              disabled={activeSection === lesson.tutorial.length - 1 && !next}
+              onClick={goNext}
             >
-              {completed ? "Completed" : "Mark complete & continue"}
-              <Check />
+              <span>
+                <small>
+                  {activeSection < lesson.tutorial.length - 1
+                    ? "Next subtopic"
+                    : "Next lesson"}
+                </small>
+                <b>
+                  {activeSection < lesson.tutorial.length - 1
+                    ? lesson.tutorial[activeSection + 1].heading
+                    : (next?.title ?? "Course complete")}
+                </b>
+              </span>
+              <ArrowRight />
             </button>
           </footer>
         </main>
