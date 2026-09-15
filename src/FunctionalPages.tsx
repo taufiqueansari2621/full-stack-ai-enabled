@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ArrowRight,
   BookOpen,
@@ -1168,12 +1168,34 @@ export function LearningExperience({
   notify,
   navigate,
 }: PageProps & { navigate: (id: NavId) => void }) {
+  const { setLearningPosition } = store;
+  const savedTab = store.state.currentPosition.section.startsWith(
+    "Visualization",
+  )
+    ? "visual"
+    : store.state.currentPosition.section.startsWith("Knowledge")
+      ? "check"
+      : "lesson";
   const [level, setLevel] = useState(0),
-    [tab, setTab] = useState<"lesson" | "visual" | "check">("lesson"),
+    [tab, setTab] = useState<"lesson" | "visual" | "check">(savedTab),
     [step, setStep] = useState(0),
     [answer, setAnswer] = useState(""),
     [feedback, setFeedback] = useState(""),
     complete = store.state.completedLessons.includes("js-event-loop");
+  useEffect(() => {
+    setLearningPosition({
+      page: "learn",
+      course: "JavaScript",
+      module: "Asynchronous JavaScript",
+      lesson: "How the event loop really works",
+      section:
+        tab === "visual"
+          ? `Visualization · Step ${step + 1}`
+          : tab === "check"
+            ? "Knowledge check"
+            : `${["Beginner", "Technical", "Practical", "Advanced", "Interview"][level]} explanation`,
+    });
+  }, [level, setLearningPosition, step, tab]);
   const content = [
     [
       "One worker, several helpers",

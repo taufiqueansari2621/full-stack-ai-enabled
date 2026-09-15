@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-const STORAGE_KEY = "forge-learning-state-v1";
+const LEGACY_STORAGE_KEY = "forge-learning-state-v1";
+const storageKey = (learnerId: string) =>
+  `forge-learning-state-v1:${learnerId}`;
 
 export type PracticeAttempt = {
   challengeId: string;
@@ -39,51 +41,48 @@ export type ForgeState = {
   activityDates: string[];
   weeklyGoalMinutes: number;
   learnedMinutes: number;
+  currentPosition: {
+    page: string;
+    course: string;
+    module: string;
+    lesson: string;
+    section: string;
+    updatedAt: string;
+  };
 };
 
 const todayKey = () => new Date().toISOString().slice(0, 10);
 const newId = () => `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
-const initialState: ForgeState = {
+const createInitialState = (): ForgeState => ({
   version: 1,
-  xp: 2840,
-  completedLessons: ["js-execution-context", "js-browser-runtime"],
+  xp: 0,
+  completedLessons: [],
   completedReviews: [],
   practiceAttempts: [],
-  knowledge: [
-    {
-      id: "welcome-note",
-      kind: "note",
-      title: "Event loop mental model",
-      body: "The call stack runs synchronous work. Microtasks drain before the next task.",
-      topic: "JavaScript",
-      createdAt: new Date().toISOString(),
-    },
-  ],
-  projectTasks: {
-    p05: [
-      "p05-1",
-      "p05-2",
-      "p05-3",
-      "p05-4",
-      "p05-5",
-      "p05-6",
-      "p05-7",
-      "p05-8",
-    ],
-  },
+  knowledge: [],
+  projectTasks: {},
   interviewResults: [],
-  activityDates: [todayKey()],
+  activityDates: [],
   weeklyGoalMinutes: 450,
-  learnedMinutes: 324,
-};
+  learnedMinutes: 0,
+  currentPosition: {
+    page: "learn",
+    course: "Foundations",
+    module: "Computer & Web Basics",
+    lesson: "How computers execute instructions",
+    section: "Day 1 · Start here",
+    updatedAt: new Date().toISOString(),
+  },
+});
 
 const isStringArray = (value: unknown): value is string[] =>
   Array.isArray(value) && value.every((item) => typeof item === "string");
 
-function loadState(): ForgeState {
+function loadState(learnerId: string): ForgeState {
+  const initialState = createInitialState();
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(storageKey(learnerId));
     if (!raw) return initialState;
     const value: unknown = JSON.parse(raw);
     if (!value || typeof value !== "object") return initialState;
@@ -124,11 +123,11 @@ function loadState(): ForgeState {
   }
 }
 
-export function useForgeStore() {
-  const [state, setState] = useState<ForgeState>(loadState);
+export function useForgeStore(learnerId: string) {
+  const [state, setState] = useState<ForgeState>(() => loadState(learnerId));
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  }, [state]);
+    localStorage.setItem(storageKey(learnerId), JSON.stringify(state));
+  }, [learnerId, state]);
 
   const touchActivity = useCallback(
     (current: ForgeState) => ({
@@ -258,9 +257,21 @@ export function useForgeStore() {
     [touchActivity],
   );
 
-  const resetProgress = useCallback(
-    () => setState({ ...initialState, activityDates: [todayKey()] }),
-    [],
+  const resetProgress = useCallback(() => setState(createInitialState()), []);
+
+  const setLearningPosition = useCallback(
+    (position: Partial<ForgeState["currentPosition"]>) =>
+      setState((current) =>
+        touchActivity({
+          ...current,
+          currentPosition: {
+            ...current.currentPosition,
+            ...position,
+            updatedAt: new Date().toISOString(),
+          },
+        }),
+      ),
+    [touchActivity],
   );
 
   const metrics = useMemo(() => {
@@ -297,6 +308,16 @@ export function useForgeStore() {
       100,
       Math.round((state.learnedMinutes / state.weeklyGoalMinutes) * 100),
     );
+    const streak = (() => {
+      const dates = new Set(state.activityDates);
+      let count = 0;
+      const cursor = new Date();
+      while (dates.has(cursor.toISOString().slice(0, 10))) {
+        count += 1;
+        cursor.setDate(cursor.getDate() - 1);
+      }
+      return count;
+    })();
     return {
       correct,
       uniqueCorrect,
@@ -304,6 +325,7 @@ export function useForgeStore() {
       completedTasks,
       mastery,
       weeklyPercent,
+      streak,
     };
   }, [state]);
 
@@ -318,8 +340,11 @@ export function useForgeStore() {
     deleteKnowledge,
     toggleProjectTask,
     saveInterview,
+    setLearningPosition,
     resetProgress,
   };
 }
+
+export { LEGACY_STORAGE_KEY };
 
 export type ForgeStore = ReturnType<typeof useForgeStore>;

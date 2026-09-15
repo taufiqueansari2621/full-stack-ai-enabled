@@ -30,6 +30,25 @@ Update this file after every meaningful verified implementation change.
 - Added global search, settings, theme selection, progress reset, notifications, and responsive interaction states.
 - Added an end-to-end browser smoke test that covers persistence, navigation, practice, notes, projects, reviews, interviews, search, and mobile overflow.
 - Verified lint, production build, and browser smoke test after the functional learning-system implementation.
+- Added first-visit onboarding and explicit Local Learning Profiles with configurable level, goal, study time, and pace.
+- Added multi-profile login/logout with learner-isolated progress records and zeroed, evidence-based starting state.
+- Added persisted lesson position so continue-learning restores the saved lesson depth, workspace tab, and visualization step.
+- Personalized the dashboard, navigation, and settings from the active profile and clarified browser-only data boundaries.
+- Added a six-day, content-rich beginner course covering computer foundations, the web, HTML, accessibility, CSS, and JavaScript.
+- Added per-day goals, prerequisites, estimates, tutorials, code examples, mistakes, exercises, challenges, quizzes, interview prompts, revision notes, and saved completion progression.
+- Changed reset into a verified learner-scoped “Reset all & start over” flow that clears all evidence and returns immediately to Day 1 without affecting other profiles.
+- Replaced fixed dashboard mastery, streak, lesson-count, and current-stage claims with values derived from the active learner's stored activity.
+- Added a typed 16-phase curriculum catalog with 50+ modules and 200+ prerequisite-ordered topics from orientation through job preparation.
+- Made every roadmap phase open a real module/topic view; populated unlocked topics navigate into their lessons and unavailable topics explain why they are disabled.
+- Replaced roadmap-level fake progress and week claims with completion-derived values and real curriculum counts.
+- Added stable primary workspace paths so `/roadmap`, `/learn`, `/practice`, and other main views survive refresh.
+- Audited welcome, dashboard, roadmap, and lesson screens in real Chrome screenshots across light and dark themes.
+- Added theme-specific accessible accent tokens for light surfaces, improved muted-text contrast, enlarged action labels/targets, strengthened disabled controls, and fixed the invisible dark-mode lesson Reset button.
+- Removed prerequisite gates from every roadmap phase and topic so learners can explore the complete curriculum freely without awarding completion or mastery.
+- Added navigable topic overview pages for not-yet-expanded lessons, with phase context, module position, adjacent topics, and working module navigation instead of locked or dead controls.
+- Audited curriculum coverage: 280 catalog topics, 6 deeply authored lessons, and 274 former outline-only gaps.
+- Replaced all 274 outline-only pages with guided topic lessons containing phase-specific mental models, examples, production/quality guidance, deliberate practice, checkpoints, notes, completion, and previous/next navigation.
+- Updated phase and overall roadmap progress to include stable IDs for every catalog topic and verified a formerly uncovered TypeScript lesson in the browser flow.
 
 ## In Progress
 
@@ -37,9 +56,9 @@ Update this file after every meaningful verified implementation change.
 
 ## Next Up
 
-1. Decompose legacy prototype-only components out of `src/App.tsx`.
-2. Add focused component and state-repository tests alongside the browser smoke coverage.
-3. Design the account-sync migration while keeping the local-first experience available offline.
+1. Fully populate Orientation and Web Fundamentals, then expand JavaScript lesson depth and practice coverage.
+2. Decompose legacy prototype-only components out of `src/App.tsx`.
+3. Add focused component and state-repository tests alongside the expanded browser smoke coverage.
 
 ## Open Questions
 
@@ -68,6 +87,6 @@ Update this file after every meaningful verified implementation change.
 
 ## Session Notes
 
-- Latest verified state: `npm run lint`, `npm run build`, and `npm run test:smoke` pass.
+- Latest verified state: profile onboarding, logout/login restoration, learner-scoped persistence, and mobile layout are covered by the browser smoke flow.
 - Headless Chrome confirmed the core learning workflows and local persistence work at desktop and mobile widths.
 - Preserve the current visual identity while improving architecture and real behavior.

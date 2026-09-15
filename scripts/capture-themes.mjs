@@ -1,0 +1,33 @@
+import puppeteer from "puppeteer-core";
+
+const browser = await puppeteer.launch({ executablePath:"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", headless:true, args:["--no-sandbox"] });
+const page = await browser.newPage();
+await page.setViewport({width:1440,height:1000,deviceScaleFactor:1});
+await page.goto("http://127.0.0.1:5173",{waitUntil:"networkidle0"});
+await page.evaluate(()=>localStorage.clear());
+await page.reload({waitUntil:"networkidle0"});
+await page.screenshot({path:"/tmp/forge-welcome-dark.png",fullPage:true});
+await page.evaluate(()=>{document.documentElement.dataset.theme="light"});
+await page.screenshot({path:"/tmp/forge-welcome-light.png",fullPage:true});
+await page.evaluate(()=>{
+  const profile={id:"audit_user",fullName:"UI Audit",username:"ui_audit",level:"Complete Beginner",goal:"Become Full-Stack AI Developer",dailyGoal:"1 Hour",speed:"Normal",createdAt:new Date().toISOString()};
+  localStorage.setItem("forge-local-profiles-v1",JSON.stringify([profile]));
+  localStorage.setItem("forge-active-profile-v1",profile.id);
+  localStorage.setItem("forge-theme","dark");
+});
+await page.goto("http://127.0.0.1:5173/",{waitUntil:"networkidle0"});
+await page.screenshot({path:"/tmp/forge-dashboard-dark.png",fullPage:true});
+await page.click('button[aria-label="Toggle theme"]');
+await page.screenshot({path:"/tmp/forge-dashboard-light.png",fullPage:true});
+await page.evaluate(()=>document.querySelectorAll("nav button")[2].click());
+await new Promise(resolve=>setTimeout(resolve,200));
+await page.screenshot({path:"/tmp/forge-roadmap-light.png",fullPage:true});
+await page.click('button[aria-label="Toggle theme"]');
+await page.screenshot({path:"/tmp/forge-roadmap-dark.png",fullPage:true});
+await page.evaluate(()=>document.querySelectorAll("nav button")[1].click());
+await new Promise(resolve=>setTimeout(resolve,200));
+await page.screenshot({path:"/tmp/forge-lesson-dark.png",fullPage:true});
+await page.click('button[aria-label="Toggle theme"]');
+await page.screenshot({path:"/tmp/forge-lesson-light.png",fullPage:true});
+await browser.close();
+console.log("Theme screenshots saved in /tmp/forge-*.png");

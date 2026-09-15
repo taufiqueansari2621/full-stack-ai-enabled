@@ -31,9 +31,11 @@ Future boundaries
 | Styling | Tokenized plain CSS | Visual system, responsive layout, animation |
 | Icons | Lucide React | Consistent stroke-based interface icons |
 | Current data | Typed objects in `src/data.ts` | Representative curriculum and progress data |
-| Current persistence | `localStorage` | Non-sensitive preferences such as theme |
+| Current persistence | Versioned `localStorage` adapters | Local profiles, learner-scoped progress, and non-sensitive preferences |
 | Quality | TypeScript and ESLint | Static verification |
 | Curriculum | Markdown directories `00_`–`14_` | Human-readable roadmap source material |
+
+The application catalog in `src/curriculumCatalog.ts` owns navigable phase/module/topic metadata. Detailed lesson records remain separate in `src/curriculum.ts`, allowing the full hierarchy to exist before each lesson is populated without presenting outline-only topics as finished content.
 
 ## Intended Source Boundaries
 
@@ -71,7 +73,7 @@ Components must not read or write browser storage directly. Storage access belon
 
 ## Authentication and Access
 
-- The current MVP has no authentication and must be presented as a local prototype.
+- The current MVP has explicit Local Learning Profiles for same-browser separation. They are not authentication and are presented as local-only profiles.
 - When accounts are introduced, the server—not the browser—establishes learner identity.
 - Every read and mutation derives ownership from the authenticated principal.
 - AI retrieval and personal knowledge queries apply authorization before content reaches the model.
@@ -102,4 +104,3 @@ Components must not read or write browser storage directly. Storage access belon
 7. New features provide loading, empty, error, and recovery states where data is asynchronous.
 8. Accessibility, mobile behavior, lint, build, and browser runtime are release gates.
 9. No secret or private learner content is stored in source control or browser-visible configuration.
-
