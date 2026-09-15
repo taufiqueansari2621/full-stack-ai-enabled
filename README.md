@@ -13,7 +13,7 @@ npm install
 npm run dev
 ```
 
-Create an optimized production build with `npm run build`. The current product prototype includes the learning dashboard, visual roadmap, multi-level lesson experience, event-loop visualizer, project workshop, smart review queue, interview simulator, progress views, and an AI mentor workspace. Progress and theme preferences are designed for local-first use while the backend is developed.
+Create an optimized production build with `npm run build`, or validate the key learner journeys with `npm run test:smoke`. Forge includes the learning dashboard, visual roadmap, multi-level lesson experience, event-loop visualizer, project workshop, smart review queue, interview simulator, progress views, and a transparent local mentor workspace. Progress, notes, attempts, milestones, review completion, and theme preferences persist in browser local storage, so learners can practice and track progress without an account.
 
 Development is guided by the project-specific [Six-File Product Context](context/README.md), including product scope, architecture, UI language, code standards, workflow rules, current progress, and the ordered [build plan](context/specs/00-build-plan.md).
 
@@ -40,37 +40,37 @@ By the end of the roadmap, you should be able to:
 
 ## The 52-week roadmap
 
-| Weeks | Focus | Build outcome |
-|---|---|---|
-| 1–2 | Engineering setup, CS, Git/Linux, HTML/CSS | Accessible portfolio foundation |
-| 3–5 | JavaScript from fundamentals to internals | Browser apps and JS utilities |
-| 6–7 | Advanced TypeScript | Typed SDK and reusable abstractions |
-| 8–12 | Angular architecture and testing | Enterprise dashboard and IoT UI |
-| 13–16 | React architecture and performance | Production React apps and comparison study |
-| 17–21 | Node, APIs, data, security, realtime | Multi-service backend portfolio |
-| 22–28 | DSA, low-level and high-level design | Interview pattern mastery and designs |
-| 29–33 | Python, data, ML | Anomaly-detection service |
-| 34–38 | Deep learning and LLM engineering | AI support copilot |
-| 39–43 | RAG and AI evaluation | Permission-aware knowledge copilot |
-| 44–47 | Agents, security, observability | Engineering agent and eval platform |
-| 48–52 | Capstone and interview sprint | Deployed industrial AI platform |
+| Weeks | Focus                                      | Build outcome                              |
+| ----- | ------------------------------------------ | ------------------------------------------ |
+| 1–2   | Engineering setup, CS, Git/Linux, HTML/CSS | Accessible portfolio foundation            |
+| 3–5   | JavaScript from fundamentals to internals  | Browser apps and JS utilities              |
+| 6–7   | Advanced TypeScript                        | Typed SDK and reusable abstractions        |
+| 8–12  | Angular architecture and testing           | Enterprise dashboard and IoT UI            |
+| 13–16 | React architecture and performance         | Production React apps and comparison study |
+| 17–21 | Node, APIs, data, security, realtime       | Multi-service backend portfolio            |
+| 22–28 | DSA, low-level and high-level design       | Interview pattern mastery and designs      |
+| 29–33 | Python, data, ML                           | Anomaly-detection service                  |
+| 34–38 | Deep learning and LLM engineering          | AI support copilot                         |
+| 39–43 | RAG and AI evaluation                      | Permission-aware knowledge copilot         |
+| 44–47 | Agents, security, observability            | Engineering agent and eval platform        |
+| 48–52 | Capstone and interview sprint              | Deployed industrial AI platform            |
 
 Detailed weekly plans live in [`12_PHASES`](12_PHASES/).
 
 ## Curriculum map
 
-| Area | What you will learn | Location |
-|---|---|---|
-| Foundations | CS, Git, Linux, HTML/CSS, JavaScript, TypeScript | [`01_FOUNDATIONS`](01_FOUNDATIONS/) |
-| Angular | Core, RxJS, architecture, performance, testing | [`02_ANGULAR`](02_ANGULAR/) |
-| React | Mental model, state, architecture, production practices | [`03_REACT`](03_REACT/) |
-| Backend | Node, API security, databases, queues, realtime | [`04_BACKEND`](04_BACKEND/) |
-| DSA | Patterns from beginner through advanced | [`05_DSA`](05_DSA/) |
-| System design | Fundamentals, LLD, HLD, cloud and DevOps | [`06_SYSTEM_DESIGN`](06_SYSTEM_DESIGN/) |
-| AI engineering | Python, ML, LLMs, RAG, agents, evaluation and MLOps | [`07_AI`](07_AI/) |
-| Projects | 34 progressively harder builds | [`08_PROJECTS`](08_PROJECTS/) |
-| Interviews | Full-stack, AI, design, project and behavioral rounds | [`09_INTERVIEW`](09_INTERVIEW/) |
-| Career | Positioning, resume, applications, GitHub case studies | [`10_PRODUCT_COMPANY`](10_PRODUCT_COMPANY/) and [`11_PORTFOLIO`](11_PORTFOLIO/) |
+| Area           | What you will learn                                     | Location                                                                        |
+| -------------- | ------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| Foundations    | CS, Git, Linux, HTML/CSS, JavaScript, TypeScript        | [`01_FOUNDATIONS`](01_FOUNDATIONS/)                                             |
+| Angular        | Core, RxJS, architecture, performance, testing          | [`02_ANGULAR`](02_ANGULAR/)                                                     |
+| React          | Mental model, state, architecture, production practices | [`03_REACT`](03_REACT/)                                                         |
+| Backend        | Node, API security, databases, queues, realtime         | [`04_BACKEND`](04_BACKEND/)                                                     |
+| DSA            | Patterns from beginner through advanced                 | [`05_DSA`](05_DSA/)                                                             |
+| System design  | Fundamentals, LLD, HLD, cloud and DevOps                | [`06_SYSTEM_DESIGN`](06_SYSTEM_DESIGN/)                                         |
+| AI engineering | Python, ML, LLMs, RAG, agents, evaluation and MLOps     | [`07_AI`](07_AI/)                                                               |
+| Projects       | 34 progressively harder builds                          | [`08_PROJECTS`](08_PROJECTS/)                                                   |
+| Interviews     | Full-stack, AI, design, project and behavioral rounds   | [`09_INTERVIEW`](09_INTERVIEW/)                                                 |
+| Career         | Positioning, resume, applications, GitHub case studies  | [`10_PRODUCT_COMPANY`](10_PRODUCT_COMPANY/) and [`11_PORTFOLIO`](11_PORTFOLIO/) |
 
 ## Project ladder
 

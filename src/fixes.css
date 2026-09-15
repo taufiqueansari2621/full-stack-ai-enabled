@@ -1,0 +1,6 @@
+.app-shell{min-height:100vh}
+.main-shell{margin-left:248px;min-height:100vh}
+
+@media(max-width:900px){
+  .main-shell{margin-left:0}
+}

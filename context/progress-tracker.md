@@ -4,11 +4,11 @@ Update this file after every meaningful verified implementation change.
 
 ## Current Phase
 
-- Phase 1: Interactive local-first product prototype.
+- Phase 2: Verified local-first learning system.
 
 ## Current Goal
 
-- Convert the visually complete prototype into a maintainable application with real local learning state and complete primary navigation experiences.
+- Make every primary learner journey useful, persistent, and testable without requiring an account or backend.
 
 ## Completed
 
@@ -24,6 +24,12 @@ Update this file after every meaningful verified implementation change.
 - Diagnosed and fixed the React Strict Mode startup crash.
 - Verified lint, production build, and real-browser dashboard rendering.
 - Added project-specific Six-File Context documentation and build plan.
+- Added a versioned local learner-state repository with defensive browser storage recovery.
+- Replaced representative practice, knowledge, progress, mentor, project, interview, review, and lesson surfaces with usable local workflows.
+- Added persistent challenge attempts, notes, review completion, project milestones, interview feedback, XP, and activity tracking.
+- Added global search, settings, theme selection, progress reset, notifications, and responsive interaction states.
+- Added an end-to-end browser smoke test that covers persistence, navigation, practice, notes, projects, reviews, interviews, search, and mobile overflow.
+- Verified lint, production build, and browser smoke test after the functional learning-system implementation.
 
 ## In Progress
 
@@ -31,9 +37,9 @@ Update this file after every meaningful verified implementation change.
 
 ## Next Up
 
-1. Unit 01: decompose the application shell and add a global error boundary.
-2. Unit 02: introduce domain types and a versioned learner-state repository.
-3. Unit 03: replace placeholder practice, knowledge, progress, and mentor views with complete local experiences.
+1. Decompose legacy prototype-only components out of `src/App.tsx`.
+2. Add focused component and state-repository tests alongside the browser smoke coverage.
+3. Design the account-sync migration while keeping the local-first experience available offline.
 
 ## Open Questions
 
@@ -56,13 +62,12 @@ Update this file after every meaningful verified implementation change.
 
 - `src/App.tsx` is intentionally oversized from the prototype and must be decomposed incrementally.
 - `src/styles.css` contains prototype-era raw color values and very small metadata type; migrate touched areas to documented tokens and accessible sizing.
-- Only theme preference is persisted; other progress values are illustrative.
-- Several navigation workspaces are informative placeholders rather than complete workflows.
-- No automated component or domain tests exist yet.
+- Legacy prototype-only components remain in `src/App.tsx` while the new functional views are incrementally separated in `src/FunctionalPages.tsx`.
+- Local state is intentionally browser-only; account sync, backups, and multi-device conflict handling are future work.
+- Browser smoke coverage exists; focused component and state-repository tests are still needed.
 
 ## Session Notes
 
-- Latest verified state: `npm run lint` and `npm run build` pass.
-- Headless Chrome confirmed that the dashboard mounts after the startup fix.
+- Latest verified state: `npm run lint`, `npm run build`, and `npm run test:smoke` pass.
+- Headless Chrome confirmed the core learning workflows and local persistence work at desktop and mobile widths.
 - Preserve the current visual identity while improving architecture and real behavior.
-
