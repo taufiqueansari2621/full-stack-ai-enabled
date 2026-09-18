@@ -6,6 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "predeploy:cloudflare": "npm run build",
+    "deploy:cloudflare": "wrangler deploy",
+    "verify:cloudflare": "node scripts/verify-cloudflare.mjs",
     "preview": "vite preview",
     "test:smoke": "node scripts/smoke.mjs",
     "lint": "eslint ."
@@ -28,6 +31,7 @@
     "prettier": "^3.9.6",
     "puppeteer-core": "^25.10.0",
     "typescript": "latest",
-    "typescript-eslint": "latest"
+    "typescript-eslint": "latest",
+    "wrangler": "^4.133.0"
   }
 }

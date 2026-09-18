@@ -2,6 +2,10 @@
 
 ## Current Architecture
 
+The local retrieval tutor builds a lightweight index from the curriculum catalog and learner knowledge entries tagged `AI Tutor Source`. Added sources reuse the learner-scoped Forge store, persist locally, and are removed by profile reset. Responses include source labels, while the response composer can later be replaced by a hosted open-weight model endpoint.
+
+The application shell owns optional global navigation and Fullscreen API controls during focused learning. Course-topic visibility remains local to each lesson. `RoadmapPage` renders one curriculum model as cards or an interactive flow, avoiding duplicated curriculum state.
+
 Forge is currently a local-first single-page application. The MVP deliberately uses seeded domain data so product flows and information architecture can be validated before committing to authentication, backend, database, or AI-provider choices.
 
 ```text
@@ -28,6 +32,7 @@ Future boundaries
 | Language | TypeScript, strict mode | Domain and UI type safety |
 | UI runtime | React | Component rendering and interaction |
 | Build tool | Vite | Local development and production bundling |
+| Production hosting | Cloudflare Workers Static Assets | Global asset delivery with SPA route fallback |
 | Styling | Tokenized plain CSS | Visual system, responsive layout, animation |
 | Icons | Lucide React | Consistent stroke-based interface icons |
 | Current data | Typed objects in `src/data.ts` | Representative curriculum and progress data |
@@ -36,6 +41,28 @@ Future boundaries
 | Curriculum | Markdown directories `00_`–`14_` | Human-readable roadmap source material |
 
 The application catalog in `src/curriculumCatalog.ts` owns navigable phase/module/topic metadata. Detailed lesson records remain separate in `src/curriculum.ts`, allowing the full hierarchy to exist before each lesson is populated without presenting outline-only topics as finished content.
+
+Frontend modules carry a `common`, `react`, or `angular` track. The learner's
+profile-scoped framework preference selects visible modules and progress
+denominators without deleting evidence from a previously studied track.
+
+Official and trusted learning links are typed curriculum data. The large
+resource catalog, topic resource panels, Full Learning lesson, and topic-drill
+engine are lazy-loaded feature chunks so research breadth does not inflate the
+initial application bundle. Exact topic matches may replace broad phase links;
+the npm lesson, for example, uses current first-party npm dependency, clean
+install, and security guidance. External resource visits never mutate progress.
+
+Lesson entry activates an ephemeral focused-shell state. Authored lessons use
+the active `/learn` workspace and catalog lessons report their open/close state
+to the application shell. Both paths remove global navigation chrome, retain a
+lesson-owned Back action, and expose only course-topic navigation. This state is
+presentational and never changes progress or mastery evidence.
+
+Production deployment is assets-only through `wrangler.jsonc`. Cloudflare
+serves the Vite `dist` directory and uses `single-page-application` not-found
+handling so direct navigation to client routes returns the application shell.
+There is no server-side Worker entry point, binding, or production secret.
 
 ## Intended Source Boundaries
 
@@ -58,8 +85,12 @@ Separate state by lifetime:
 
 - **Ephemeral UI state:** active tab, open panel, selected filter, modal state.
 - **Session learning state:** current attempt, answers, timer, hint level.
-- **Durable learner state:** completions, evidence, mastery, review schedule, notes, mistakes.
+- **Durable learner state:** completions, interactive example records, mastery artifacts, topic-practice artifacts, attempts, review schedule, notes, mistakes.
 - **Server-authoritative state:** identity, synced progress, AI usage, project artifacts; introduced later.
+
+Interactive example records are unique per learner, lesson, and case. Saving a
+first normal, unusual, or failure case records the learner's prediction and
+reflection, but does not mark the topic complete or claim mastery.
 
 Components must not read or write browser storage directly. Storage access belongs behind a typed repository adapter, except the existing theme preference until the adapter unit is complete.
 
@@ -95,7 +126,7 @@ Components must not read or write browser storage directly. Storage access belon
 
 ## Invariants
 
-1. A lesson-completed flag alone never equals mastery.
+1. A lesson-completed flag or submitted artifact alone never equals mastery.
 2. UI components never calculate final mastery or review dates; domain functions own those rules.
 3. External and persisted data is validated before entering trusted domain state.
 4. AI output never directly mutates durable state or executes a tool without validation and authorization.

@@ -1,5 +1,16 @@
 # Progress Tracker
 
+## 2026-09-19 — Trainable tutor and professional workspace upgrade
+
+- Added a private local RAG-style Forge Tutor over the complete curriculum plus learner-added training sources, with visible grounding and honest out-of-data fallback.
+- Added consistent themed inputs so lesson textareas no longer render as white browser controls in dark mode.
+- Added optional focused-learning navigation from the left edge and top-right, plus browser full-screen mode; course topics remain independently collapsible.
+- Added DSA & Coding Interviews as a complete role roadmap option.
+- Added switchable card and clickable flow/tree learning-path views.
+- Expanded the project workshop from four to eight portfolio projects and added actionable guidance/evidence checklists.
+- Verified lint, production build, and the full browser smoke suite including 78 primary responsive checks and six focused lesson viewport checks.
+- Deployed to Cloudflare as version `eae7e35d-57f4-46e7-980b-5c26ef2a29ea`; live SPA, deep lesson, focused navigation, project controls, console health, and 390px overflow verification passed.
+
 Update this file after every meaningful verified implementation change.
 
 ## Current Phase
@@ -62,6 +73,57 @@ Update this file after every meaningful verified implementation change.
 - Expanded Git and GitHub into 11 professional learning steps and added detailed sequences for the terminal, DNS/HTTP, forms, and JavaScript arrays, with topic-aware learning sequences for the rest of the catalog.
 - Added active subtopic navigation and always-available Previous/Next progression to the six foundation lessons so completed lessons are no longer navigation dead ends.
 - Persisted the selected catalog or foundation subtopic as the learner's current learning position.
+- Replaced the space-heavy Foundation course card list inside authored lessons with a compact lesson-task roadmap covering goals, concepts, every tutorial section, mistakes, exercises, quiz, and revision, with clear active-task highlighting.
+- Converted the six foundation lessons from long scrolling documents into focused task pages with a visible task counter, active roadmap state, and page-by-page Previous/Next progression.
+- Added deep instructional records for all 18 foundation teaching subtopics, including purpose, analogy, ordered mechanics, visual model, realistic example, practice challenge, and takeaways.
+- Expanded responsive browser verification to all 12 primary workspaces at six viewport/theme combinations from 1440px desktop to 320px mobile and confirmed no document-level horizontal overflow.
+- Added a four-stage Deep Dive Lab to every catalog topic with prediction-before-explanation, worked models, progressive hints, transfer practice, teach-back, confidence calibration, and durable learning evidence.
+- Benchmarked ten major learning platforms and documented the shared professional learning model across diagnosis, active learning, practice, projects, retention, and validation.
+- Added a persistent five-level Mastery Studio to every catalog topic, moving from foundation and guided tracing through application, debugging, and production decision records with explicit success criteria.
+- Added typed learner-scoped mastery artifacts that can be revised without duplication and do not inflate calculated mastery or replace formal assessment evidence.
+- Removed the catalog subtopic-selection interface and replaced it with Full Learning Mode, where every topic opens directly into one continuous sequence of all concept chapters, examples, practice tasks, Deep Dive, Mastery Studio, assessment, and interview preparation.
+- Converted all six authored foundation lessons to the same continuous Full Learning Mode, removing their internal task picker while preserving every tutorial, visual model, exercise, quiz, revision item, and lesson-to-lesson control.
+- Isolated browser smoke-test storage from normal localhost development profiles by running the destructive reset flow only on the separate `127.0.0.1` origin.
+- Added context-aware lesson back navigation: authored lessons return to the exact roadmap phase that opened them, with a safe complete-roadmap fallback for direct or refreshed lesson visits.
+- Audited the whole curriculum against a zero-to-professional learning loop and expanded the navigable catalog to 17 phases, 98 modules, and 684 ordered topics.
+- Added a learner-scoped React, Angular, or Both choice to Frontend Engineering; the preference persists and limits roadmap/dashboard progress denominators to the selected curriculum.
+- Expanded Frontend Engineering to a 39-topic common platform foundation, a 67-topic React specialization, and a 94-topic Angular specialization covering foundations through architecture, production incidents, projects, interviews, and assessment.
+- Added a complete Data Structures & Algorithms phase and expanded backend, distributed systems, Python, data engineering, ML, deep learning, DevOps, cloud, SRE, incidents, and senior/principal interview preparation.
+- Expanded generated Full Learning Mode lessons across the catalog with mental models, guided implementation, debugging, testing, performance, security, professional practice, and multi-level interview reasoning.
+- Documented the curriculum depth audit, the honest distinction between structured coverage and topic-specific authored depth, and the next authoring priorities.
+- Deeply researched freeCodeCamp, MDN, The Odin Project, Exercism, Frontend Mentor, GitHub Skills, Google ML Crash Course, Hugging Face Learn, LeetCode, HackerRank, GreatFrontEnd, roadmap.sh, and official technology documentation.
+- Added a searchable Resource Academy with 71 attributed official/trusted resources, explicit Official and Free labels, four evidence levels, and Frontend, Full-Stack, and AI Engineer role roadmaps.
+- Added relevant official/trusted resources inside every catalog lesson without awarding progress for opening external links.
+- Expanded Practice with a second curriculum-wide mode: Easy, Medium, and Hard open-ended drills for every visible topic, producing 2,052 combinations when both frontend frameworks are selected.
+- Added learner-scoped topic-practice artifacts that can be revised per topic and difficulty, survive logout/login, and clear with the existing learner reset.
+- Lazy-loaded Full Learning Mode, lesson resources, the Resource Academy, and topic drills; the initial production chunk fell from 504.53 kB to 395.78 kB and no longer triggers Vite's size advisory.
+- Verified the Resource Academy, Angular lesson resources, Medium drill persistence, reset behavior, and all 13 workspaces across six responsive light/dark viewport checks.
+- Added Focused Learning Mode for authored and catalog lessons: the global sidebar, top bar, search/settings chrome, and floating mentor are removed while studying, and the existing lesson Back action restores the exact roadmap context.
+- Replaced the authored lesson chapter/subtask outline with a six-topic Foundation course navigator; catalog lessons now label their phase-wide navigator as Course Topics.
+- Made course navigation sticky beside lessons on desktop and a compact horizontal swipe rail on tablet/mobile, giving the lesson the full canvas without document-level overflow.
+- Updated visual capture tooling for the focused shell and verified both desktop and 390px mobile compositions in real Chrome screenshots.
+- Extended browser coverage with focused-shell DOM assertions, six dedicated catalog-lesson viewport checks, and 78 primary responsive light/dark workspace checks.
+- Installed Wrangler 4.133.0 and added reproducible Cloudflare Workers Static Assets configuration with explicit single-page-application fallback.
+- Published Forge as the independent `forge-ai-engineering` Worker without modifying the existing `valorindia` Pages project or attaching a custom domain.
+- Verified the live root, `/learn`, `/roadmap`, and `/resources` routes with HTTP 200 responses and real Chrome checks for React boot, lazy content, focused learning, console errors, and 390px overflow.
+- Rewrote every active learner workspace in clear, consistent English, including onboarding, navigation, dashboard, learning path, lessons, deeper practice, skill levels, practice, notes, projects, interviews, review, progress, quizzes, certificates, and resources.
+- Replaced unexplained product jargon such as artifact, evidence, rubric, calibration, curriculum-wide, and mastery-facing labels with direct learner actions while preserving required technical vocabulary and all stored IDs and behavior.
+- Added a browser-based plain-language regression check and updated all interaction and responsive assertions for the new labels.
+- Verified the plain-English experience with a clean production build, zero-warning lint, full persistence workflow, 78 responsive workspace checks, and six focused lesson viewport checks.
+- Rebuilt the reported npm lesson as 11 distinct, topic-specific chapters covering the package manifest, runtime and development dependencies, semantic versions, lockfiles, `npm install` versus `npm ci`, scripts, peer dependencies, safe updates, debugging, and supply-chain safety.
+- Added a prediction-first Interactive Example Lab to every catalog and authored Foundation lesson with normal, unusual, and failure situations, revealed results, explanations, follow-up questions, saved reflections, and learner-profile isolation.
+- Added typed `exampleLabRecords` persistence with first-save XP/time credit, update-without-duplication behavior, logout/login restoration, and learner-reset cleanup without treating saved examples as topic completion.
+- Reworked generated lesson chapters so foundation, mental model, process, build, application, debugging, testing, safety/performance, professional, and interview sections serve distinct teaching purposes instead of repeating one generic example.
+- Added current-topic auto-focus plus learner-controlled hide/show behavior to both catalog and Foundation course rails, while preserving the horizontal mobile rail and full-width lesson mode.
+- Added safe wrapping for long examples and code, and verified the updated lesson visually at 1470px desktop and 390px mobile widths.
+- Added current official npm resources for dependency types, reproducible `npm ci` installs, and dependency security; the Resource Academy now contains 74 unique resources.
+- Extended the browser smoke workflow to verify npm chapter uniqueness, prediction/reveal/reflection persistence, course-rail controls, logout/login restoration, learner reset, 78 primary responsive checks, and six focused lesson viewport checks.
+- Audited project-page controls and replaced repeated folder symbols with meaningful Search, Analytics, Database, and AI icons.
+- Corrected the primary project action to show `Start P05` at zero progress and `Continue P05` only after saved work exists.
+- Replaced ambiguous arrow-only project-card controls with named `Open project` actions, visible labels, consistent icon sizing, hover feedback, and 44px touch targets.
+- Added accessible names to active icon-only menu, close, send, review, project, search, and settings controls; decorative icons are now hidden from assistive technology where touched.
+- Made project filters horizontally swipeable on narrow screens and raised their text and touch sizing without introducing page-level overflow.
+- Extended the full browser suite to reject any visible button without a text or ARIA name and to verify four distinct project symbols plus labeled 40px-or-larger card actions.
 
 ## In Progress
 
@@ -69,9 +131,11 @@ Update this file after every meaningful verified implementation change.
 
 ## Next Up
 
-1. Add topic-specific instructional records for TypeScript Systems and Frontend Engineering.
-2. Decompose legacy prototype-only components out of `src/App.tsx`.
-3. Add focused component and state-repository tests alongside the expanded browser smoke coverage.
+1. Continue topic-specific authoring for shared frontend, React, and Angular lessons, exercises, project artifacts, and assessment banks.
+2. Add a constrained code runner and authored topic-linked test/assessment banks.
+3. Add freshness metadata, learner bookmarks, and review workflows to the Resource Academy.
+4. Decompose legacy prototype-only components out of `src/App.tsx`.
+5. Add focused component and state-repository tests alongside the expanded browser smoke coverage.
 
 ## Open Questions
 
@@ -100,6 +164,8 @@ Update this file after every meaningful verified implementation change.
 
 ## Session Notes
 
-- Latest verified state: profile onboarding, logout/login restoration, learner-scoped persistence, topic/subtopic navigation, cross-lesson progression, and mobile layout are covered by the browser smoke flow.
-- Headless Chrome confirmed active Git topic/subtopic states, foundation subtopic progression, cross-lesson Next navigation, core learning workflows, and local persistence at desktop and mobile widths.
+- Latest implementation state: distraction-free Complete Lessons, hideable course-topic-only navigation, prediction-first interactive examples, deeper practice, five skill levels, React/Angular/Both paths, 684 topics, 74 trusted resources, curriculum-wide three-level topic practice, and plain-English learner copy.
+- Headless Chrome confirmed the Angular-only path, lesson resources, Resource Academy, Medium practice artifact, logout/login restoration, clean reset, and every existing learner workflow.
+- Lint, production build, all 78 responsive workspace checks, and six focused catalog-lesson viewport checks pass; feature-level lazy loading keeps the initial production chunk below Vite's advisory threshold.
+- Production is live at `https://forge-ai-engineering.valorled-store.workers.dev` on Cloudflare version `441f2ce6-6089-441c-96f3-a384b3c1470b`; the live Chrome audit confirms SPA routes, the deep npm lesson, three interactive examples, meaningful project icons, named project controls, focused learning, course-rail controls, console health, and 390px overflow safety.
 - Preserve the current visual identity while improving architecture and real behavior.

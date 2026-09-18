@@ -27,7 +27,7 @@ export const curriculumLessons: CurriculumLesson[] = [
     day: 1,
     phase: "Computer & Web Basics",
     title: "How computers execute instructions",
-    goal: "Build a mental model of hardware, software, programs, and data before writing code.",
+    goal: "Learn how hardware, software, programs, and data work together before you write code.",
     prerequisites: "None — this lesson starts from zero.",
     minutes: 45,
     concepts: [
@@ -86,7 +86,7 @@ export const curriculumLessons: CurriculumLesson[] = [
     day: 2,
     phase: "Computer & Web Basics",
     title: "How the web works",
-    goal: "Understand browsers, servers, URLs, DNS, HTTP requests, and responses.",
+    goal: "Learn how a browser uses URLs, DNS, and HTTP to get a website from a server.",
     prerequisites: "Day 1: programs, memory, input and output.",
     minutes: 60,
     concepts: ["client", "server", "URL", "DNS", "HTTP", "request/response"],
@@ -141,7 +141,7 @@ export const curriculumLessons: CurriculumLesson[] = [
     day: 3,
     phase: "HTML",
     title: "HTML document structure",
-    goal: "Create a valid page using meaningful document structure.",
+    goal: "Build a valid web page with clear, meaningful HTML structure.",
     prerequisites: "Day 2: browsers and HTTP responses.",
     minutes: 75,
     concepts: ["element", "attribute", "doctype", "head", "body", "nesting"],
@@ -194,7 +194,7 @@ export const curriculumLessons: CurriculumLesson[] = [
     day: 4,
     phase: "HTML",
     title: "Semantic and accessible HTML",
-    goal: "Structure pages for people, keyboards, search engines, and assistive technology.",
+    goal: "Build pages that work well for people, keyboards, search engines, and assistive tools.",
     prerequisites: "Day 3: HTML document structure.",
     minutes: 75,
     concepts: [
@@ -254,7 +254,7 @@ export const curriculumLessons: CurriculumLesson[] = [
     day: 5,
     phase: "CSS",
     title: "CSS foundations and the box model",
-    goal: "Style predictable interfaces using selectors, cascade, spacing, and sizing.",
+    goal: "Use CSS selectors, spacing, and sizing to create a clear and reliable design.",
     prerequisites: "Days 3–4: structured and semantic HTML.",
     minutes: 90,
     concepts: [
@@ -318,7 +318,7 @@ export const curriculumLessons: CurriculumLesson[] = [
     day: 6,
     phase: "JavaScript",
     title: "Variables, values, and functions",
-    goal: "Write small programs that store data, make decisions, and reuse behavior.",
+    goal: "Write small programs that save values, make decisions, and reuse code.",
     prerequisites: "Days 1–5 and a browser with DevTools.",
     minutes: 90,
     concepts: [

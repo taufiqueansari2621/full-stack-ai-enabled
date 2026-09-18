@@ -22,10 +22,16 @@ export type KnowledgeEntry = {
 
 export type InterviewResult = {
   id: string;
+  questionId?: string;
   question: string;
+  topic?: string;
+  phase?: string;
+  difficulty?: string;
+  format?: string;
   answer: string;
   score: number;
   feedback: string[];
+  strengths?: string[];
   createdAt: string;
 };
 
@@ -47,6 +53,31 @@ export type CertificateRecord = {
   score: number;
 };
 
+export type MasteryArtifact = {
+  id: string;
+  lessonId: string;
+  level: "foundation" | "guided" | "applied" | "debug" | "professional";
+  response: string;
+  updatedAt: string;
+};
+
+export type TopicPracticeArtifact = {
+  id: string;
+  lessonId: string;
+  difficulty: "easy" | "medium" | "hard";
+  response: string;
+  updatedAt: string;
+};
+
+export type ExampleLabRecord = {
+  id: string;
+  lessonId: string;
+  caseId: string;
+  prediction: string;
+  reflection: string;
+  updatedAt: string;
+};
+
 export type ForgeState = {
   version: 1;
   xp: number;
@@ -58,6 +89,10 @@ export type ForgeState = {
   interviewResults: InterviewResult[];
   quizResults: QuizResult[];
   certificates: CertificateRecord[];
+  masteryArtifacts: MasteryArtifact[];
+  topicPracticeArtifacts: TopicPracticeArtifact[];
+  exampleLabRecords: ExampleLabRecord[];
+  frontendFrameworkPath: "react" | "angular" | "both" | null;
   activityDates: string[];
   weeklyGoalMinutes: number;
   learnedMinutes: number;
@@ -85,6 +120,10 @@ const createInitialState = (): ForgeState => ({
   interviewResults: [],
   quizResults: [],
   certificates: [],
+  masteryArtifacts: [],
+  topicPracticeArtifacts: [],
+  exampleLabRecords: [],
+  frontendFrameworkPath: null,
   activityDates: [],
   weeklyGoalMinutes: 450,
   learnedMinutes: 0,
@@ -142,6 +181,21 @@ function loadState(learnerId: string): ForgeState {
       certificates: Array.isArray(candidate.certificates)
         ? candidate.certificates
         : [],
+      masteryArtifacts: Array.isArray(candidate.masteryArtifacts)
+        ? candidate.masteryArtifacts
+        : [],
+      topicPracticeArtifacts: Array.isArray(candidate.topicPracticeArtifacts)
+        ? candidate.topicPracticeArtifacts
+        : [],
+      exampleLabRecords: Array.isArray(candidate.exampleLabRecords)
+        ? candidate.exampleLabRecords
+        : [],
+      frontendFrameworkPath:
+        candidate.frontendFrameworkPath === "react" ||
+        candidate.frontendFrameworkPath === "angular" ||
+        candidate.frontendFrameworkPath === "both"
+          ? candidate.frontendFrameworkPath
+          : null,
       activityDates: isStringArray(candidate.activityDates)
         ? candidate.activityDates
         : [todayKey()],
@@ -279,7 +333,7 @@ export function useForgeStore(learnerId: string) {
           interviewResults: [
             ...current.interviewResults,
             { ...result, id: newId(), createdAt: new Date().toISOString() },
-          ].slice(-50),
+          ].slice(-500),
         }),
       ),
     [touchActivity],
@@ -319,6 +373,106 @@ export function useForgeStore(learnerId: string) {
           ],
         });
       }),
+    [touchActivity],
+  );
+
+  const saveMasteryArtifact = useCallback(
+    (artifact: Omit<MasteryArtifact, "id" | "updatedAt">) =>
+      setState((current) => {
+        const existing = current.masteryArtifacts.find(
+          (item) =>
+            item.lessonId === artifact.lessonId &&
+            item.level === artifact.level,
+        );
+        const nextArtifact: MasteryArtifact = {
+          ...artifact,
+          id: existing?.id ?? newId(),
+          updatedAt: new Date().toISOString(),
+        };
+        return touchActivity({
+          ...current,
+          xp: current.xp + (existing ? 0 : 20),
+          learnedMinutes: current.learnedMinutes + (existing ? 2 : 8),
+          masteryArtifacts: [
+            ...current.masteryArtifacts.filter(
+              (item) =>
+                item.lessonId !== artifact.lessonId ||
+                item.level !== artifact.level,
+            ),
+            nextArtifact,
+          ].slice(-500),
+        });
+      }),
+    [touchActivity],
+  );
+
+  const saveTopicPracticeArtifact = useCallback(
+    (artifact: Omit<TopicPracticeArtifact, "id" | "updatedAt">) =>
+      setState((current) => {
+        const existing = current.topicPracticeArtifacts.find(
+          (item) =>
+            item.lessonId === artifact.lessonId &&
+            item.difficulty === artifact.difficulty,
+        );
+        const nextArtifact: TopicPracticeArtifact = {
+          ...artifact,
+          id: existing?.id ?? newId(),
+          updatedAt: new Date().toISOString(),
+        };
+        return touchActivity({
+          ...current,
+          xp: current.xp + (existing ? 0 : 15),
+          learnedMinutes: current.learnedMinutes + (existing ? 2 : 10),
+          topicPracticeArtifacts: [
+            ...current.topicPracticeArtifacts.filter(
+              (item) =>
+                item.lessonId !== artifact.lessonId ||
+                item.difficulty !== artifact.difficulty,
+            ),
+            nextArtifact,
+          ].slice(-2052),
+        });
+      }),
+    [touchActivity],
+  );
+
+  const saveExampleLabRecord = useCallback(
+    (record: Omit<ExampleLabRecord, "id" | "updatedAt">) =>
+      setState((current) => {
+        const existing = current.exampleLabRecords.find(
+          (item) =>
+            item.lessonId === record.lessonId && item.caseId === record.caseId,
+        );
+        const nextRecord: ExampleLabRecord = {
+          ...record,
+          id: existing?.id ?? newId(),
+          updatedAt: new Date().toISOString(),
+        };
+        return touchActivity({
+          ...current,
+          xp: current.xp + (existing ? 0 : 10),
+          learnedMinutes: current.learnedMinutes + (existing ? 1 : 4),
+          exampleLabRecords: [
+            ...current.exampleLabRecords.filter(
+              (item) =>
+                item.lessonId !== record.lessonId ||
+                item.caseId !== record.caseId,
+            ),
+            nextRecord,
+          ].slice(-2052),
+        });
+      }),
+    [touchActivity],
+  );
+
+  const setFrontendFrameworkPath = useCallback(
+    (path: "react" | "angular" | "both") =>
+      setState((current) =>
+        touchActivity({
+          ...current,
+          frontendFrameworkPath: path,
+        }),
+      ),
     [touchActivity],
   );
 
@@ -407,6 +561,10 @@ export function useForgeStore(learnerId: string) {
     saveInterview,
     saveQuiz,
     earnCertificate,
+    saveMasteryArtifact,
+    saveTopicPracticeArtifact,
+    saveExampleLabRecord,
+    setFrontendFrameworkPath,
     setLearningPosition,
     resetProgress,
   };

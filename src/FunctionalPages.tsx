@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import {
   ArrowRight,
+  BarChart3,
   BookOpen,
   BrainCircuit,
   Check,
@@ -10,10 +11,9 @@ import {
   CircleAlert,
   Clock3,
   Code2,
+  Database,
   FileText,
-  FolderKanban,
   Lightbulb,
-  MessageSquareText,
   NotebookPen,
   Plus,
   RotateCcw,
@@ -22,16 +22,20 @@ import {
   Target,
   Trash2,
   Trophy,
+  Upload,
   X,
   Zap,
 } from "lucide-react";
 import {
-  interviewQuestions,
   projectCards,
   reviewItems,
   type NavId,
 } from "./data";
 import type { ForgeStore } from "./useForgeStore";
+import { curriculumPhases } from "./curriculumCatalog";
+
+const TopicPracticeLab = lazy(() => import("./TopicPracticeLab"));
+const InterviewAcademy = lazy(() => import("./InterviewAcademy"));
 
 export type ToastMessage = { id: number; text: string };
 type PageProps = { store: ForgeStore; notify: (text: string) => void };
@@ -64,14 +68,14 @@ const challenges = [
     prompt: "Which description is most precise?",
     options: [
       "A function that runs once",
-      "A function bundled with references to its lexical environment",
+      "A function that remembers variables from where it was created",
       "A private method",
       "Any callback",
     ],
-    answer: "A function bundled with references to its lexical environment",
+    answer: "A function that remembers variables from where it was created",
     hint: "What can a returned function access after its outer function finishes?",
     explanation:
-      "A closure is a function plus access to bindings from the lexical environment where it was created.",
+      "A closure is a function that can still use variables from the place where it was created.",
     xp: 60,
   },
   {
@@ -90,7 +94,7 @@ const challenges = [
     answer: "Use setItems(current => [...current, item])",
     hint: "Create a new reference and use the latest state.",
     explanation:
-      "The functional immutable update avoids mutation and stale state.",
+      "This creates a new array from the latest state. It avoids changing the old array by mistake.",
     xp: 60,
   },
   {
@@ -109,7 +113,7 @@ const challenges = [
     answer: "(tenant_id, status, created_at DESC)",
     hint: "Match equality filters first, then ordering.",
     explanation:
-      "The composite index narrows equalities and can serve the requested order.",
+      "This index first matches the two filters, then returns the rows in the order the query needs.",
     xp: 80,
   },
 ];
@@ -187,6 +191,17 @@ const projectTasks: Record<string, string[]> = {
     "Cost analysis",
     "Deployment",
   ],
+  p02: ["Write user stories", "Create semantic HTML", "Build mobile layout", "Add responsive breakpoints", "Add keyboard navigation", "Test screen-reader labels", "Optimize images", "Run accessibility audit", "Deploy", "Write case study"],
+  p11: ["Define component API", "Build design tokens", "Create reusable components", "Document variants", "Add keyboard behavior", "Write unit tests", "Add visual tests", "Publish Storybook", "Package release", "Usage guide"],
+  p20: ["Model the schema", "Write migrations", "Build REST endpoints", "Validate input", "Add authentication", "Add authorization", "Write integration tests", "Document OpenAPI", "Add rate limits", "Deploy with monitoring"],
+  p34: ["Choose the problem", "Collect a legal dataset", "Build baseline", "Train model", "Measure quality", "Analyze errors", "Create inference API", "Build user interface", "Add drift checks", "Document model card", "Deploy and monitor"],
+};
+const projectGuidance: Record<string, { goal: string; actions: string[]; evidence: string }> = {
+  Overview: { goal: "Turn the brief into a small, testable product plan before coding.", actions: ["Write the user and problem in one sentence", "List must-have and out-of-scope behavior", "Define three measurable success checks"], evidence: "A README with scope, users, acceptance criteria, and a demo plan." },
+  Architecture: { goal: "Choose boundaries that keep UI, business rules, data, and infrastructure easy to change.", actions: ["Draw components and data flow", "Record two alternatives and trade-offs", "Mark trust boundaries and failure points"], evidence: "An architecture diagram plus short decision records." },
+  Testing: { goal: "Prove important behavior from small functions through the real user flow.", actions: ["Test normal, edge, and failure cases", "Add integration coverage at system boundaries", "Run one accessible end-to-end journey"], evidence: "Passing tests, coverage notes, and a documented manual test." },
+  Deployment: { goal: "Ship a repeatable release that can be observed and safely rolled back.", actions: ["Create a production build and environment checklist", "Add health checks, logs, and core metrics", "Document deploy and rollback commands"], evidence: "A live URL, release checklist, monitoring screenshot, and rollback plan." },
+  "Decision log": { goal: "Explain why important technical choices were made.", actions: ["State context and constraints", "Compare at least two options", "Record the decision, consequences, and revisit trigger"], evidence: "Three concise architecture decision records linked from the README." },
 };
 
 function Feedback({
@@ -216,6 +231,7 @@ function Feedback({
 }
 
 export function PracticePage({ store, notify }: PageProps) {
+  const [mode, setMode] = useState<"quick" | "topics">("quick");
   const [index, setIndex] = useState(0),
     [selected, setSelected] = useState(""),
     [checked, setChecked] = useState(false),
@@ -233,19 +249,19 @@ export function PracticePage({ store, notify }: PageProps) {
     setChecked(true);
     store.saveAttempt({ challengeId: item.id, correct: ok, answer: selected });
     notify(
-      ok ? `Correct — +${item.xp} XP` : "Attempt saved — study the explanation",
+      ok ? `Correct — +${item.xp} XP` : "Answer saved — read the explanation and try again",
     );
   };
   return (
     <div className="page">
       <section className="page-title">
         <div>
-          <span className="eyebrow">DELIBERATE PRACTICE</span>
+          <span className="eyebrow">FOCUSED PRACTICE</span>
           <h1>
-            Train the skill, not{" "}
-            <span className="gradient-text">the answer</span>
+            Practice the skill, not just{" "}
+            <span className="gradient-text">one answer</span>
           </h1>
-          <p>Attempts persist and contribute evidence to mastery.</p>
+          <p>Every answer is saved so you can see what to practice next.</p>
         </div>
         <div className="live-stat">
           <Trophy />
@@ -253,11 +269,30 @@ export function PracticePage({ store, notify }: PageProps) {
             <b>
               {store.metrics.uniqueCorrect}/{challenges.length}
             </b>
-            <span>mastered</span>
+            <span>answered correctly</span>
           </div>
         </div>
       </section>
-      <div className="practice-shell">
+      <div className="practice-mode-tabs" role="tablist" aria-label="Practice mode">
+        <button
+          role="tab"
+          aria-selected={mode === "quick"}
+          className={mode === "quick" ? "active" : ""}
+          onClick={() => setMode("quick")}
+        >
+          Quick checks <span>{challenges.length}</span>
+        </button>
+        <button
+          role="tab"
+          aria-selected={mode === "topics"}
+          className={mode === "topics" ? "active" : ""}
+          onClick={() => setMode("topics")}
+        >
+          Practice by topic <span>Easy · Medium · Hard</span>
+        </button>
+      </div>
+      {mode === "quick" ? (
+        <div className="practice-shell">
         <aside className="challenge-list panel">
           {challenges.map((c, i) => {
             const mastered = store.state.practiceAttempts.some(
@@ -318,7 +353,7 @@ export function PracticePage({ store, notify }: PageProps) {
           {checked && (
             <Feedback
               type={correct ? "success" : "error"}
-              title={correct ? "Exactly right" : "Not quite yet"}
+              title={correct ? "Correct" : "Try again"}
               text={item.explanation}
             />
           )}
@@ -336,7 +371,7 @@ export function PracticePage({ store, notify }: PageProps) {
                   (a) => a.challengeId === item.id,
                 ).length
               }{" "}
-              saved attempts
+              saved answers
             </span>
             {checked ? (
               <>
@@ -364,7 +399,18 @@ export function PracticePage({ store, notify }: PageProps) {
             )}
           </div>
         </article>
-      </div>
+        </div>
+      ) : (
+        <Suspense
+          fallback={
+            <div className="topic-practice-summary panel">
+              Opening topic practice…
+            </div>
+          }
+        >
+          <TopicPracticeLab store={store} notify={notify} />
+        </Suspense>
+      )}
     </div>
   );
 }
@@ -400,11 +446,11 @@ export function KnowledgePage({ store, notify }: PageProps) {
     <div className="page">
       <section className="page-title">
         <div>
-          <span className="eyebrow">PERSONAL KNOWLEDGE BASE</span>
+          <span className="eyebrow">MY NOTES</span>
           <h1>
-            Your engineering <span className="gradient-text">second brain</span>
+            Save what you <span className="gradient-text">learn</span>
           </h1>
-          <p>Capture insights and useful mistakes.</p>
+          <p>Keep helpful notes and mistakes you do not want to repeat.</p>
         </div>
         <div className="page-actions">
           <button
@@ -424,7 +470,7 @@ export function KnowledgePage({ store, notify }: PageProps) {
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search knowledge..."
+            placeholder="Search your notes..."
           />
         </div>
         <div className="filter-row compact">
@@ -482,11 +528,15 @@ export function KnowledgePage({ store, notify }: PageProps) {
             aria-modal="true"
             onMouseDown={(e) => e.stopPropagation()}
           >
-            <button className="modal-close" onClick={() => setForm(null)}>
-              <X />
+            <button
+              className="modal-close"
+              onClick={() => setForm(null)}
+              aria-label="Close note form"
+            >
+              <X aria-hidden="true" />
             </button>
             <span className="eyebrow teal">
-              {form === "note" ? "CAPTURE AN INSIGHT" : "MISTAKE JOURNAL"}
+              {form === "note" ? "SAVE A NOTE" : "LEARN FROM A MISTAKE"}
             </span>
             <h2>
               {form === "note" ? "Create a note" : "Log a useful mistake"}
@@ -571,13 +621,13 @@ export function ProgressPage({
       "practice",
     ],
     [
-      "Project usage",
+      "Projects",
       Math.min(100, store.metrics.completedTasks * 4),
-      `${store.metrics.completedTasks} milestones`,
+      `${store.metrics.completedTasks} project steps`,
       "projects",
     ],
     [
-      "Recall",
+      "Review",
       Math.min(100, store.state.completedReviews.length * 22),
       `${store.state.completedReviews.length} reviews`,
       "reviews",
@@ -593,17 +643,17 @@ export function ProgressPage({
     <div className="page">
       <section className="page-title">
         <div>
-          <span className="eyebrow">EVIDENCE-BASED PROGRESS</span>
+          <span className="eyebrow">YOUR PROGRESS</span>
           <h1>
-            Mastery, not <span className="gradient-text">checkboxes</span>
+            See what you have <span className="gradient-text">practiced</span>
           </h1>
-          <p>Calculated from local learning activity.</p>
+          <p>Your scores come from lessons, practice, projects, reviews, and interviews.</p>
         </div>
         <div className="mastery-hero">
           <div>
-            <span>Overall mastery</span>
+            <span>Overall progress</span>
             <b>{store.metrics.mastery}%</b>
-            <small>Local evidence</small>
+            <small>Saved in this browser</small>
           </div>
           <Target />
         </div>
@@ -626,8 +676,8 @@ export function ProgressPage({
         <article className="panel evidence-card">
           <div className="section-head">
             <div>
-              <span className="eyebrow">YOUR EVIDENCE</span>
-              <h2>Learning activity</h2>
+              <span className="eyebrow">YOUR SAVED WORK</span>
+              <h2>Learning progress</h2>
             </div>
           </div>
           <div className="evidence-list">
@@ -646,8 +696,8 @@ export function ProgressPage({
           </div>
         </article>
         <article className="panel next-actions">
-          <span className="eyebrow">BEST NEXT ACTIONS</span>
-          <h2>Strengthen weak signals</h2>
+          <span className="eyebrow">WHAT TO DO NEXT</span>
+          <h2>Build your lowest scores</h2>
           {[...metrics]
             .sort((a, b) => a[1] - b[1])
             .slice(0, 3)
@@ -677,6 +727,12 @@ const mentorReplies: Record<string, string> = {
   "Ask me a question":
     "A Promise callback and timer are ready together. Which runs first, and why?",
 };
+
+type MentorMessage = { role: "mentor" | "user"; text: string; sources?: string[] };
+const stopWords = new Set("a an and are as at be by can do for from how i in is it of on or that the this to what when where which why with you your".split(" "));
+const terms = (value: string) =>
+  Array.from(new Set(value.toLowerCase().replace(/[^a-z0-9+#.\s-]/g, " ").split(/\s+/).filter((term) => term.length > 1 && !stopWords.has(term))));
+
 export function MentorPage({
   store,
   navigate,
@@ -684,23 +740,58 @@ export function MentorPage({
   store: ForgeStore;
   navigate: (id: NavId) => void;
 }) {
-  const [messages, setMessages] = useState([
+  const [messages, setMessages] = useState<MentorMessage[]>([
       {
-        role: "mentor",
-        text: "I am your local learning coach. I guide without pretending a live AI service is connected.",
+        role: "mentor" as const,
+        text: "I am your trainable Forge Tutor. Ask about the course or add your own notes below. I retrieve the most relevant material first and clearly say when the answer is only general guidance.",
       },
     ]),
-    [input, setInput] = useState("");
+    [input, setInput] = useState(""),
+    [trainingOpen, setTrainingOpen] = useState(false),
+    [sourceTitle, setSourceTitle] = useState(""),
+    [sourceBody, setSourceBody] = useState("");
+  const trainingSources = store.state.knowledge.filter((entry) => entry.topic === "AI Tutor Source");
+  const courseSources = useMemo(
+    () => curriculumPhases.flatMap((phase) => phase.modules.flatMap((module) => module.topics.map((topic) => ({
+      title: topic,
+      body: `${phase.title}. ${phase.description} Section: ${module.title}. Topic: ${topic}.`,
+    })))),
+    [],
+  );
+  const answerQuestion = (question: string) => {
+    const queryTerms = terms(question);
+    const candidates = [
+      ...trainingSources.map((entry) => ({ title: entry.title, body: entry.body, custom: true })),
+      ...courseSources.map((entry) => ({ ...entry, custom: false })),
+    ].map((source) => ({
+      ...source,
+      score: queryTerms.reduce((score, term) => score + (terms(`${source.title} ${source.body}`).includes(term) ? (source.title.toLowerCase().includes(term) ? 3 : 1) : 0), 0),
+    })).sort((a, b) => b.score - a.score).slice(0, 3);
+    const relevant = candidates.filter((source) => source.score > 0);
+    if (!relevant.length) return {
+      text: `I could not find “${question}” in your course or added sources. General guidance: define the goal, list what you already know, test the smallest example, and verify the answer with an official source. Add trusted material to Train your tutor if you want grounded answers on this subject.`,
+      sources: ["General guidance — not from your training data"],
+    };
+    const best = relevant[0];
+    const customContext = relevant.filter((source) => source.custom).map((source) => source.body).join(" ").slice(0, 700);
+    return {
+      text: customContext
+        ? `Based on your training material, the key idea is: ${customContext} To apply it to “${question}”, start with the smallest working example, state the expected result, then test the normal, edge, and failure cases. If the result affects production, also check security, performance, and observability.`
+        : `This is covered in ${best.title}. It belongs to ${best.body} A strong answer should explain the idea in plain language, show one concrete example, name a common failure, and describe how you would test or verify it. Open the matching lesson for the full guided explanation and practice.`,
+      sources: relevant.map((source) => `${source.custom ? "Your source" : "Forge course"}: ${source.title}`),
+    };
+  };
   const send = (text: string) => {
     if (!text.trim()) return;
+    const reply = mentorReplies[text]
+      ? { text: mentorReplies[text], sources: ["Forge guided coaching"] }
+      : answerQuestion(text);
     setMessages((c) => [
       ...c,
-      { role: "user", text },
+      { role: "user" as const, text },
       {
-        role: "mentor",
-        text:
-          mentorReplies[text] ??
-          `Let’s reason through “${text}”. What did you expect, what happened, and what is the smallest reproduction?`,
+        role: "mentor" as const,
+        ...reply,
       },
     ]);
     setInput("");
@@ -709,23 +800,23 @@ export function MentorPage({
     <div className="page">
       <section className="page-title">
         <div>
-          <span className="eyebrow">SOCRATIC COACH</span>
+          <span className="eyebrow">LEARNING HELP</span>
           <h1>
-            Think deeper with your{" "}
-            <span className="gradient-text">AI mentor</span>
+            Work through a problem with{" "}
+            <span className="gradient-text">guided help</span>
           </h1>
-          <p>Transparent local coaching.</p>
+          <p>Get simple questions and hints that help you find the answer.</p>
         </div>
         <div className="local-badge">
-          <CheckCircle2 /> Local mode
+          <CheckCircle2 /> Private local RAG
         </div>
       </section>
       <div className="mentor-layout">
         <aside className="mentor-context panel">
-          <span className="eyebrow">ACTIVE CONTEXT</span>
+          <span className="eyebrow">CURRENT TOPIC</span>
           <h2>JavaScript event loop</h2>
           <div className="context-stat">
-            <span>Mastery</span>
+            <span>Progress</span>
             <b>{store.metrics.mastery}%</b>
           </div>
           <div className="large-bar">
@@ -743,6 +834,9 @@ export function MentorPage({
           >
             <Code2 /> Open practice
           </button>
+          <button className="secondary-button mentor-train-button" onClick={() => setTrainingOpen((open) => !open)} aria-expanded={trainingOpen}>
+            <Upload /> {trainingOpen ? "Close trainer" : "Train your tutor"}
+          </button>
         </aside>
         <article className="mentor-chat panel">
           <div className="chat-header">
@@ -751,13 +845,13 @@ export function MentorPage({
             </div>
             <div>
               <b>Forge Mentor</b>
-              <span>Ready · local</span>
+              <span>Ready · {courseSources.length + trainingSources.length} indexed sources</span>
             </div>
             <button
               onClick={() =>
                 setMessages([
                   {
-                    role: "mentor",
+                    role: "mentor" as const,
                     text: "Fresh session. What should we work through?",
                   },
                 ])
@@ -770,6 +864,7 @@ export function MentorPage({
             {messages.map((m, i) => (
               <div key={i} className={`message ${m.role}`}>
                 <p>{m.text}</p>
+                {m.sources?.length ? <div className="mentor-citations">{m.sources.map((source) => <span key={source}>{source}</span>)}</div> : null}
               </div>
             ))}
           </div>
@@ -785,12 +880,37 @@ export function MentorPage({
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask or describe what you tried..."
             />
-            <button disabled={!input.trim()}>
-              <ArrowRight />
+            <button
+              disabled={!input.trim()}
+              aria-label="Send message to Forge Mentor"
+            >
+              <ArrowRight aria-hidden="true" />
             </button>
           </form>
         </article>
       </div>
+      {trainingOpen && (
+        <section className="mentor-training panel" aria-labelledby="mentor-training-title">
+          <div className="section-head">
+            <div><span className="eyebrow teal">YOUR KNOWLEDGE BASE</span><h2 id="mentor-training-title">Train the tutor with your content</h2></div>
+            <span>{trainingSources.length} custom sources</span>
+          </div>
+          <p>Paste notes, documentation, policies, or project knowledge. It stays in this browser and is searched together with all {courseSources.length} course topics.</p>
+          <div className="mentor-training-form">
+            <label>Source title<input value={sourceTitle} onChange={(event) => setSourceTitle(event.target.value)} placeholder="Example: Our API authentication guide" /></label>
+            <label>Training content<textarea value={sourceBody} onChange={(event) => setSourceBody(event.target.value)} placeholder="Paste accurate, trusted content here…" /></label>
+            <button className="primary-button" disabled={sourceTitle.trim().length < 3 || sourceBody.trim().length < 40} onClick={() => {
+              store.addKnowledge({ kind: "note", title: sourceTitle.trim(), body: sourceBody.trim(), topic: "AI Tutor Source" });
+              setSourceTitle(""); setSourceBody("");
+            }}><Plus /> Add to knowledge base</button>
+          </div>
+          <div className="mentor-source-list">
+            {trainingSources.map((source) => <article key={source.id}><div><b>{source.title}</b><span>{source.body.slice(0, 120)}{source.body.length > 120 ? "…" : ""}</span></div><button onClick={() => store.deleteKnowledge(source.id)} aria-label={`Remove ${source.title}`}><Trash2 /></button></article>)}
+            {!trainingSources.length && <div className="mentor-empty-source">No custom content yet. The tutor can still search the complete Forge curriculum.</div>}
+          </div>
+          <aside className="mentor-trust-note"><Lightbulb /><span><b>Reliable by design:</b> answers show their sources. Local retrieval is fast and private, but it is not a replacement for a reasoning language model; uncertain or unrelated questions are labeled as general guidance.</span></aside>
+        </section>
+      )}
     </div>
   );
 }
@@ -798,12 +918,14 @@ export function MentorPage({
 export function ProjectsHub({ store, notify }: PageProps) {
   const [filter, setFilter] = useState("All projects"),
     [selected, setSelected] = useState<string | null>(null);
+  const recommendedStarted =
+    (store.state.projectTasks.p05?.length ?? 0) > 0;
   const visible = projectCards.filter(
     (p) =>
       filter === "All projects" ||
       (filter === "In progress" &&
         (store.state.projectTasks[p.id]?.length ?? 0) > 0) ||
-      (filter === "Frontend" && ["JavaScript", "Angular"].includes(p.type)) ||
+      (filter === "Frontend" && ["Frontend", "JavaScript", "React", "Angular"].includes(p.type)) ||
       (filter === "Backend" && p.type === "Backend") ||
       (filter === "AI enabled" && p.type.includes("AI")),
   );
@@ -812,14 +934,15 @@ export function ProjectsHub({ store, notify }: PageProps) {
       <div className="page">
         <section className="page-title">
           <div>
-            <span className="eyebrow">BUILD TO UNDERSTAND</span>
+          <span className="eyebrow">LEARN BY BUILDING</span>
             <h1>
               Project <span className="gradient-text">workshop</span>
             </h1>
-            <p>Complete persistent engineering milestones.</p>
+            <p>Build real projects one clear step at a time. Your work is saved.</p>
           </div>
           <button className="primary-button" onClick={() => setSelected("p05")}>
-            <Plus /> Continue P05
+            {recommendedStarted ? "Continue P05" : "Start P05"}
+            <ArrowRight aria-hidden="true" />
           </button>
         </section>
         <div className="filter-row">
@@ -833,6 +956,7 @@ export function ProjectsHub({ store, notify }: PageProps) {
             <button
               key={x}
               className={filter === x ? "active" : ""}
+              aria-pressed={filter === x}
               onClick={() => setFilter(x)}
             >
               {x}
@@ -846,6 +970,14 @@ export function ProjectsHub({ store, notify }: PageProps) {
               progress = tasks.length
                 ? Math.round((done / tasks.length) * 100)
                 : 0;
+            const ProjectIcon =
+              p.type === "Angular" || p.type === "React"
+                ? BarChart3
+                : p.type === "Backend"
+                  ? Database
+                  : p.type.includes("AI")
+                    ? BrainCircuit
+                    : Search;
             return (
               <article className={`project-card panel ${p.accent}`} key={p.id}>
                 <div className="project-card-head">
@@ -855,7 +987,7 @@ export function ProjectsHub({ store, notify }: PageProps) {
                   </span>
                 </div>
                 <div className="project-symbol">
-                  <FolderKanban />
+                  <ProjectIcon aria-hidden="true" />
                 </div>
                 <span className="eyebrow">
                   {p.type} · {p.level}
@@ -872,15 +1004,20 @@ export function ProjectsHub({ store, notify }: PageProps) {
                 </div>
                 <div className="project-footer">
                   <span>
-                    <CheckCircle2 />
-                    {done}/{tasks.length}
+                    <CheckCircle2 aria-hidden="true" />
+                    {done} of {tasks.length} steps
                   </span>
                   <span>
-                    <Clock3 />
+                    <Clock3 aria-hidden="true" />
                     {p.hours}
                   </span>
-                  <button onClick={() => setSelected(p.id)}>
-                    <ArrowRight />
+                  <button
+                    className="project-open-button"
+                    onClick={() => setSelected(p.id)}
+                    aria-label={`Open ${p.title}`}
+                  >
+                    <span>Open project</span>
+                    <ArrowRight aria-hidden="true" />
                   </button>
                 </div>
               </article>
@@ -910,7 +1047,7 @@ export function ProjectWorkspace({
   close: () => void;
   notify: (text: string) => void;
 }) {
-  const [tab, setTab] = useState("Milestones"),
+  const [tab, setTab] = useState("Steps"),
     tasks = projectTasks[projectId] ?? projectTasks.p05,
     done = store.state.projectTasks[projectId] ?? [],
     title = projectCards.find((p) => p.id === projectId)?.title ?? "Project";
@@ -925,8 +1062,12 @@ export function ProjectWorkspace({
             <span className="eyebrow">PROJECT WORKSPACE</span>
             <h1>{title}</h1>
           </div>
-          <button className="workspace-close" onClick={close}>
-            <X />
+          <button
+            className="workspace-close"
+            onClick={close}
+            aria-label="Close project workspace"
+          >
+            <X aria-hidden="true" />
           </button>
         </header>
         <div className="workspace-summary panel">
@@ -945,7 +1086,7 @@ export function ProjectWorkspace({
           <aside className="workspace-nav panel">
             {[
               "Overview",
-              "Milestones",
+              "Steps",
               "Architecture",
               "Testing",
               "Deployment",
@@ -964,7 +1105,7 @@ export function ProjectWorkspace({
           <section className="milestone-panel panel">
             <span className="eyebrow">{tab.toUpperCase()}</span>
             <h2>{tab}</h2>
-            {tab === "Milestones" ? (
+            {tab === "Steps" ? (
               <div className="milestone-list">
                 {tasks.map((task, i) => {
                   const id = `${projectId}-${i + 1}`,
@@ -977,15 +1118,15 @@ export function ProjectWorkspace({
                         store.toggleProjectTask(projectId, id);
                         notify(
                           complete
-                            ? "Milestone reopened"
-                            : "Milestone complete — +20 XP",
+                            ? "Project step reopened"
+                            : "Project step complete — +20 XP",
                         );
                       }}
                     >
                       <span>{complete ? <Check /> : i + 1}</span>
                       <div>
                         <b>{task}</b>
-                        <small>Implement, verify, and capture evidence.</small>
+                        <small>Build it, test it, and save what you learned.</small>
                       </div>
                       <em>{complete ? "Complete" : "Mark done"}</em>
                     </button>
@@ -995,11 +1136,13 @@ export function ProjectWorkspace({
             ) : (
               <div className="workspace-tab">
                 <BrainCircuit />
-                <h3>{tab} workspace</h3>
-                <p>
-                  Capture decisions and evidence for this area in your project
-                  documentation.
-                </p>
+                <span className="eyebrow teal">GUIDED PROJECT COACH</span>
+                <h3>{projectGuidance[tab]?.goal ?? `${tab} workspace`}</h3>
+                <p>Use this checklist for <b>{title}</b>. Complete it with your own evidence instead of only marking tasks done.</p>
+                <ol className="project-guidance-list">
+                  {(projectGuidance[tab]?.actions ?? ["Describe the goal", "Do the work", "Save evidence"]).map((action) => <li key={action}>{action}</li>)}
+                </ol>
+                <aside className="project-evidence-callout"><Target /><div><b>Evidence to save</b><span>{projectGuidance[tab]?.evidence ?? "Notes and a tested result."}</span></div></aside>
                 <button
                   className="secondary-button"
                   onClick={() => notify(`${tab} entry saved as a future task`)}
@@ -1015,151 +1158,15 @@ export function ProjectWorkspace({
   );
 }
 
-function grade(answer: string) {
-  const v = answer.toLowerCase(),
-    checks = [
-      answer.trim().length >= 100,
-      /stack/.test(v),
-      /microtask|promise/.test(v),
-      /task|timer|settimeout/.test(v),
-      /example|project|used/.test(v),
-      /trade.?off|starv|block|risk/.test(v),
-    ];
-  return {
-    score: Math.round((checks.filter(Boolean).length / checks.length) * 100),
-    feedback: [
-      "Develop the answer",
-      "Explain the stack",
-      "Explain microtasks",
-      "Compare tasks",
-      "Give an example",
-      "Mention a trade-off",
-    ].filter((_, i) => !checks[i]),
-  };
-}
 export function InterviewTrainer({ store, notify }: PageProps) {
-  const [started, setStarted] = useState(false),
-    [question, setQuestion] = useState(0),
-    [answer, setAnswer] = useState(""),
-    [result, setResult] = useState<{
-      score: number;
-      feedback: string[];
-    } | null>(null);
-  const submit = () => {
-    const r = grade(answer);
-    setResult(r);
-    store.saveInterview({
-      question: interviewQuestions[question],
-      answer,
-      score: r.score,
-      feedback: r.feedback,
-    });
-    notify(`Answer saved · ${r.score}%`);
-  };
-  if (!started)
-    return (
-      <div className="page">
-        <section className="page-title">
-          <div>
-            <span className="eyebrow">PRACTICE UNDER PRESSURE</span>
-            <h1>
-              Interview <span className="gradient-text">training room</span>
-            </h1>
-            <p>Transparent scoring and history.</p>
-          </div>
-          <div className="live-stat">
-            <MessageSquareText />
-            <div>
-              <b>{store.metrics.interviewAverage}%</b>
-              <span>average</span>
-            </div>
-          </div>
-        </section>
-        <article className="mock-card featured interview-launch">
-          <div className="mock-icon">
-            <MessageSquareText />
-          </div>
-          <h2>JavaScript technical screen</h2>
-          <p>Four questions · structured rubric</p>
-          <button className="primary-button" onClick={() => setStarted(true)}>
-            Start <ArrowRight />
-          </button>
-        </article>
-      </div>
-    );
   return (
-    <div className="page interview-session">
-      <button className="back-link" onClick={() => setStarted(false)}>
-        <ChevronLeft /> End practice
-      </button>
-      <div className="interview-top">
-        <span>QUESTION {question + 1} OF 4</span>
-        <span>Local rubric</span>
-      </div>
-      <article className="interview-question panel">
-        <div className="interviewer">
-          <div>
-            <Sparkles />
-          </div>
-          <span>Forge Interviewer</span>
-        </div>
-        <h1>{interviewQuestions[question]}</h1>
-        <p>Include definition, internals, example, and trade-offs.</p>
-        <textarea
-          disabled={!!result}
-          value={answer}
-          onChange={(e) => setAnswer(e.target.value)}
-        />
-        {result && (
-          <div
-            className={`interview-result ${result.score >= 67 ? "success" : "warning"}`}
-          >
-            <div>
-              <b>{result.score}%</b>
-            </div>
-            <div>
-              {result.feedback.length ? (
-                <ul>
-                  {result.feedback.map((x) => (
-                    <li key={x}>{x}</li>
-                  ))}
-                </ul>
-              ) : (
-                <p>Excellent depth.</p>
-              )}
-            </div>
-          </div>
-        )}
-        <div className="interview-actions">
-          <button
-            className="secondary-button"
-            onClick={() => notify("Use one concrete execution trace")}
-          >
-            <Lightbulb /> Clarify
-          </button>
-          {result ? (
-            <button
-              className="primary-button"
-              onClick={() => {
-                setQuestion((question + 1) % 4);
-                setAnswer("");
-                setResult(null);
-              }}
-            >
-              Next <ArrowRight />
-            </button>
-          ) : (
-            <button
-              className="primary-button"
-              disabled={answer.trim().length < 30}
-              onClick={submit}
-            >
-              Submit <ArrowRight />
-            </button>
-          )}
-        </div>
-      </article>
-    </div>
+    <Suspense
+      fallback={
+        <div className="page loading-page panel">Opening Interview Academy…</div>
+      }
+    >
+      <InterviewAcademy store={store} notify={notify} />
+    </Suspense>
   );
 }
 
@@ -1397,11 +1404,11 @@ export function ReviewsWorkspace({
     <div className="page">
       <section className="page-title">
         <div>
-          <span className="eyebrow">SPACED REPETITION</span>
+          <span className="eyebrow">REVIEW AT THE RIGHT TIME</span>
           <h1>
             Make knowledge <span className="gradient-text">stick</span>
           </h1>
-          <p>Your queue persists.</p>
+          <p>Your review list is saved in this browser.</p>
         </div>
         <div className="review-summary">
           <div>
@@ -1420,6 +1427,11 @@ export function ReviewsWorkspace({
             >
               <button
                 className="check-button"
+                aria-label={
+                  complete
+                    ? `Mark ${item.title} as not reviewed`
+                    : `Mark ${item.title} as reviewed`
+                }
                 onClick={() => {
                   if (complete) store.undoReview(item.title);
                   else store.completeReview(item.title);
@@ -1439,13 +1451,14 @@ export function ReviewsWorkspace({
               </div>
               <button
                 className="round-action"
+                aria-label={`Open practice for ${item.title}`}
                 onClick={() =>
                   navigate(
                     i === 1 ? "practice" : i === 3 ? "interview" : "learn",
                   )
                 }
               >
-                <ArrowRight />
+                <ArrowRight aria-hidden="true" />
               </button>
             </div>
           );

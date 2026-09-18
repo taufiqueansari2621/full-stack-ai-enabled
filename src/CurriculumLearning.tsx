@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -9,21 +9,42 @@ import {
   Clock3,
   Code2,
   Lightbulb,
+  PanelLeftClose,
+  PanelLeftOpen,
   RotateCcw,
   Target,
 } from "lucide-react";
-import { curriculumLessons } from "./curriculum";
-import type { NavId } from "./data";
+import { curriculumLessons, type CurriculumLesson } from "./curriculum";
+import { getFoundationTopicDetail } from "./foundationTopicDetails";
+import { InteractiveExampleLab } from "./InteractiveExampleLab";
+import { getTopicExampleCases } from "./topicExampleCases";
 import type { ForgeStore } from "./useForgeStore";
+
+type LessonStep = { id: string; title: string };
+
+const getLessonSteps = (lesson: CurriculumLesson): LessonStep[] => [
+  { id: "overview", title: "Your goal and what you need first" },
+  { id: "concepts", title: "Important words and ideas" },
+  ...lesson.tutorial.map((section, index) => ({
+    id: `tutorial-${index}`,
+    title: section.heading,
+  })),
+  { id: "mistakes", title: "Common mistakes" },
+  { id: "practice", title: "Practice and challenge" },
+  { id: "quiz", title: "Quick quiz" },
+  { id: "revision", title: "Interview and review" },
+];
 
 export function CurriculumLearning({
   store,
   notify,
-  navigate,
+  onBack,
+  backLabel,
 }: {
   store: ForgeStore;
   notify: (text: string) => void;
-  navigate: (id: NavId) => void;
+  onBack: () => void;
+  backLabel: string;
 }) {
   const savedIndex = Math.max(
     0,
@@ -34,15 +55,11 @@ export function CurriculumLearning({
   const [index, setIndex] = useState(savedIndex);
   const [selected, setSelected] = useState("");
   const [checked, setChecked] = useState(false);
-  const [activeSection, setActiveSection] = useState(() =>
-    Math.max(
-      0,
-      curriculumLessons[savedIndex].tutorial.findIndex(
-        (section) => section.heading === store.state.currentPosition.section,
-      ),
-    ),
-  );
+  const [topicsVisible, setTopicsVisible] = useState(true);
+  const topicRailRef = useRef<HTMLElement | null>(null);
+  const topicScrollerRef = useRef<HTMLElement | null>(null);
   const lesson = curriculumLessons[index];
+  const lessonSteps = getLessonSteps(lesson);
   const completed = store.state.completedLessons.includes(lesson.id);
   const correct = checked && selected === lesson.quiz.answer;
   const progress = Math.round(
@@ -54,11 +71,30 @@ export function CurriculumLearning({
   );
   const next = curriculumLessons[index + 1];
   const previous = curriculumLessons[index - 1];
-  const completedIds = useMemo(
-    () => new Set(store.state.completedLessons),
-    [store.state.completedLessons],
-  );
   const { setLearningPosition } = store;
+  const exampleCases = useMemo(() => {
+    const firstDetail = getFoundationTopicDetail(lesson.id, 0);
+    const phaseId = lesson.id === "day-6-javascript" ? "javascript" : lesson.id === "day-1-computers" ? "orientation" : "web";
+    const qualityRule =
+      phaseId === "javascript"
+        ? "Use small functions, make data changes clear, handle bad input, and test what a user can see."
+        : phaseId === "web"
+          ? "Use meaningful HTML, visible keyboard focus, readable contrast, and layouts that work at every screen size."
+          : "Make one small change at a time, inspect the result, and keep a safe way back.";
+    return getTopicExampleCases({
+      phaseId,
+      topic: lesson.title,
+      moduleTitle: lesson.phase,
+      definition: lesson.goal,
+      realWorld: firstDetail?.realWorld ?? lesson.tutorial[0].body,
+      example:
+        lesson.tutorial[0].code ??
+        firstDetail?.diagram ??
+        lesson.challenge,
+      practice: lesson.exercises[0],
+      qualityRule,
+    });
+  }, [lesson]);
 
   useEffect(
     () =>
@@ -67,44 +103,44 @@ export function CurriculumLearning({
         course: "Full-Stack + AI",
         module: lesson.phase,
         lesson: lesson.title,
-        section:
-          lesson.tutorial[activeSection]?.heading ??
-          `Day ${lesson.day} · Tutorial`,
+        section: "Complete Lesson",
       }),
-    [activeSection, lesson, setLearningPosition],
+    [lesson, setLearningPosition],
   );
   useEffect(() => {
-    const sections = lesson.tutorial
-      .map((_, sectionIndex) =>
-        document.getElementById(`lesson-subtopic-${sectionIndex}`),
-      )
-      .filter((section): section is HTMLElement => Boolean(section));
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries.find((entry) => entry.isIntersecting);
-        if (!visible) return;
-        const sectionIndex = Number(
-          visible.target.getAttribute("data-subtopic-index"),
-        );
-        if (Number.isFinite(sectionIndex)) setActiveSection(sectionIndex);
-      },
-      { rootMargin: "-20% 0px -60% 0px", threshold: 0 },
-    );
-    sections.forEach((section) => observer.observe(section));
-    return () => observer.disconnect();
-  }, [lesson]);
+    if (!topicsVisible) return;
+    const frame = window.requestAnimationFrame(() => {
+      const desktopRail = topicRailRef.current;
+      const mobileScroller = topicScrollerRef.current;
+      const activeTopic = desktopRail?.querySelector<HTMLButtonElement>(
+        '[aria-current="page"]',
+      );
+      if (!activeTopic) return;
+
+      if (window.matchMedia("(max-width: 900px)").matches) {
+        if (!mobileScroller) return;
+        const scrollerBox = mobileScroller.getBoundingClientRect();
+        const topicBox = activeTopic.getBoundingClientRect();
+        mobileScroller.scrollLeft +=
+          topicBox.left -
+          scrollerBox.left -
+          (scrollerBox.width - topicBox.width) / 2;
+        return;
+      }
+
+      if (!desktopRail) return;
+      const railBox = desktopRail.getBoundingClientRect();
+      const topicBox = activeTopic.getBoundingClientRect();
+      desktopRail.scrollTop +=
+        topicBox.top - railBox.top - (railBox.height - topicBox.height) / 2;
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [index, topicsVisible]);
   const open = (nextIndex: number) => {
     setIndex(nextIndex);
     setSelected("");
     setChecked(false);
-    setActiveSection(0);
     window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-  const openSection = (sectionIndex: number) => {
-    setActiveSection(sectionIndex);
-    document
-      .getElementById(`lesson-subtopic-${sectionIndex}`)
-      ?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
   const submit = () => {
     if (!selected) return;
@@ -117,29 +153,32 @@ export function CurriculumLearning({
     });
     notify(
       ok
-        ? "Correct — your quiz evidence was saved"
-        : "Attempt saved — review the explanation",
+        ? "Correct — your quiz answer was saved"
+        : "Answer saved — read the explanation and try again",
     );
   };
   const finish = () => {
     store.completeLesson(lesson.id);
     notify(`Day ${lesson.day} completed — progress saved`);
   };
-  const goPrevious = () => {
-    if (activeSection > 0) openSection(activeSection - 1);
-    else if (previous) open(index - 1);
-  };
-  const goNext = () => {
-    if (activeSection < lesson.tutorial.length - 1)
-      openSection(activeSection + 1);
-    else if (next) open(index + 1);
-  };
+  const goPrevious = () => previous && open(index - 1);
+  const goNext = () => next && open(index + 1);
 
   return (
     <div className="page curriculum-page">
-      <button className="back-link" onClick={() => navigate("roadmap")}>
-        <ChevronLeft /> Roadmap
-      </button>
+      <div className="lesson-toolbar">
+        <button className="back-link" onClick={onBack}>
+          <ChevronLeft /> {backLabel}
+        </button>
+        <button
+          className="secondary-button topic-rail-toggle"
+          aria-expanded={topicsVisible}
+          onClick={() => setTopicsVisible((visible) => !visible)}
+        >
+          {topicsVisible ? <PanelLeftClose /> : <PanelLeftOpen />}
+          {topicsVisible ? "Hide course topics" : "Show course topics"}
+        </button>
+      </div>
       <section className="curriculum-head">
         <div>
           <span className="eyebrow teal">
@@ -156,189 +195,357 @@ export function CurriculumLearning({
           </div>
         </div>
       </section>
-      <div className="curriculum-layout">
-        <aside className="day-list panel" aria-label="Related lessons">
-          <span className="eyebrow">RELATED LESSONS</span>
+      <div
+        className={`curriculum-layout ${topicsVisible ? "" : "topics-hidden"}`}
+      >
+        {topicsVisible && (
+          <aside
+            ref={topicRailRef}
+            className="day-list panel"
+            aria-label="Course topics"
+          >
+          <span className="eyebrow teal">COURSE TOPICS</span>
           <h2>Foundation course</h2>
-          {curriculumLessons.map((item, i) => (
-            <button
-              key={item.id}
-              className={i === index ? "active" : ""}
-              onClick={() => open(i)}
-            >
-              <span>{completedIds.has(item.id) ? <Check /> : item.day}</span>
-              <div>
-                <b>{item.title}</b>
-                <small>
-                  {item.phase} · {item.minutes} min
-                </small>
-              </div>
-            </button>
-          ))}
-          <div className="lesson-subtopic-menu">
-            <span>INSIDE THIS LESSON</span>
-            {lesson.tutorial.map((section, sectionIndex) => (
-              <button
-                key={section.heading}
-                className={sectionIndex === activeSection ? "active" : ""}
-                aria-current={
-                  sectionIndex === activeSection ? "step" : undefined
-                }
-                onClick={() => openSection(sectionIndex)}
-              >
-                <span>{String(sectionIndex + 1).padStart(2, "0")}</span>
-                {section.heading}
-              </button>
-            ))}
-          </div>
-        </aside>
-        <main className="lesson-document">
-          <section className="lesson-overview panel">
-            <div>
-              <Target />
-              <span>
-                <b>Today’s goal</b>
-                {lesson.goal}
-              </span>
-            </div>
-            <div>
-              <BookOpen />
-              <span>
-                <b>Prerequisites</b>
-                {lesson.prerequisites}
-              </span>
-            </div>
-            <div>
-              <Clock3 />
-              <span>
-                <b>Estimated time</b>
-                {lesson.minutes} minutes
-              </span>
-            </div>
-          </section>
-          <section className="lesson-section panel">
-            <span className="eyebrow">IMPORTANT CONCEPTS</span>
-            <div className="concept-chips">
-              {lesson.concepts.map((item) => (
-                <span key={item}>{item}</span>
-              ))}
-            </div>
-          </section>
-          {lesson.tutorial.map((section, i) => (
-            <section
-              className={`lesson-section panel ${i === activeSection ? "active-subtopic" : ""}`}
-              id={`lesson-subtopic-${i}`}
-              data-subtopic-index={i}
-              key={section.heading}
-            >
-              <span className="section-number">
-                {String(i + 1).padStart(2, "0")}
-              </span>
-              <h2>{section.heading}</h2>
-              <p>{section.body}</p>
-              {section.code && (
-                <pre className="code-block">
-                  <code>{section.code}</code>
-                </pre>
-              )}
-            </section>
-          ))}
-          <section className="lesson-section panel">
-            <span className="eyebrow">COMMON MISTAKES</span>
-            <h2>What beginners often get wrong</h2>
-            <ul>
-              {lesson.mistakes.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-          </section>
-          <section className="lesson-section panel">
-            <span className="eyebrow">MINI EXERCISES</span>
-            <h2>Practise before the quiz</h2>
-            <ol>
-              {lesson.exercises.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ol>
-            <div className="challenge-callout">
-              <Code2 />
-              <div>
-                <b>Day {lesson.day} challenge</b>
-                <p>{lesson.challenge}</p>
-              </div>
-            </div>
-          </section>
-          <section className="lesson-section quiz-card panel">
-            <span className="eyebrow teal">KNOWLEDGE CHECK</span>
-            <h2>{lesson.quiz.question}</h2>
-            <div className="challenge-options">
-              {lesson.quiz.options.map((option) => (
+          <p className="lesson-step-summary">
+            Topic {index + 1} of {curriculumLessons.length} · choose any lesson
+          </p>
+          <nav
+            ref={topicScrollerRef}
+            className="course-topic-list"
+            aria-label="Foundation topics"
+          >
+            {curriculumLessons.map((courseLesson, lessonIndex) => {
+              const active = lessonIndex === index;
+              const finished = store.state.completedLessons.includes(
+                courseLesson.id,
+              );
+              return (
                 <button
-                  key={option}
-                  disabled={checked}
-                  className={`${selected === option ? "selected" : ""} ${checked && option === lesson.quiz.answer ? "correct" : ""}`}
-                  onClick={() => setSelected(option)}
+                  key={courseLesson.id}
+                  className={active ? "active" : ""}
+                  aria-current={active ? "page" : undefined}
+                  onClick={() => open(lessonIndex)}
                 >
-                  {option}
-                  {checked && option === lesson.quiz.answer && <CheckCircle2 />}
+                  <span>
+                    {finished ? (
+                      <Check />
+                    ) : (
+                      String(courseLesson.day).padStart(2, "0")
+                    )}
+                  </span>
+                  <div>
+                    <b>{courseLesson.title}</b>
+                    <small>
+                      {courseLesson.phase} · {courseLesson.minutes} min
+                    </small>
+                  </div>
                 </button>
-              ))}
+              );
+            })}
+          </nav>
+          </aside>
+        )}
+        <main className="lesson-document" id="lesson-task-page">
+          <section className="lesson-page-progress full-mode-banner panel">
+            <span>COMPLETE LESSON</span>
+            <b>{lessonSteps.length} lesson parts · about {lesson.minutes} minutes</b>
+            <div className="bar" aria-label="Complete lesson available">
+              <i style={{ width: "100%" }} />
             </div>
-            {checked && (
-              <div className={`quiz-feedback ${correct ? "success" : "error"}`}>
-                <Lightbulb />
-                <p>
-                  <b>{correct ? "Correct." : "Not quite."}</b>{" "}
-                  {lesson.quiz.explanation}
-                </p>
+          </section>
+            <section className="focused-lesson-page panel">
+              <span className="eyebrow teal">START HERE</span>
+              <h2>Your goal and what you need first</h2>
+              <p className="lesson-lead">{lesson.goal}</p>
+              <div className="lesson-overview page-overview">
+                <div>
+                  <Target />
+                  <span>
+                    <b>By the end</b>
+                    You can explain the main idea, use it in an example, and
+                    check your understanding with practice.
+                  </span>
+                </div>
+                <div>
+                  <BookOpen />
+                  <span>
+                    <b>Before you start</b>
+                    {lesson.prerequisites}
+                  </span>
+                </div>
+                <div>
+                  <Clock3 />
+                  <span>
+                    <b>Time needed</b>
+                    About {lesson.minutes} minutes for a beginner.
+                  </span>
+                </div>
               </div>
-            )}
-            <div className="learning-actions">
-              <button
-                onClick={() => {
-                  setSelected("");
-                  setChecked(false);
-                }}
-              >
-                <RotateCcw /> Reset
-              </button>
-              <button
-                className="primary-button"
-                disabled={!selected || checked}
-                onClick={submit}
-              >
-                Check answer <ArrowRight />
-              </button>
-            </div>
-          </section>
-          <section className="lesson-section panel">
-            <span className="eyebrow">INTERVIEW + REVISION</span>
-            <h2>Explain it in your own words</h2>
-            <p>
-              <b>Interview question:</b> {lesson.interview}
-            </p>
-            <ul>
-              {lesson.revision.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-          </section>
+              <div className="challenge-callout">
+                <Lightbulb />
+                <div>
+                  <b>How to use this lesson</b>
+                  <p>
+                    Read each part in order. Guess what examples will do before
+                    checking the result. Then explain the idea in your own words
+                    and complete the exercises before the quiz.
+                  </p>
+                </div>
+              </div>
+            </section>
+            <InteractiveExampleLab
+              lessonId={lesson.id}
+              topic={lesson.title}
+              cases={exampleCases}
+              store={store}
+            />
+            <section className="focused-lesson-page panel">
+              <span className="eyebrow teal">NEW WORDS</span>
+              <h2>Important words and ideas</h2>
+              <p className="lesson-lead">
+                Learn how these words connect. For each one, explain its meaning,
+                give an example, and show how it connects to the others.
+              </p>
+              <div className="concept-learning-grid">
+                {lesson.concepts.map((item, conceptIndex) => (
+                  <article key={item}>
+                    <span>{String(conceptIndex + 1).padStart(2, "0")}</span>
+                    <h3>{item}</h3>
+                    <p>
+                      Find this idea in an example. Then say what goes in, why it
+                      is used, what comes out, and one thing that can go wrong.
+                    </p>
+                  </article>
+                ))}
+              </div>
+              <div className="challenge-callout">
+                <Code2 />
+                <div>
+                  <b>Quick memory check</b>
+                  <p>
+                    Hide the list and write the words again from memory. Draw
+                    arrows between related ideas and label what moves between them.
+                  </p>
+                </div>
+              </div>
+            </section>
+          {lesson.tutorial.map((tutorialSection, tutorialIndex) => {
+            const tutorialDetail = getFoundationTopicDetail(
+              lesson.id,
+              tutorialIndex,
+            );
+            return (
+            <section
+              key={tutorialSection.heading}
+              className="focused-lesson-page detailed-subtopic panel"
+            >
+              <span className="eyebrow teal">
+                LESSON PART {tutorialIndex + 1} OF {lesson.tutorial.length}
+              </span>
+              <h2>{tutorialSection.heading}</h2>
+              <p className="lesson-lead">{tutorialSection.body}</p>
+              <div className="detail-explanation-grid">
+                <article>
+                  <span className="eyebrow">WHY IT MATTERS</span>
+                  <p>{tutorialDetail?.why ?? lesson.goal}</p>
+                </article>
+                <article>
+                  <span className="eyebrow">EVERYDAY EXAMPLE</span>
+                  <p>
+                    {tutorialDetail?.analogy ??
+                      `Connect ${tutorialSection.heading} to a familiar process with clear inputs, steps, and results.`}
+                  </p>
+                </article>
+              </div>
+              <div className="subtopic-teaching-block">
+                <span className="eyebrow">HOW IT WORKS · STEP BY STEP</span>
+                <h3>Follow the complete process</h3>
+                <ol className="numbered-process">
+                  {(tutorialDetail?.steps ?? [tutorialSection.body]).map(
+                    (step, stepIndex) => (
+                      <li key={step}>
+                        <span>{stepIndex + 1}</span>
+                        <p>{step}</p>
+                      </li>
+                    ),
+                  )}
+                </ol>
+              </div>
+              <div className="subtopic-visual-model">
+                <span className="eyebrow">SIMPLE DIAGRAM</span>
+                <pre className="code-block">
+                  <code>
+                    {tutorialDetail?.diagram ??
+                      `input → ${tutorialSection.heading} → result`}
+                  </code>
+                </pre>
+              </div>
+              {tutorialSection.code && (
+                <div className="subtopic-teaching-block">
+                  <span className="eyebrow">EXAMPLE WITH AN ANSWER</span>
+                  <pre className="code-block">
+                    <code>{tutorialSection.code}</code>
+                  </pre>
+                </div>
+              )}
+              <div className="real-world-example">
+                <Lightbulb />
+                <div>
+                  <span className="eyebrow">REAL-WORLD EXAMPLE</span>
+                  <p>{tutorialDetail?.realWorld ?? lesson.goal}</p>
+                </div>
+              </div>
+              <div className="practice-task">
+                <Code2 />
+                <div>
+                  <span className="eyebrow">PRACTICE NOW</span>
+                  <p>{tutorialDetail?.practice ?? lesson.challenge}</p>
+                </div>
+              </div>
+              <div className="subtopic-takeaways">
+                <span className="eyebrow">REMEMBER THESE POINTS</span>
+                <ul>
+                  {(tutorialDetail?.takeaways ?? lesson.revision).map(
+                    (takeaway) => (
+                      <li key={takeaway}>
+                        <CheckCircle2 /> {takeaway}
+                      </li>
+                    ),
+                  )}
+                </ul>
+              </div>
+            </section>
+            );
+          })}
+            <section className="focused-lesson-page panel">
+              <span className="eyebrow">COMMON MISTAKES</span>
+              <h2>What beginners often get wrong</h2>
+              <p className="lesson-lead">
+                Learn what the mistake looks like and how to correct it. Finding
+                it early can save hours of guessing.
+              </p>
+              <div className="mistake-learning-list">
+                {lesson.mistakes.map((item, mistakeIndex) => (
+                  <article key={item}>
+                    <span>{String(mistakeIndex + 1).padStart(2, "0")}</span>
+                    <div>
+                      <h3>{item}</h3>
+                      <p>
+                        Return to the main idea. Create the smallest example that
+                        shows the problem, guess the result, run it, and compare
+                        what actually happened.
+                      </p>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+            <section className="focused-lesson-page panel">
+              <span className="eyebrow">MINI EXERCISES</span>
+              <h2>Practice before the quiz</h2>
+              <p className="lesson-lead">
+                Complete these without copying. First predict the result, then
+                perform the task, and finally explain any difference.
+              </p>
+              <ol className="exercise-cards">
+                {lesson.exercises.map((item, exerciseIndex) => (
+                  <li key={item}>
+                    <span>EXERCISE {exerciseIndex + 1}</span>
+                    <p>{item}</p>
+                  </li>
+                ))}
+              </ol>
+              <div className="challenge-callout">
+                <Code2 />
+                <div>
+                  <b>Day {lesson.day} challenge</b>
+                  <p>{lesson.challenge}</p>
+                </div>
+              </div>
+            </section>
+            <section className="focused-lesson-page quiz-card panel">
+              <span className="eyebrow teal">QUICK QUIZ</span>
+              <h2>{lesson.quiz.question}</h2>
+              <div className="challenge-options">
+                {lesson.quiz.options.map((option) => (
+                  <button
+                    key={option}
+                    disabled={checked}
+                    className={`${selected === option ? "selected" : ""} ${checked && option === lesson.quiz.answer ? "correct" : ""}`}
+                    onClick={() => setSelected(option)}
+                  >
+                    {option}
+                    {checked && option === lesson.quiz.answer && (
+                      <CheckCircle2 />
+                    )}
+                  </button>
+                ))}
+              </div>
+              {checked && (
+                <div
+                  className={`quiz-feedback ${correct ? "success" : "error"}`}
+                >
+                  <Lightbulb />
+                  <p>
+                    <b>{correct ? "Correct." : "Not quite."}</b>{" "}
+                    {lesson.quiz.explanation}
+                  </p>
+                </div>
+              )}
+              <div className="learning-actions">
+                <button
+                  onClick={() => {
+                    setSelected("");
+                    setChecked(false);
+                  }}
+                >
+                  <RotateCcw /> Reset
+                </button>
+                <button
+                  className="primary-button"
+                  disabled={!selected || checked}
+                  onClick={submit}
+                >
+                  Check answer <ArrowRight />
+                </button>
+              </div>
+            </section>
+            <section className="focused-lesson-page panel">
+              <span className="eyebrow">INTERVIEW + REVIEW</span>
+              <h2>Explain it in your own words</h2>
+              <p className="lesson-lead">
+                <b>Interview question:</b> {lesson.interview}
+              </p>
+              <div className="revision-checklist">
+                {lesson.revision.map((item) => (
+                  <div key={item}>
+                    <CheckCircle2 />
+                    <span>{item}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="challenge-callout">
+                <Lightbulb />
+                <div>
+                  <b>A clear answer order</b>
+                  <p>
+                    Start with a simple definition, explain why it matters, walk
+                    through one clear example, mention an unusual case, and
+                    finish with how you would check the result.
+                  </p>
+                </div>
+              </div>
+            </section>
           <footer className="lesson-completion panel">
             <button
               className="lesson-step-button"
-              disabled={!activeSection && !previous}
+              disabled={!previous}
               onClick={goPrevious}
             >
               <ArrowLeft />
               <span>
-                <small>
-                  {activeSection ? "Previous subtopic" : "Previous lesson"}
-                </small>
-                <b>
-                  {activeSection
-                    ? lesson.tutorial[activeSection - 1].heading
-                    : (previous?.title ?? "Start of course")}
-                </b>
+                <small>Previous lesson</small>
+                <b>{previous?.title ?? "Start of course"}</b>
               </span>
             </button>
             <div className="lesson-completion-main">
@@ -350,7 +557,7 @@ export function CurriculumLearning({
                       ? `Day ${lesson.day} completed`
                       : `Complete Day ${lesson.day}`}
                   </b>
-                  <small>Your progress is saved to this profile</small>
+                  <small>Saved to this profile</small>
                 </span>
               </div>
               <button
@@ -364,20 +571,12 @@ export function CurriculumLearning({
             </div>
             <button
               className="lesson-step-button next"
-              disabled={activeSection === lesson.tutorial.length - 1 && !next}
+              disabled={!next}
               onClick={goNext}
             >
               <span>
-                <small>
-                  {activeSection < lesson.tutorial.length - 1
-                    ? "Next subtopic"
-                    : "Next lesson"}
-                </small>
-                <b>
-                  {activeSection < lesson.tutorial.length - 1
-                    ? lesson.tutorial[activeSection + 1].heading
-                    : (next?.title ?? "Course complete")}
-                </b>
+                <small>Next lesson</small>
+                <b>{next?.title ?? "Course complete"}</b>
               </span>
               <ArrowRight />
             </button>

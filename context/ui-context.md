@@ -1,5 +1,12 @@
 # UI Context
 
+## Learning workspace additions
+
+- Focused lessons expose an optional left-edge hover menu and top-right menu/full-screen controls without reducing the reading canvas.
+- Topic navigation has its own Hide/Show control and is independent from global navigation.
+- Roadmap selection uses accessible pressed-state controls for Card view and Interactive flow.
+- Inputs, selects, and textareas inherit the active theme; dark pages must not show an unstyled white native control.
+
 ## Design Direction
 
 Forge should feel like a premium developer tool combined with a focused learning studio: deep navy surfaces, crisp information hierarchy, restrained glow, data-rich panels, and purposeful motion. It should be motivating without looking like a children's game and futuristic without sacrificing legibility.
@@ -61,8 +68,16 @@ New UI work should use these names. Existing short token names can be migrated a
 
 - Desktop application shell: fixed 248px sidebar, sticky 72px top bar, fluid main canvas.
 - Mobile shell: hidden sidebar opened as a modal drawer with scrim; no horizontal page scrolling.
+- Focused learning shell: entering an authored or catalog lesson removes the global sidebar, top bar, search, and floating mentor so the lesson owns the full canvas; the visible Back control restores the application shell.
+- Course-topic rail: show only peer course topics, never lesson chapters or subtasks; keep it sticky, independently scrollable, hideable, and automatically focused on the current topic on desktop, then convert it to a one-row swipeable strip above the lesson at 900px and below.
 - Dashboard: 12-column responsive grid with a dominant next-action card.
-- Lesson workspace: course navigation, central learning surface, contextual mentor; secondary panels may collapse.
+- Lesson workspace: topic selection opens one continuous Complete Lesson; secondary concept pickers are avoided and supporting panels may collapse.
+- Interactive example lab: present normal, unusual, and failure tabs; require a written prediction before revealing the expected result; then collect a reflection and show saved-case progress.
+- Teaching examples and code must wrap inside their cards at narrow widths without hiding content or creating document-level horizontal scrolling.
+- Skill builder: use a sequential level rail, one focused task, a plain-language success checklist, and progressively reduced guidance.
+- Framework choice: show the shared foundation and React / Angular / Both as three explicit, reversible choices before specialization modules.
+- Learning resources: lead with a simple explanation of how resources support practice, then provide role paths, searchable filters, and clearly attributed external cards.
+- Topic practice: keep quick checks and open-ended drills as explicit modes; use dependent phase/module/topic selectors and three large difficulty choices.
 - Reading content: visually quiet surface with generous line height.
 - Lists and tables: retain labels on mobile or convert to stacked cards.
 - Modals: centered surface, visible title and close action, focus trap, escape-to-close, restored trigger focus.
@@ -78,11 +93,26 @@ New UI work should use these names. Existing short token names can be migrated a
 - Empty states: explain why empty and provide one next action.
 - AI content: use violet or teal accent plus explicit AI label; never imitate human certainty.
 
+## Plain-English Product Copy
+
+- Use direct navigation labels such as `Lessons`, `Learning Path`, `My Notes`,
+  `Review`, `My Progress`, and `AI Help`.
+- Use familiar action words: `saved work`, not `artifact`; `score guide`, not
+  `rubric`; `course stage` and `section`, not unexplained internal hierarchy.
+- Keep real technical names such as HTTP, RxJS, RAG, Big O, and CI/CD, then
+  explain them in the lesson before asking a beginner to use them.
+- Prefer short active sentences that tell the learner what to do and what a
+  successful result looks like.
+- Use the same action labels across workspaces: `Save my work`, `Quick check`,
+  `Practice`, and `Completed`.
+
 ## Icons
 
 - Use Lucide React only unless a data visualization requires custom SVG.
 - Standard sizes: 16px inline, 18–20px controls, 24px section icons.
 - Decorative icons are hidden from assistive technology; meaningful icon-only buttons require labels.
+- Use a visible action label beside arrows when the destination is not already obvious; reserve icon-only controls for familiar actions such as close, menu, theme, and send.
+- Status icons are not styled like buttons. Project and card actions use a text label, a directional icon, and at least a 40px desktop / 44px touch target.
 
 ## Motion
 
@@ -98,4 +128,3 @@ New UI work should use these names. Existing short token names can be migrated a
 - Do not communicate mastery, errors, or status by color alone.
 - Minimum touch target is 44×44px on touch layouts.
 - Charts require text summaries and diagrams require accessible descriptions.
-

@@ -1,5 +1,9 @@
 # Unit 05: Related Topics and Subtopic Navigation
 
+> Historical specification: the selectable subtopic interface was superseded
+> by Unit 09 Full Learning Mode. The authored instructional records remain in
+> use, but they now render together as one continuous topic page.
+
 ## Goal
 
 Turn long lesson documents into a clear zero-to-professional sequence where a
@@ -15,8 +19,11 @@ next.
   and focused practice task.
 - Make Previous and Next advance through subtopics first, then cross module
   boundaries to the adjacent topic.
-- Add an in-lesson subtopic menu and explicit Previous/Next controls to the six
-  authored foundation lessons.
+- Replace the authored lesson's six-course-card sidebar with a focused lesson
+  roadmap containing the goal, concepts, every teaching section, mistakes,
+  exercises, knowledge check, and revision tasks.
+- Keep the current task highlighted, show one focused task page at a time, and
+  provide one-click access plus explicit Previous/Next progression.
 - Keep completion independent from navigation so an already-completed lesson
   never becomes a dead end.
 - Save the selected topic and subtopic as the learner's current position.
@@ -37,7 +44,8 @@ next.
 
 - Browser flow opens Git, confirms the active related-topic state, and advances
   from the first to the second detailed subtopic.
-- Browser flow advances a foundation lesson subtopic and crosses into the next
-  lesson with the bottom Next control.
-- Lint, production build, full persistence smoke flow, and mobile overflow check
-  pass.
+- Browser flow confirms the old Foundation course cards are absent, advances
+  through foundation tasks, and crosses into the next lesson with the bottom
+  Next control.
+- Lint, production build, full persistence smoke flow, and the multi-viewport
+  responsive audit pass.

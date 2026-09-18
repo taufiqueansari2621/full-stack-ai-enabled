@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import {
   Activity,
   ArrowRight,
@@ -24,13 +24,16 @@ import {
   Gauge,
   Home,
   Layers3,
+  LibraryBig,
   Lightbulb,
   ListChecks,
   LockKeyhole,
   Menu,
+  Maximize2,
   MessageSquareText,
   Moon,
   Network,
+  Minimize2,
   NotebookPen,
   Play,
   Plus,
@@ -69,24 +72,32 @@ import { CurriculumLearning } from "./CurriculumLearning";
 import { curriculumLessons } from "./curriculum";
 import {
   curriculumPhases,
+  getPhaseModules,
   totalCatalogTopics,
   type CurriculumPhase,
 } from "./curriculumCatalog";
-import { CatalogTopicLesson } from "./CatalogTopicLesson";
 import { catalogLessonId } from "./topicIds";
 import { CertificatesPage, QuizzesPage } from "./Assessments";
 
+const ResourcesPage = lazy(() => import("./ResourcesPage"));
+const CatalogTopicLesson = lazy(() =>
+  import("./CatalogTopicLesson").then((module) => ({
+    default: module.CatalogTopicLesson,
+  })),
+);
+
 const navItems: { id: NavId; label: string; icon: typeof Home }[] = [
   { id: "home", label: "Home", icon: Home },
-  { id: "learn", label: "Learn", icon: BookOpen },
-  { id: "roadmap", label: "Roadmap", icon: Network },
+  { id: "learn", label: "Lessons", icon: BookOpen },
+  { id: "roadmap", label: "Learning Path", icon: Network },
+  { id: "resources", label: "Resources", icon: LibraryBig },
   { id: "practice", label: "Practice", icon: Code2 },
   { id: "quizzes", label: "Quizzes", icon: CircleHelp },
   { id: "projects", label: "Projects", icon: FolderKanban },
-  { id: "interview", label: "Interview", icon: BriefcaseBusiness },
-  { id: "knowledge", label: "Knowledge", icon: BrainCircuit },
-  { id: "reviews", label: "Reviews", icon: TimerReset },
-  { id: "progress", label: "Progress", icon: BarChart3 },
+  { id: "interview", label: "Interview Prep", icon: BriefcaseBusiness },
+  { id: "knowledge", label: "My Notes", icon: BrainCircuit },
+  { id: "reviews", label: "Review", icon: TimerReset },
+  { id: "progress", label: "My Progress", icon: BarChart3 },
   { id: "certificates", label: "Certificates", icon: Award },
 ];
 
@@ -197,8 +208,12 @@ function Sidebar({
             <b>FORGE</b>
             <span>AI ENGINEERING</span>
           </div>
-          <button className="close-mobile" onClick={close}>
-            <X size={20} />
+          <button
+            className="close-mobile"
+            onClick={close}
+            aria-label="Close navigation menu"
+          >
+            <X size={20} aria-hidden="true" />
           </button>
         </div>
         <div className="path-chip">
@@ -225,7 +240,7 @@ function Sidebar({
               {item.id === "reviews" && <em>4</em>}
             </button>
           ))}
-          <span className="nav-heading">Your coach</span>
+          <span className="nav-heading">Help</span>
           <button
             className={active === "mentor" ? "active mentor-nav" : "mentor-nav"}
             onClick={() => {
@@ -234,7 +249,7 @@ function Sidebar({
             }}
           >
             <Sparkles size={18} />
-            <span>AI Mentor</span>
+            <span>AI Help</span>
             <i />
           </button>
         </nav>
@@ -288,18 +303,22 @@ function Topbar({
   return (
     <header className="topbar">
       <div className="topbar-left">
-        <button className="menu-button" onClick={openMenu}>
-          <Menu size={20} />
+        <button
+          className="menu-button"
+          onClick={openMenu}
+          aria-label="Open navigation menu"
+        >
+          <Menu size={20} aria-hidden="true" />
         </button>
         <div>
-          <span>Full-Stack AI Engineer</span>
+          <span>Your Full-Stack + AI course</span>
           <b>{title}</b>
         </div>
       </div>
       <div className="topbar-actions">
         <button className="search-button" onClick={openSearch}>
           <Search size={17} />
-          <span>Search anything...</span>
+          <span>Search the course...</span>
           <kbd>⌘ K</kbd>
         </button>
         <button onClick={() => setDark(!dark)} aria-label="Toggle theme">
@@ -342,7 +361,10 @@ function Dashboard({
   const phaseScore = (phaseId: string) => {
     const phase = curriculumPhases.find((item) => item.id === phaseId);
     if (!phase) return 0;
-    const ids = phase.modules.flatMap((module) =>
+    const ids = getPhaseModules(
+      phase,
+      store.state.frontendFrameworkPath,
+    ).flatMap((module) =>
       module.topics.map(
         (topic) =>
           curriculumLessons.find((lesson) => lesson.title === topic)?.id ??
@@ -403,12 +425,11 @@ function Dashboard({
             Welcome back, {profile.fullName.split(" ")[0]} <span>👋</span>
           </h1>
           <p>
-            Your progress is saved to this local profile. Let’s make today
-            count.
+            Your work is saved in this browser. Choose one clear next step.
           </p>
         </div>
         <button className="outline-button" onClick={() => navigate("reviews")}>
-          <CalendarDays size={17} /> View learning plan
+          <CalendarDays size={17} /> See today’s review
         </button>
       </section>
 
@@ -416,7 +437,7 @@ function Dashboard({
         <article className="mission-card panel">
           <div className="mission-copy">
             <span className="eyebrow teal">
-              <Sparkles size={13} /> CONTINUE YOUR JOURNEY
+              <Sparkles size={13} /> CONTINUE LEARNING
             </span>
             <h2>{store.state.currentPosition.lesson}</h2>
             <p>
@@ -428,10 +449,10 @@ function Dashboard({
                 <Clock3 size={15} /> {profile.dailyGoal} daily goal
               </span>
               <span>
-                <Code2 size={15} /> Practice included
+                <Code2 size={15} /> Includes practice
               </span>
               <span>
-                <Zap size={15} /> Progress autosaves
+                <Zap size={15} /> Saved automatically
               </span>
             </div>
             <button
@@ -453,7 +474,7 @@ function Dashboard({
               <span className="orb-dot d2" />
               <span className="orb-dot d3" />
             </div>
-            <span>JavaScript mastery</span>
+            <span>JavaScript progress</span>
             <ProgressRing value={store.metrics.mastery} size={70} />
           </div>
         </article>
@@ -501,12 +522,12 @@ function Dashboard({
             <Trophy size={20} />
           </div>
           <div>
-            <span>Overall mastery</span>
+            <span>Overall skill progress</span>
             <h3>
               {store.metrics.mastery}
               <span>%</span>
             </h3>
-            <small className="positive">Based on saved evidence</small>
+            <small className="positive">Based on your saved work</small>
           </div>
           <ProgressRing value={store.metrics.mastery} size={55} stroke={5} />
         </article>
@@ -529,12 +550,12 @@ function Dashboard({
             <FolderKanban size={20} />
           </div>
           <div>
-            <span>Project milestones</span>
+            <span>Project steps</span>
             <h3>
               {store.metrics.completedTasks}
               <span> done</span>
             </h3>
-            <small>Across active projects</small>
+            <small>Completed in your projects</small>
           </div>
           <div className="project-stack">
             <i />
@@ -571,11 +592,11 @@ function Dashboard({
         <article className="panel journey-card">
           <div className="section-head">
             <div>
-              <span className="eyebrow">YOUR JOURNEY</span>
-              <h2>52-week engineering path</h2>
+              <span className="eyebrow">YOUR LEARNING PATH</span>
+              <h2>52-week learning plan</h2>
             </div>
             <button onClick={() => navigate("roadmap")}>
-              Open roadmap <ArrowRight size={15} />
+              Open learning path <ArrowRight size={15} />
             </button>
           </div>
           <div className="journey-track">
@@ -595,8 +616,8 @@ function Dashboard({
               <span>YOU ARE HERE</span>
               <b>{store.state.currentPosition.module}</b>
               <small>
-                {store.state.completedLessons.length} lessons completed from
-                real activity
+                {store.state.completedLessons.length} lessons completed and
+                saved
               </small>
             </div>
             <div className="stage-progress">
@@ -611,8 +632,8 @@ function Dashboard({
         <article className="panel review-card">
           <div className="section-head">
             <div>
-              <span className="eyebrow">SMART REVIEW</span>
-              <h2>Due for review</h2>
+              <span className="eyebrow">REVIEW</span>
+              <h2>Review these next</h2>
             </div>
             <span className="count-chip">4 items</span>
           </div>
@@ -645,11 +666,11 @@ function Dashboard({
         <article className="panel skill-card">
           <div className="section-head">
             <div>
-              <span className="eyebrow">SKILL SIGNAL</span>
-              <h2>Strengths & focus areas</h2>
+              <span className="eyebrow">YOUR SKILLS</span>
+              <h2>Strong skills and skills to practise</h2>
             </div>
             <button onClick={() => navigate("progress")}>
-              Full report <ArrowRight size={15} />
+              See progress <ArrowRight size={15} />
             </button>
           </div>
           <div className="skill-list">
@@ -666,18 +687,18 @@ function Dashboard({
           <div className="insight">
             <Lightbulb size={18} />
             <div>
-              <b>Coach insight</b>
+              <b>Learning tip</b>
               <span>
                 {strongest.score
-                  ? `${strongest.name} currently has your strongest completion evidence at ${strongest.score}%. `
-                  : "Complete lessons and assessments to create your first skill signal. "}
-                Next focus: {focus.name} at {focus.score}%.
+                  ? `${strongest.name} is your strongest area at ${strongest.score}%. `
+                  : "Complete a lesson or quiz to see your first skill score. "}
+                Practise next: {focus.name}, currently {focus.score}%.
               </span>
             </div>
           </div>
         </article>
         <article className="panel next-project">
-          <span className="eyebrow">RECOMMENDED PROJECT</span>
+          <span className="eyebrow">PROJECT TO TRY NEXT</span>
           <div className="project-art">
             <div>
               <span>JS</span>
@@ -689,22 +710,22 @@ function Dashboard({
           <span className="level-pill">INTERMEDIATE · P05</span>
           <h2>Intelligent Search Dashboard</h2>
           <p>
-            Turn event-loop knowledge into a fast search experience with
-            debounce, cancellation, caching and URL state.
+            Build a fast search page. You will control typing delays, cancel old
+            requests, save results, and keep the search in the URL.
           </p>
           <div className="project-details">
             <span>
               <Clock3 size={15} /> 14 hours
             </span>
             <span>
-              <ListChecks size={15} /> 11 milestones
+              <ListChecks size={15} /> 11 steps
             </span>
           </div>
           <button
             className="secondary-button"
             onClick={() => navigate("projects")}
           >
-            View project brief <ArrowRight size={16} />
+            View project details <ArrowRight size={16} />
           </button>
         </article>
       </section>
@@ -715,23 +736,44 @@ function Dashboard({
 function RoadmapPage({
   store,
   openLesson,
+  initialPhaseId,
+  onInitialPhaseConsumed,
+  onLearningFocusChange,
 }: {
   store: ForgeStore;
-  openLesson: (title: string) => void;
+  openLesson: (title: string, phaseId: string) => void;
+  initialPhaseId: string | null;
+  onInitialPhaseConsumed: () => void;
+  onLearningFocusChange: (focused: boolean) => void;
 }) {
-  const [selected, setSelected] = useState<CurriculumPhase | null>(null);
+  const [selected, setSelected] = useState<CurriculumPhase | null>(() =>
+    initialPhaseId
+      ? (curriculumPhases.find((phase) => phase.id === initialPhaseId) ?? null)
+      : null,
+  );
+  const [roadmapView, setRoadmapView] = useState<"cards" | "flow">("cards");
   const [topicPreview, setTopicPreview] = useState<{
     module: string;
     topic: string;
     position: number;
     topics: string[];
   } | null>(null);
+  const openTopicPreview = (preview: NonNullable<typeof topicPreview>) => {
+    onLearningFocusChange(true);
+    setTopicPreview(preview);
+  };
+  const closeTopicPreview = () => {
+    setTopicPreview(null);
+    onLearningFocusChange(false);
+  };
   const completed = new Set(store.state.completedLessons);
+  const phaseModules = (phase: CurriculumPhase) =>
+    getPhaseModules(phase, store.state.frontendFrameworkPath);
   const topicId = (phase: CurriculumPhase, moduleId: string, topic: string) =>
     curriculumLessons.find((item) => item.title === topic)?.id ??
     catalogLessonId(phase.id, moduleId, topic);
   const phaseProgress = (phase: CurriculumPhase) => {
-    const ids = phase.modules.flatMap((item) =>
+    const ids = phaseModules(phase).flatMap((item) =>
       item.topics.map((topic) => topicId(phase, item.id, topic)),
     );
     return ids.length
@@ -741,7 +783,7 @@ function RoadmapPage({
       : 0;
   };
   const overallIds = curriculumPhases.flatMap((phase) =>
-    phase.modules.flatMap((item) =>
+    phaseModules(phase).flatMap((item) =>
       item.topics.map((topic) => topicId(phase, item.id, topic)),
     ),
   );
@@ -749,40 +791,52 @@ function RoadmapPage({
     (overallIds.filter((id) => completed.has(id)).length / overallIds.length) *
       100,
   );
+  useEffect(() => {
+    if (initialPhaseId) onInitialPhaseConsumed();
+  }, [initialPhaseId, onInitialPhaseConsumed]);
   if (selected && topicPreview) {
-    const selectedModule = selected.modules.find(
+    const selectedModule = phaseModules(selected).find(
       (item) => item.title === topicPreview.module,
     );
     if (selectedModule)
       return (
-        <CatalogTopicLesson
-          key={`${selected.id}:${selectedModule.id}:${topicPreview.topic}`}
-          phase={selected}
-          module={selectedModule}
-          topic={topicPreview.topic}
-          position={topicPreview.position}
-          store={store}
-          onBack={() => setTopicPreview(null)}
-          onSelect={(nextModule, topic, position) => {
-            const lesson = curriculumLessons.find(
-              (item) => item.title === topic,
-            );
-            if (lesson) openLesson(topic);
-            else
-              setTopicPreview({
-                module: nextModule.title,
-                topic,
-                position,
-                topics: nextModule.topics,
-              });
-          }}
-        />
+        <Suspense
+          fallback={
+            <div className="page loading-page panel">Opening the lesson…</div>
+          }
+        >
+          <CatalogTopicLesson
+            key={`${selected.id}:${selectedModule.id}:${topicPreview.topic}`}
+            phase={{ ...selected, modules: phaseModules(selected) }}
+            module={selectedModule}
+            topic={topicPreview.topic}
+            position={topicPreview.position}
+            store={store}
+            onBack={closeTopicPreview}
+            onSelect={(nextModule, topic, position) => {
+              const lesson = curriculumLessons.find(
+                (item) => item.title === topic,
+              );
+              if (lesson) {
+                onLearningFocusChange(false);
+                openLesson(topic, selected.id);
+              }
+              else
+                openTopicPreview({
+                  module: nextModule.title,
+                  topic,
+                  position,
+                  topics: nextModule.topics,
+                });
+            }}
+          />
+        </Suspense>
       );
   }
   if (selected && topicPreview)
     return (
       <div className="page topic-preview">
-        <button className="back-link" onClick={() => setTopicPreview(null)}>
+        <button className="back-link" onClick={closeTopicPreview}>
           <ChevronLeft /> {selected.title}
         </button>
         <section className="page-title">
@@ -792,13 +846,13 @@ function RoadmapPage({
               {topicPreview.module.toUpperCase()}
             </span>
             <h1>{topicPreview.topic}</h1>
-            <p>This topic is freely accessible in your Full-Stack + AI path.</p>
+            <p>You can open this topic at any time in your Full-Stack + AI course.</p>
           </div>
           <span className="status-pill active">Open access</span>
         </section>
         <div className="topic-preview-grid">
           <article className="panel">
-            <span className="eyebrow">LEARNING POSITION</span>
+            <span className="eyebrow">WHERE YOU ARE</span>
             <h2>
               Topic {topicPreview.position + 1} of {topicPreview.topics.length}
             </h2>
@@ -807,23 +861,23 @@ function RoadmapPage({
               <b>{selected.title}</b> phase. It follows{" "}
               {topicPreview.position
                 ? topicPreview.topics[topicPreview.position - 1]
-                : "the phase introduction"}{" "}
+                : "the stage introduction"}{" "}
               and prepares you for{" "}
               {topicPreview.topics[topicPreview.position + 1] ??
-                "the module assessment"}
+                "the section test"}
               .
             </p>
           </article>
           <article className="panel">
-            <span className="eyebrow">WHY IT MATTERS</span>
-            <h2>Build the concept in context</h2>
+            <span className="eyebrow">WHY THIS MATTERS</span>
+            <h2>See how this topic connects</h2>
             <p>
-              {selected.description} This topic belongs in that progression and
-              remains available without prerequisite restrictions.
+              {selected.description} This topic is one step in that learning
+              path, and you can open it at any time.
             </p>
           </article>
           <article className="panel topic-outline">
-            <span className="eyebrow">MODULE SEQUENCE</span>
+            <span className="eyebrow">TOPICS IN THIS SECTION</span>
             <h2>{topicPreview.module}</h2>
             {topicPreview.topics.map((topic, index) => (
               <button
@@ -833,9 +887,12 @@ function RoadmapPage({
                   const lesson = curriculumLessons.find(
                     (item) => item.title === topic,
                   );
-                  if (lesson) openLesson(topic);
+                  if (lesson) {
+                    onLearningFocusChange(false);
+                    openLesson(topic, selected.id);
+                  }
                   else
-                    setTopicPreview({
+                    openTopicPreview({
                       ...topicPreview,
                       topic,
                       position: index,
@@ -855,12 +912,12 @@ function RoadmapPage({
     return (
       <div className="page phase-detail">
         <button className="back-link" onClick={() => setSelected(null)}>
-          <ChevronLeft /> Complete roadmap
+          <ChevronLeft /> Back to the full learning path
         </button>
         <section className="page-title">
           <div>
             <span className="eyebrow">
-              PHASE {String(selected.order).padStart(2, "0")} ·{" "}
+              STAGE {String(selected.order).padStart(2, "0")} ·{" "}
               {selected.difficulty.toUpperCase()}
             </span>
             <h1>{selected.title}</h1>
@@ -869,20 +926,55 @@ function RoadmapPage({
           <div className="title-stat">
             <ProgressRing value={phaseProgress(selected)} />
             <div>
-              <b>{selected.modules.length} modules</b>
+              <b>{phaseModules(selected).length} sections</b>
               <span>
-                {selected.modules.reduce(
+                {phaseModules(selected).reduce(
                   (sum, item) => sum + item.topics.length,
                   0,
                 )}{" "}
-                ordered topics
+                topics in learning order
               </span>
-              <small>Open access · learn in any order</small>
+              <small>All topics are open · choose any topic</small>
             </div>
           </div>
         </section>
+        {selected.id === "frontend" && (
+          <section className="framework-choice panel" aria-labelledby="framework-choice-title">
+            <div className="framework-choice-copy">
+              <span className="eyebrow teal">CHOOSE A FRONTEND FRAMEWORK</span>
+              <h2 id="framework-choice-title">Learn React, Angular, or both</h2>
+              <p>
+                First, everyone learns the same web basics. Then you can study
+                React, Angular, or both. You can change this choice later.
+              </p>
+            </div>
+            <div className="framework-choice-options">
+              {([
+                ["react", "R", "React", "Build modern websites with a flexible library and Next.js"],
+                ["angular", "A", "Angular", "Build large, structured business apps with Angular and RxJS"],
+                ["both", "R+A", "Learn both", "Learn both and understand when to use each one"],
+              ] as const).map(([value, mark, label, description]) => (
+                <button
+                  key={value}
+                  className={store.state.frontendFrameworkPath === value ? "active" : ""}
+                  aria-pressed={store.state.frontendFrameworkPath === value}
+                  onClick={() => store.setFrontendFrameworkPath(value)}
+                >
+                  <span>{mark}</span>
+                  <div><b>{label}</b><small>{description}</small></div>
+                  {store.state.frontendFrameworkPath === value && <Check />}
+                </button>
+              ))}
+            </div>
+            {!store.state.frontendFrameworkPath && (
+              <div className="framework-choice-prompt">
+                <Lightbulb /> Choose one option to show its lessons. You can change it at any time.
+              </div>
+            )}
+          </section>
+        )}
         <div className="module-grid">
-          {selected.modules.map((item, moduleIndex) => (
+          {phaseModules(selected).map((item, moduleIndex) => (
             <article className="module-card panel" key={item.id}>
               <div className="module-heading">
                 <span>{String(moduleIndex + 1).padStart(2, "0")}</span>
@@ -901,18 +993,20 @@ function RoadmapPage({
                     <button
                       key={topic}
                       title={
-                        !lesson ? "Open topic curriculum overview" : undefined
+                        !lesson ? "Open the full topic lesson" : undefined
                       }
-                      onClick={() =>
-                        available
-                          ? openLesson(topic)
-                          : setTopicPreview({
+                      onClick={() => {
+                        if (available) {
+                          onLearningFocusChange(false);
+                          openLesson(topic, selected.id);
+                        } else
+                          openTopicPreview({
                               module: item.title,
                               topic,
                               position: topicIndex,
                               topics: item.topics,
-                            })
-                      }
+                            });
+                      }}
                     >
                       <span>{topicIndex + 1}</span>
                       <b>{topic}</b>
@@ -930,30 +1024,53 @@ function RoadmapPage({
     <div className="page">
       <section className="page-title">
         <div>
-          <span className="eyebrow">YOUR PERSONAL CURRICULUM</span>
+          <span className="eyebrow">YOUR COMPLETE COURSE</span>
           <h1>
-            From fundamentals to{" "}
+            Start at zero. Grow into an{" "}
             <span className="gradient-text">AI engineer</span>
           </h1>
           <p>
-            Every skill connects to practice, projects and the exact way an
-            interviewer will test it.
+            Learn one topic at a time. Practice it, use it in a project, and
+            prepare for interview questions.
           </p>
         </div>
         <div className="title-stat">
           <ProgressRing value={overall} />
           <div>
-            <b>Overall path</b>
+            <b>Course progress</b>
             <span>
-              {curriculumPhases.length} phases · {totalCatalogTopics} topics
+              {curriculumPhases.length} stages · {totalCatalogTopics} topics
             </span>
             <small>
-              {store.state.completedLessons.length} verified lessons completed
+              {store.state.completedLessons.length} lessons completed
             </small>
           </div>
         </div>
       </section>
-      <div className="roadmap-layout">
+      <div className="roadmap-view-switch" role="group" aria-label="Learning path view">
+        <button className={roadmapView === "cards" ? "active" : ""} aria-pressed={roadmapView === "cards"} onClick={() => setRoadmapView("cards")}><Layers3 /> Card view</button>
+        <button className={roadmapView === "flow" ? "active" : ""} aria-pressed={roadmapView === "flow"} onClick={() => setRoadmapView("flow")}><Network /> Interactive flow</button>
+      </div>
+      {roadmapView === "flow" ? (
+        <section className="roadmap-flow panel" aria-label="Interactive learning path flow">
+          <div className="roadmap-flow-intro"><span className="eyebrow teal">ZERO TO PROFESSIONAL</span><h2>Click any stage to explore its learning tree</h2><p>Follow the main path from top to bottom. Branches show the major sections inside each stage.</p></div>
+          <div className="roadmap-flow-tree">
+            {curriculumPhases.map((node, index) => {
+              const progress = phaseProgress(node);
+              return <div className="flow-stage" key={node.id}>
+                {index > 0 && <span className="flow-connector" aria-hidden="true" />}
+                <button onClick={() => setSelected(node)} aria-label={`Explore ${node.title}`}>
+                  <span>{String(node.order).padStart(2, "0")}</span><div><small>{node.difficulty} · {node.duration}</small><b>{node.title}</b><em>{node.modules.length} sections · {node.modules.reduce((sum, module) => sum + module.topics.length, 0)} topics</em></div><strong>{progress}%</strong><ArrowRight />
+                </button>
+                <div className="flow-branches" aria-label={`${node.title} sections`}>
+                  {node.modules.slice(0, 6).map((module) => <button key={module.id} onClick={() => setSelected(node)}><span>{module.title}</span><small>{module.topics.length} topics</small></button>)}
+                  {node.modules.length > 6 && <button onClick={() => setSelected(node)}><span>+ {node.modules.length - 6} more sections</span><small>Open stage</small></button>}
+                </div>
+              </div>;
+            })}
+          </div>
+        </section>
+      ) : <div className="roadmap-layout">
         <div className="roadmap-line" />
         {curriculumPhases.map((node) => {
           const progress = phaseProgress(node),
@@ -971,13 +1088,13 @@ function RoadmapPage({
                 <div className="roadmap-card-top">
                   <div>
                     <span className="roadmap-phase">
-                      PHASE {String(node.order).padStart(2, "0")}
+                      STAGE {String(node.order).padStart(2, "0")}
                     </span>
                     <h2>{node.title}</h2>
                   </div>
                   <span className={`status-pill ${status}`}>
                     {status === "complete"
-                      ? "Mastered"
+                      ? "Completed"
                       : progress > 0
                         ? "In progress"
                         : "Open"}
@@ -1000,7 +1117,7 @@ function RoadmapPage({
                   </span>
                   <span>
                     <FolderKanban size={15} />
-                    {node.modules.length} modules
+                    {node.modules.length} sections
                   </span>
                 </div>
                 <div className="roadmap-progress">
@@ -1020,7 +1137,7 @@ function RoadmapPage({
             </article>
           );
         })}
-      </div>
+      </div>}
     </div>
   );
 }
@@ -1295,8 +1412,8 @@ export function LearnPage() {
         ))}
         <div className="ask-box">
           <textarea placeholder="Ask about this lesson..." />
-          <button>
-            <ArrowRight size={16} />
+          <button aria-label="Send lesson question">
+            <ArrowRight size={16} aria-hidden="true" />
           </button>
         </div>
       </aside>
@@ -1382,8 +1499,8 @@ export function ProjectsPage() {
                 <Clock3 size={15} />
                 {p.hours}
               </span>
-              <button>
-                <ArrowRight size={17} />
+              <button aria-label={`Open ${p.title}`}>
+                <ArrowRight size={17} aria-hidden="true" />
               </button>
             </div>
           </article>
@@ -1662,9 +1779,14 @@ export function ReviewsPage({
             className={`queue-row ${done.includes(r.title) ? "complete" : ""}`}
             key={r.title}
           >
-            <button
-              className="check-button"
-              onClick={() =>
+          <button
+            className="check-button"
+            aria-label={
+              done.includes(r.title)
+                ? `Mark ${r.title} as not reviewed`
+                : `Mark ${r.title} as reviewed`
+            }
+            onClick={() =>
                 setDone(
                   done.includes(r.title)
                     ? done.filter((x) => x !== r.title)
@@ -1690,8 +1812,11 @@ export function ReviewsPage({
               </div>
               <b>{r.strength}%</b>
             </div>
-            <button className="round-action">
-              <ArrowRight size={17} />
+            <button
+              className="round-action"
+              aria-label={`Open practice for ${r.title}`}
+            >
+              <ArrowRight size={17} aria-hidden="true" />
             </button>
           </div>
         ))}
@@ -1730,31 +1855,31 @@ export function PlaceholderPage({
   > = {
     practice: {
       icon: Code2,
-      title: "Deliberate practice",
-      kicker: "TRAIN THE SKILL",
-      text: "Prediction, debugging, coding and explanation challenges matched to your current learning path.",
-      action: "Start a mixed practice set",
+      title: "Focused practice",
+      kicker: "PRACTICE WHAT YOU LEARN",
+      text: "Answer questions, fix bugs, write code, and explain ideas from your current lessons.",
+      action: "Start practicing",
     },
     knowledge: {
       icon: NotebookPen,
-      title: "Your second brain",
-      kicker: "PERSONAL KNOWLEDGE BASE",
-      text: "Notes, flashcards, code snippets, architecture decisions and mistakes—all connected to the concepts you learned.",
-      action: "Create your first note",
+      title: "Your notes",
+      kicker: "SAVE WHAT YOU LEARN",
+      text: "Keep notes, code examples, useful decisions, and mistakes you do not want to repeat.",
+      action: "Write your first note",
     },
     progress: {
       icon: BarChart3,
-      title: "Mastery, not completion",
-      kicker: "LEARNING ANALYTICS",
-      text: "Understand your real readiness across recall, implementation, projects, explanations and interviews.",
-      action: "Generate weekly report",
+      title: "See what you can do",
+      kicker: "YOUR PROGRESS",
+      text: "See your results from lessons, practice, projects, review, and interview answers.",
+      action: "See my progress",
     },
     mentor: {
       icon: Sparkles,
-      title: "A mentor that makes you think",
-      kicker: "AI LEARNING COACH",
-      text: "Get progressive hints, explanations and senior-level feedback while keeping ownership of the solution.",
-      action: "Start a coaching session",
+      title: "Get help without losing the answer",
+      kicker: "AI HELP",
+      text: "Ask for a small hint, a simple explanation, or feedback on your own solution.",
+      action: "Ask for help",
     },
   };
   const c = content[id] || content.practice;
@@ -1773,29 +1898,29 @@ export function PlaceholderPage({
           <ArrowRight size={16} />
         </button>
         <button className="secondary-button" onClick={() => navigate("home")}>
-          Back to dashboard
+          Back to Home
         </button>
       </div>
       <div className="coming-grid">
         <div>
           <CheckCircle2 />
-          <b>Connected learning context</b>
+          <b>Help based on your course</b>
           <span>
-            Recommendations use lessons, reviews and project evidence.
+            Suggestions use your lessons, reviews, and saved project work.
           </span>
         </div>
         <div>
           <BrainCircuit />
-          <b>Adaptive difficulty</b>
+          <b>Practice at the right level</b>
           <span>
-            Challenges become harder when recall and implementation improve.
+            Questions become harder as your answers and projects improve.
           </span>
         </div>
         <div>
           <Award />
-          <b>Evidence-based mastery</b>
+          <b>Progress based on real work</b>
           <span>
-            Progress reflects what you can explain and build independently.
+            Your progress comes from what you can explain and build yourself.
           </span>
         </div>
       </div>
@@ -1818,12 +1943,17 @@ function SearchOverlay({
       page: "learn" as NavId,
     },
     {
-      title: "Mixed practice challenges",
+      title: "Practice questions and coding tasks",
       meta: "Practice · 4 challenges",
       page: "practice" as NavId,
     },
     {
-      title: "Foundation path assessment",
+      title: "Official guides and learning resources",
+      meta: "Resources · hand-picked",
+      page: "resources" as NavId,
+    },
+    {
+      title: "Foundation course test",
       meta: "Quiz · 10 questions",
       page: "quizzes" as NavId,
     },
@@ -1833,23 +1963,23 @@ function SearchOverlay({
       page: "projects" as NavId,
     },
     {
-      title: "Spaced repetition queue",
-      meta: "Reviews · due today",
+      title: "Topics to review today",
+      meta: "Review · due today",
       page: "reviews" as NavId,
     },
     {
-      title: "Technical interview simulator",
-      meta: "Interview · adaptive",
+      title: "Technical interview practice",
+      meta: "Interview Prep · guided",
       page: "interview" as NavId,
     },
     {
-      title: "Notes and mistake journal",
-      meta: "Knowledge base",
+      title: "My notes and mistakes",
+      meta: "My Notes",
       page: "knowledge" as NavId,
     },
     {
       title: "Certificates of Completion",
-      meta: "Evidence-based credentials",
+      meta: "Certificates earned from completed work",
       page: "certificates" as NavId,
     },
   ].filter(
@@ -1874,12 +2004,12 @@ function SearchOverlay({
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search lessons, projects, practice..."
           />
-          <button onClick={close}>
-            <X />
+          <button onClick={close} aria-label="Close search">
+            <X aria-hidden="true" />
           </button>
         </div>
         <span className="eyebrow">
-          {query ? `${results.length} RESULTS` : "QUICK NAVIGATION"}
+          {query ? `${results.length} RESULTS` : "GO TO A PAGE"}
         </span>
         <div className="search-results">
           {results.map((item) => (
@@ -1939,11 +2069,15 @@ function SettingsOverlay({
         aria-labelledby="settings-title"
         onMouseDown={(e) => e.stopPropagation()}
       >
-        <button className="modal-close" onClick={close}>
-          <X />
+        <button
+          className="modal-close"
+          onClick={close}
+          aria-label="Close settings"
+        >
+          <X aria-hidden="true" />
         </button>
-        <span className="eyebrow teal">LOCAL LEARNING PROFILE</span>
-        <h2 id="settings-title">Your Forge workspace</h2>
+        <span className="eyebrow teal">PROFILE ON THIS DEVICE</span>
+        <h2 id="settings-title">Your Forge profile</h2>
         <div className="settings-profile">
           <div className="avatar">{initials(profile.fullName)}</div>
           <div>
@@ -1956,7 +2090,7 @@ function SettingsOverlay({
         <div className="setting-row">
           <div>
             <b>Appearance</b>
-            <span>Switch between dark and light workspace themes.</span>
+            <span>Choose a dark or light screen.</span>
           </div>
           <button className="secondary-button" onClick={() => setDark(!dark)}>
             {dark ? <Sun /> : <Moon />}
@@ -1965,10 +2099,9 @@ function SettingsOverlay({
         </div>
         <div className="setting-row">
           <div>
-            <b>Local learning data</b>
+            <b>Where your work is saved</b>
             <span>
-              All activity belongs to profile {profile.id} and stays only in
-              this browser.
+              Your lessons and progress stay in this browser under profile {profile.id}.
             </span>
           </div>
           <span className="local-status">
@@ -1977,8 +2110,8 @@ function SettingsOverlay({
         </div>
         <div className="setting-row">
           <div>
-            <b>Switch learner</b>
-            <span>Sign out without deleting this profile or any progress.</span>
+            <b>Change profile</b>
+            <span>Log out without deleting this profile or its progress.</span>
           </div>
           <button className="secondary-button" onClick={logout}>
             Log out
@@ -1986,8 +2119,8 @@ function SettingsOverlay({
         </div>
         <div className="setting-row danger">
           <div>
-            <b>Reset learning progress</b>
-            <span>Clear this learner's activity. This cannot be undone.</span>
+            <b>Delete this profile’s progress</b>
+            <span>This removes all saved learning work and cannot be undone.</span>
           </div>
           {confirmReset ? (
             <div className="confirm-actions">
@@ -2041,11 +2174,11 @@ function Welcome({
           <div className="brand-mark">
             <Command />
           </div>
-          <span className="eyebrow teal">FORGE · LOCAL-FIRST LEARNING</span>
-          <h1>Learn Full-Stack Development + AI from zero to advanced.</h1>
+          <span className="eyebrow teal">FORGE · SAVED ON THIS DEVICE</span>
+          <h1>Learn web development and AI, one clear step at a time.</h1>
           <p>
-            A real, connected learning journey with lessons, practice, projects,
-            review and interview preparation. Your progress stays private in
+            Start with no experience. Learn with simple lessons, practice,
+            projects, review, and interview preparation. Your work stays in
             this browser.
           </p>
           <div className="profile-actions">
@@ -2064,10 +2197,10 @@ function Welcome({
             </button>
           </div>
           <button className="text-button" onClick={() => setMode("create")}>
-            Explore the 52-week roadmap
+            See the 52-week learning path
           </button>
           <small>
-            This is a local learning profile, not secure cloud authentication.
+            This is a profile on this device. It is not an online account.
           </small>
         </div>
       </main>
@@ -2080,8 +2213,8 @@ function Welcome({
             <ChevronLeft /> Back
           </button>
           <span className="eyebrow teal">WELCOME BACK</span>
-          <h1>Choose your local profile</h1>
-          <p>Each learner’s progress is stored separately on this device.</p>
+          <h1>Choose a profile</h1>
+          <p>Each person’s work is saved separately on this device.</p>
           <div className="profile-list">
             {profiles.map((profile) => (
               <button key={profile.id} onClick={() => login(profile.id)}>
@@ -2125,11 +2258,11 @@ function Welcome({
         >
           <ChevronLeft /> Back
         </button>
-        <span className="eyebrow teal">LOCAL LEARNING PROFILE</span>
-        <h1>Build your learning path</h1>
+        <span className="eyebrow teal">PROFILE ON THIS DEVICE</span>
+        <h1>Set up your learning</h1>
         <p>
-          No password is required. This profile and its progress live only in
-          this browser.
+          You do not need a password. This profile is saved only in this
+          browser.
         </p>
         <div className="profile-form">
           <label>
@@ -2247,6 +2380,7 @@ function LearningWorkspace({
     "home",
     "learn",
     "roadmap",
+    "resources",
     "practice",
     "quizzes",
     "projects",
@@ -2270,8 +2404,15 @@ function LearningWorkspace({
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [catalogLearningFocus, setCatalogLearningFocus] = useState(false);
+  const [focusNavOpen, setFocusNavOpen] = useState(false);
+  const [fullScreen, setFullScreen] = useState(Boolean(document.fullscreenElement));
+  const [roadmapReturnPhaseId, setRoadmapReturnPhaseId] = useState<
+    string | null
+  >(null);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const store = useForgeStore(profile.id);
+  const learningFocus = active === "learn" || catalogLearningFocus;
   const notify = (text: string) => {
     const id = Date.now();
     setToasts((items) => [...items, { id, text }]);
@@ -2286,7 +2427,11 @@ function LearningWorkspace({
   }, [dark]);
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
-      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+      if (
+        !learningFocus &&
+        (event.metaKey || event.ctrlKey) &&
+        event.key.toLowerCase() === "k"
+      ) {
         event.preventDefault();
         setSearchOpen(true);
       }
@@ -2297,6 +2442,11 @@ function LearningWorkspace({
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
+  }, [learningFocus]);
+  useEffect(() => {
+    const sync = () => setFullScreen(Boolean(document.fullscreenElement));
+    document.addEventListener("fullscreenchange", sync);
+    return () => document.removeEventListener("fullscreenchange", sync);
   }, []);
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -2305,7 +2455,7 @@ function LearningWorkspace({
       window.history.replaceState({ page: active }, "", path);
   }, [active]);
   const title = useMemo(
-    () => navItems.find((x) => x.id === active)?.label || "AI Mentor",
+    () => navItems.find((x) => x.id === active)?.label || "AI Help",
     [active],
   );
   let view;
@@ -2315,7 +2465,11 @@ function LearningWorkspace({
     view = (
       <RoadmapPage
         store={store}
-        openLesson={(title) => {
+        initialPhaseId={roadmapReturnPhaseId}
+        onInitialPhaseConsumed={() => setRoadmapReturnPhaseId(null)}
+        onLearningFocusChange={setCatalogLearningFocus}
+        openLesson={(title, phaseId) => {
+          setRoadmapReturnPhaseId(phaseId);
           store.setLearningPosition({
             page: "learn",
             lesson: title,
@@ -2331,7 +2485,15 @@ function LearningWorkspace({
         key={store.state.currentPosition.lesson}
         store={store}
         notify={notify}
-        navigate={setActive}
+        onBack={() => {
+          setCatalogLearningFocus(false);
+          setActive("roadmap");
+        }}
+        backLabel={
+          roadmapReturnPhaseId
+            ? `Back to ${curriculumPhases.find((phase) => phase.id === roadmapReturnPhaseId)?.title ?? "previous page"}`
+            : "Back to Learning Path"
+        }
       />
     );
   else if (active === "projects")
@@ -2344,6 +2506,16 @@ function LearningWorkspace({
     );
   else if (active === "practice")
     view = <PracticePage store={store} notify={notify} />;
+  else if (active === "resources")
+    view = (
+      <Suspense
+        fallback={
+          <div className="page loading-page panel">Opening learning resources…</div>
+        }
+      >
+        <ResourcesPage />
+      </Suspense>
+    );
   else if (active === "quizzes")
     view = <QuizzesPage store={store} notify={notify} />;
   else if (active === "knowledge")
@@ -2354,29 +2526,50 @@ function LearningWorkspace({
     view = <CertificatesPage store={store} profile={profile} notify={notify} />;
   else view = <MentorPage store={store} navigate={setActive} />;
   return (
-    <div className="app-shell">
-      <Sidebar
-        active={active}
-        onNavigate={setActive}
-        open={mobileOpen}
-        close={() => setMobileOpen(false)}
-        store={store}
-        profile={profile}
-      />
-      <div className="main-shell">
-        <Topbar
-          title={title}
-          dark={dark}
-          setDark={setDark}
-          openMenu={() => setMobileOpen(true)}
-          openSearch={() => setSearchOpen(true)}
-          openSettings={() => setSettingsOpen(true)}
+    <div className={`app-shell ${learningFocus ? "learning-focus" : ""}`}>
+      {!learningFocus && (
+        <Sidebar
+          active={active}
+          onNavigate={setActive}
+          open={mobileOpen}
+          close={() => setMobileOpen(false)}
+          store={store}
+          profile={profile}
         />
+      )}
+      {learningFocus && (
+        <>
+          <button className="focus-nav-edge" onClick={() => setFocusNavOpen(true)} aria-label="Open main navigation"><Menu /><span>Menu</span></button>
+          <div className="focus-screen-actions">
+            <button onClick={() => setFocusNavOpen(true)}><Menu /><span>Menu</span></button>
+            <button onClick={() => {
+              if (document.fullscreenElement) void document.exitFullscreen();
+              else void document.documentElement.requestFullscreen();
+            }} aria-label={fullScreen ? "Exit full screen" : "Enter full screen"}>
+              {fullScreen ? <Minimize2 /> : <Maximize2 />}<span>{fullScreen ? "Exit full screen" : "Full screen"}</span>
+            </button>
+          </div>
+          {focusNavOpen && <div className="focus-navigation"><Sidebar active={active} onNavigate={(id) => { setActive(id); setFocusNavOpen(false); }} open close={() => setFocusNavOpen(false)} store={store} profile={profile} /></div>}
+        </>
+      )}
+      <div className="main-shell">
+        {!learningFocus && (
+          <Topbar
+            title={title}
+            dark={dark}
+            setDark={setDark}
+            openMenu={() => setMobileOpen(true)}
+            openSearch={() => setSearchOpen(true)}
+            openSettings={() => setSettingsOpen(true)}
+          />
+        )}
         {view}
-        <button className="floating-mentor" onClick={() => setActive("mentor")}>
-          <Sparkles size={19} />
-          <span>Ask your mentor</span>
-        </button>
+        {!learningFocus && (
+          <button className="floating-mentor" onClick={() => setActive("mentor")}>
+            <Sparkles size={19} />
+            <span>Ask for help</span>
+          </button>
+        )}
       </div>
       {searchOpen && (
         <SearchOverlay

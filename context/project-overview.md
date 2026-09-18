@@ -2,6 +2,8 @@
 
 ## Overview
 
+Current product surfaces include a trainable local retrieval tutor, card and interactive-tree roadmap views, four job-goal roadmaps including DSA, a 10,260-question Interview Academy, and eight guided portfolio projects with architecture, testing, deployment, and decision evidence.
+
 Forge is a self-guided technical learning platform that helps one learner progress from web fundamentals to a job-ready full-stack AI engineer. It combines structured lessons, visual explanations, deliberate practice, production-style projects, spaced repetition, AI-guided coaching, and interview simulation in one coherent learning loop.
 
 The product must continuously answer: **Where am I, what should I learn next, why does it matter, how do I practise it, where will I use it, and how close am I to interview readiness?**
@@ -42,10 +44,15 @@ Learn → Understand → Visualize → Practice → Build → Debug
 
 ### Learning
 
-- Interactive 52-week roadmap with prerequisites and progress.
-- Multi-depth lessons with explanations, analogies, diagrams, examples, mistakes, and assessments.
+- Interactive 17-phase, 684-topic roadmap with learner-selected React and Angular specializations, prerequisites, and progress.
+- Full Learning Mode pages with continuous concept chapters, explanations, analogies, diagrams, examples, mistakes, and assessments.
+- A distraction-free learning shell that gives lessons the full viewport, keeps a clear route back, and shows only course topics in its responsive lesson rail.
+- Interactive example labs for every topic with normal, unusual, and failure cases; learners predict before revealing the result, explain what they learned, and save each case.
+- Topic Mastery Studios that move from foundation through guided, applied, debugging, and production evidence.
 - Visual execution tools for algorithms, data structures, browser/runtime behavior, and system architecture.
 - Mixed practice: quick checks, predictions, debugging, coding, explanations, and real-world challenges.
+- A curriculum-wide Easy, Medium, and Hard practice lab with learner-scoped artifacts for every visible topic.
+- A 74-resource academy with official documentation, trusted courses, practice, projects, interviews, and role roadmaps.
 
 ### Projects
 
@@ -77,8 +84,9 @@ Learn → Understand → Visualize → Practice → Build → Debug
 - Project catalog and detailed capstone presentation.
 - Review queue with completion interactions.
 - Question-by-question interview simulation.
-- Representative practice, knowledge, progress, and mentor workspaces.
+- Persistent quick checks, curriculum-wide topic drills, knowledge, progress, and mentor workspaces.
 - Light/dark theme stored locally.
+- Reproducible Cloudflare Workers Static Assets deployment with SPA deep-route support.
 
 ### Next Product Scope
 
@@ -107,4 +115,3 @@ Learn → Understand → Visualize → Practice → Build → Debug
 5. The interface works from 320px mobile width through large desktop layouts.
 6. `npm run lint` and `npm run build` pass with no browser console errors.
 7. Future AI and backend integrations can be introduced behind typed boundaries without rewriting presentation components.
-

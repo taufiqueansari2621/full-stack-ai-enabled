@@ -2,6 +2,7 @@ export type NavId =
   | "home"
   | "learn"
   | "roadmap"
+  | "resources"
   | "practice"
   | "quizzes"
   | "projects"
@@ -29,7 +30,7 @@ export const roadmapNodes: RoadmapNode[] = [
     id: "foundations",
     title: "Web Foundations",
     description:
-      "How the web works, Git, semantic HTML, CSS and accessible interfaces.",
+      "Learn how the web works, use Git, and build accessible pages with HTML and CSS.",
     progress: 100,
     duration: "2 weeks",
     difficulty: "Beginner",
@@ -39,9 +40,9 @@ export const roadmapNodes: RoadmapNode[] = [
   },
   {
     id: "javascript",
-    title: "JavaScript Mastery",
+    title: "JavaScript",
     description:
-      "From language fundamentals to closures, prototypes, async internals and performance.",
+      "Go from basic JavaScript to closures, prototypes, async code, and faster apps.",
     progress: 68,
     duration: "3 weeks",
     difficulty: "Intermediate",
@@ -57,9 +58,9 @@ export const roadmapNodes: RoadmapNode[] = [
   },
   {
     id: "typescript",
-    title: "TypeScript Systems",
+    title: "TypeScript",
     description:
-      "Model reliable applications with expressive types and reusable abstractions.",
+      "Use types to catch mistakes and keep large apps clear and reliable.",
     progress: 18,
     duration: "2 weeks",
     difficulty: "Intermediate",
@@ -77,7 +78,7 @@ export const roadmapNodes: RoadmapNode[] = [
     id: "frontend",
     title: "Frontend Engineering",
     description:
-      "Build production interfaces with React, Angular, testing and performance.",
+      "Build real websites with React or Angular, tests, accessibility, and good performance.",
     progress: 0,
     duration: "9 weeks",
     difficulty: "Advanced",
@@ -89,7 +90,7 @@ export const roadmapNodes: RoadmapNode[] = [
     id: "backend",
     title: "Backend & Data",
     description:
-      "Secure APIs, databases, queues, caching and realtime systems.",
+      "Build safe APIs, work with databases, and add background jobs and live updates.",
     progress: 0,
     duration: "5 weeks",
     difficulty: "Advanced",
@@ -101,7 +102,7 @@ export const roadmapNodes: RoadmapNode[] = [
     id: "system-design",
     title: "System Design",
     description:
-      "Design maintainable systems and reason clearly about scale and reliability.",
+      "Design systems that stay reliable and easy to change as they grow.",
     progress: 0,
     duration: "7 weeks",
     difficulty: "Advanced",
@@ -113,7 +114,7 @@ export const roadmapNodes: RoadmapNode[] = [
     id: "ai",
     title: "Applied AI Engineering",
     description:
-      "Build evaluated ML, LLM, RAG and agent systems that are safe to operate.",
+      "Build ML, LLM, RAG, and agent systems. Test their quality and run them safely.",
     progress: 0,
     duration: "19 weeks",
     difficulty: "Advanced",
@@ -125,6 +126,10 @@ export const roadmapNodes: RoadmapNode[] = [
 
 export const projectCards = [
   {
+    id: "p02", code: "P02", title: "Accessible Product Website", type: "Frontend", level: "Beginner", progress: 0,
+    description: "Turn a product brief into a responsive, keyboard-friendly website with strong HTML, CSS, forms, and performance.", accent: "green", tasks: "0 / 10", hours: "10h",
+  },
+  {
     id: "p05",
     code: "P05",
     title: "Intelligent Search Dashboard",
@@ -132,7 +137,7 @@ export const projectCards = [
     level: "Intermediate",
     progress: 72,
     description:
-      "Fast search with debounce, caching, pagination, URL state and resilient error handling.",
+      "Build fast search with typing delay, saved results, pages, shareable URLs, and clear error handling.",
     accent: "blue",
     tasks: "8 / 11",
     hours: "14h",
@@ -145,10 +150,18 @@ export const projectCards = [
     level: "Advanced",
     progress: 26,
     description:
-      "Role-aware dashboards, large datasets, realtime charts and performance budgets.",
+      "Build dashboards for different user roles, large data sets, live charts, and clear speed targets.",
     accent: "violet",
     tasks: "4 / 15",
     hours: "24h",
+  },
+  {
+    id: "p11", code: "P11", title: "Production Design System", type: "React", level: "Intermediate", progress: 0,
+    description: "Create accessible reusable components, design tokens, documentation, tests, and a versioned package.", accent: "blue", tasks: "0 / 10", hours: "18h",
+  },
+  {
+    id: "p20", code: "P20", title: "Secure API Platform", type: "Backend", level: "Intermediate", progress: 0,
+    description: "Design a typed REST API with PostgreSQL, authentication, authorization, tests, rate limits, and OpenAPI docs.", accent: "amber", tasks: "0 / 10", hours: "22h",
   },
   {
     id: "p25",
@@ -158,7 +171,7 @@ export const projectCards = [
     level: "Advanced",
     progress: 0,
     description:
-      "Tenant isolation, RBAC, audit logs, queues and production observability.",
+      "Keep each customer’s data separate. Add role permissions, activity logs, background jobs, and monitoring.",
     accent: "amber",
     tasks: "0 / 18",
     hours: "32h",
@@ -171,24 +184,28 @@ export const projectCards = [
     level: "Expert",
     progress: 0,
     description:
-      "Permission-aware retrieval, reranking, citations, evaluation and AI safety.",
+      "Search only allowed documents, improve result order, show sources, test answer quality, and add AI safety checks.",
     accent: "green",
     tasks: "0 / 21",
     hours: "40h",
+  },
+  {
+    id: "p34", code: "P34", title: "Production ML Product", type: "AI + ML", level: "Professional", progress: 0,
+    description: "Train and evaluate a model, serve it through an API, monitor quality and drift, and publish a responsible model card.", accent: "violet", tasks: "0 / 11", hours: "45h",
   },
 ];
 
 export const reviewItems = [
   {
     title: "Closures & lexical scope",
-    type: "Concept recall",
+    type: "Remember the idea",
     duration: "6 min",
     due: "Due now",
     strength: 54,
   },
   {
     title: "Two pointer pattern",
-    type: "Coding repeat",
+    type: "Repeat the code",
     duration: "12 min",
     due: "Due now",
     strength: 61,

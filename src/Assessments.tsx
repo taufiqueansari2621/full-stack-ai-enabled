@@ -190,11 +190,11 @@ export function QuizzesPage({
       <div className="page">
         <section className="page-title">
           <div>
-            <span className="eyebrow teal">ASSESSMENTS</span>
-            <h1>Quizzes that prove understanding</h1>
+            <span className="eyebrow teal">QUIZZES AND TESTS</span>
+            <h1>Check what you understand</h1>
             <p>
-              Answers, scores, weak topics, and recommendations are saved to
-              your local profile.
+              Your answers, scores, topics to review, and next steps are saved
+              in this browser.
             </p>
           </div>
           {latest && (
@@ -210,20 +210,20 @@ export function QuizzesPage({
         <article className="assessment-launch panel">
           <Award />
           <div>
-            <span className="eyebrow">FOUNDATION PATH ASSESSMENT</span>
+            <span className="eyebrow">FOUNDATION COURSE TEST</span>
             <h2>Computer, Web, HTML, CSS & JavaScript Foundations</h2>
             <p>
-              10 questions · passing score 80% · explanations and revision
-              guidance included
+              10 questions · pass with 80% · explanations and review help
+              included
             </p>
             <div className="assessment-tags">
               <span>Multiple choice</span>
-              <span>Concept reasoning</span>
+              <span>Explain ideas</span>
               <span>Saved result</span>
             </div>
           </div>
           <button className="primary-button" onClick={reset}>
-            {latest ? "Retry assessment" : "Start assessment"}
+            {latest ? "Try the test again" : "Start test"}
             <ArrowRight />
           </button>
         </article>
@@ -244,7 +244,7 @@ export function QuizzesPage({
             <h1>
               {correct} / {foundationQuiz.length}
             </h1>
-            <p>{score}% accuracy · passing score 80%</p>
+            <p>{score}% correct · pass with 80%</p>
           </div>
           <button className="secondary-button" onClick={reset}>
             <RotateCcw /> Retry quiz
@@ -281,8 +281,8 @@ export function QuizzesPage({
           <section className="revision-plan panel">
             <Target />
             <div>
-              <h2>Recommended revision</h2>
-              <p>Review these weak areas before retrying:</p>
+              <h2>What to review next</h2>
+              <p>Study these topics before you try again:</p>
               <div>
                 {weakTopics.map((topic) => (
                   <span key={topic}>{topic}</span>
@@ -297,7 +297,7 @@ export function QuizzesPage({
   return (
     <div className="page quiz-session">
       <button className="back-link" onClick={() => setStarted(false)}>
-        <ArrowLeft /> Exit assessment
+        <ArrowLeft /> Exit test
       </button>
       <div className="quiz-session-top">
         <span>
@@ -356,12 +356,12 @@ export function QuizzesPage({
               });
               notify(
                 score >= 80
-                  ? `Assessment passed · ${score}%`
-                  : `Assessment saved · review ${weakTopics.length} topics`,
+                  ? `Test passed · ${score}%`
+                  : `Test saved · review ${weakTopics.length} topics`,
               );
             }}
           >
-            Submit assessment <Check />
+            Finish test <Check />
           </button>
         )}
       </footer>
@@ -374,7 +374,7 @@ function LightExplanation({ ok, text }: { ok: boolean; text: string }) {
     <p className="answer-explanation">
       {ok ? <CheckCircle2 /> : <CircleAlert />}
       <span>
-        <b>{ok ? "Correct reasoning" : "Explanation"}</b>
+        <b>{ok ? "Why this is correct" : "Explanation"}</b>
         {text}
       </span>
     </p>
@@ -418,11 +418,11 @@ export function CertificatesPage({
       <div className="page certificate-page">
         <section className="page-title no-print">
           <div>
-            <span className="eyebrow teal">YOUR CREDENTIAL</span>
+            <span className="eyebrow teal">YOUR CERTIFICATE</span>
             <h1>Certificate of Completion</h1>
             <p>
-              A local Forge learning credential based on recorded completion and
-              assessment evidence.
+              You earned this certificate by completing the required lessons
+              and passing the test. It is saved in this browser.
             </p>
           </div>
           <button className="primary-button" onClick={() => window.print()}>
@@ -471,10 +471,10 @@ export function CertificatesPage({
       <section className="page-title">
         <div>
           <span className="eyebrow teal">CERTIFICATES</span>
-          <h1>Credentials backed by learning evidence</h1>
+          <h1>Certificates earned from completed work</h1>
           <p>
-            Opening content never earns a certificate. Complete the required
-            learning and pass its assessment.
+            Finish the required lessons and pass the test to earn a
+            certificate.
           </p>
         </div>
       </section>
@@ -495,13 +495,13 @@ export function CertificatesPage({
               lessons: {completed}/{required.length}
             </li>
             <li className={passing ? "done" : ""}>
-              {passing ? <Check /> : <span />} Foundation assessment:{" "}
+              {passing ? <Check /> : <span />} Foundation test:{" "}
               {passing ? `${passing.score}% passed` : "80% required"}
             </li>
           </ul>
         </div>
         <button className="primary-button" disabled={!eligible} onClick={issue}>
-          {eligible ? "Issue certificate" : "Requirements incomplete"}
+          {eligible ? "Get certificate" : "Finish the requirements"}
           <Award />
         </button>
       </article>
