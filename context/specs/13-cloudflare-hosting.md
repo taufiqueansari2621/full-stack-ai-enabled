@@ -31,7 +31,7 @@ local-first learner model or breaking direct workspace URLs.
 - `npx wrangler deploy --dry-run` — accepted 13 production assets.
 - `npm run deploy:cloudflare` — published version
   `01807517-a352-4b47-8108-8124f0a60fce`.
-- Live URL: `https://forge-ai-engineering.valorled-store.workers.dev`.
+- Live URL: `https://forge-ai-engineering.taufiqueansari895.workers.dev`.
 - Root, `/learn`, `/roadmap`, and `/resources` returned HTTP 200.
 - `npm run verify:cloudflare` passed SPA routing, React boot, lazy content,
   focused learning, console-health, and 390px overflow checks.

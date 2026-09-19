@@ -2,7 +2,7 @@ import puppeteer from "puppeteer-core";
 
 const baseUrl =
   process.env.FORGE_DEPLOY_URL ??
-  "https://forge-ai-engineering.valorled-store.workers.dev";
+  "https://forge-ai-engineering.taufiqueansari895.workers.dev";
 const browser = await puppeteer.launch({
   executablePath:
     "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",

@@ -1,5 +1,11 @@
 # Progress Tracker
 
+## 2026-09-19 — Cloudflare account migration
+
+- Moved the live Forge deployment from the Valorled Cloudflare account to `taufiqueansari895@gmail.com`.
+- New live URL: `https://forge-ai-engineering.taufiqueansari895.workers.dev`.
+- New Cloudflare version: `1e9fbfb3-2048-458f-a186-a6080d7f80c6`.
+
 ## 2026-09-19 — Trainable tutor and professional workspace upgrade
 
 - Added a private local RAG-style Forge Tutor over the complete curriculum plus learner-added training sources, with visible grounding and honest out-of-data fallback.
