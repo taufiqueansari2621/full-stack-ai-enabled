@@ -5,6 +5,20 @@ export type AccountUser = {
   username: string;
 };
 
+export type CloudProfile = {
+  fullName: string;
+  username: string;
+  goal: string | null;
+  framework: "react" | "angular" | "both" | null;
+  dailyMinutes: number | null;
+  difficulty: string | null;
+  experience: string | null;
+  target: string | null;
+  diagnosticScore: number | null;
+  recommendedPhase: string | null;
+  onboardingComplete: boolean;
+};
+
 type ApiErrorBody = { error?: { code?: string; message?: string } };
 
 export class ForgeApiError extends Error {
@@ -59,6 +73,20 @@ export const forgeApi = {
       body: JSON.stringify(input),
     }),
   logout: () => request<{ ok: true }>("/api/auth/logout", { method: "POST" }),
+  profile: () => request<{ profile: CloudProfile }>("/api/profile"),
+  saveOnboarding: (input: {
+    goal: string;
+    experience: string;
+    framework: string;
+    dailyMinutes: number;
+    target: string;
+    difficulty: string;
+    diagnosticAnswers: Record<string, string>;
+  }) =>
+    request<{ profile: CloudProfile; plan: Record<string, unknown> }>(
+      "/api/profile",
+      { method: "PUT", body: JSON.stringify(input) },
+    ),
   progress: () =>
     request<{ state: unknown; revision: number; updatedAt: string | null }>(
       "/api/progress",

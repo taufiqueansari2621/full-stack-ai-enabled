@@ -41,6 +41,54 @@ try {
   await page.type('input[type="email"]', email);
   await page.type('input[type="password"]', "account-smoke-password");
   await clickText("Create secure account");
+  await clickText("Full Stack AI Engineer");
+  await clickText("Continue");
+  await clickText("Some Programming Experience");
+  await clickText("Continue");
+  await clickText("React");
+  await clickText("Continue");
+  await clickText("1 hour/day");
+  await clickText("Continue");
+  await clickText("Get my first developer job");
+  await clickText("Continue");
+  const diagnosticAnswers = [
+    "Semantic HTML elements",
+    "The Promise microtask",
+    "Unknown must be narrowed before use",
+    "The server from a verified session",
+    "Faster reads can cost storage and write work",
+    "Measure retrieval and answer quality",
+  ];
+  for (const answer of diagnosticAnswers) {
+    await page.evaluate((label) => {
+      const target = [...document.querySelectorAll("label")].find((item) =>
+        item.textContent?.includes(label),
+      );
+      const input = target?.querySelector("input");
+      if (!(input instanceof HTMLInputElement))
+        throw new Error(`Answer not found: ${label}`);
+      input.click();
+    }, answer);
+  }
+  const buildDisabled = await page.evaluate(() => {
+    const button = [...document.querySelectorAll("button")].find((item) =>
+      item.textContent?.includes("Build my roadmap"),
+    );
+    return button instanceof HTMLButtonElement ? button.disabled : "missing";
+  });
+  if (buildDisabled)
+    throw new Error(`Roadmap action unavailable: ${buildDisabled}`);
+  await clickText("Build my roadmap");
+  try {
+    await clickText("Open my Forge dashboard");
+  } catch (error) {
+    const body = await page.evaluate(() =>
+      document.body.textContent?.slice(0, 1200),
+    );
+    throw new Error(`Roadmap result missing. Page contained: ${body}`, {
+      cause: error,
+    });
+  }
   await page.waitForFunction(
     () => document.body.textContent?.includes("Import my Forge progress"),
     { timeout: 10_000 },
@@ -103,7 +151,7 @@ try {
     throw new Error(`Login after recovery returned ${loginStatus}`);
   if (errors.length) throw new Error(`Browser errors: ${errors.join(" | ")}`);
   console.log(
-    "Account smoke passed: registration UI, recovery, session renewal, explicit local import, cloud progress, and logout authorization.",
+    "Account smoke passed: registration, seven-step onboarding, diagnostic roadmap, recovery, session renewal, explicit local import, cloud progress, and logout authorization.",
   );
 } finally {
   await browser.close();

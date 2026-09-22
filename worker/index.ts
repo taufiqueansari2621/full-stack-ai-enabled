@@ -2,6 +2,7 @@ import { authenticate } from "./auth";
 import { HttpError, apiError, json, type Route } from "./http";
 import { authRoutes } from "./routes/auth";
 import { progressRoutes } from "./routes/progress";
+import { profileRoutes } from "./routes/profile";
 import type { Env } from "./types";
 
 const routes: Route[] = [
@@ -20,6 +21,7 @@ const routes: Route[] = [
   },
   ...authRoutes,
   ...progressRoutes,
+  ...profileRoutes,
 ];
 
 const SECURITY_HEADERS = {

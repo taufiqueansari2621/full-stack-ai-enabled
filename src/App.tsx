@@ -70,6 +70,7 @@ import { useForgeStore, type ForgeStore } from "./useForgeStore";
 import { useLocalProfiles, type LearnerProfile } from "./useLocalProfiles";
 import { useCloudAccount, type CloudAccount } from "./useCloudAccount";
 import { useCloudProgress } from "./useCloudProgress";
+import { Onboarding } from "./Onboarding";
 import { CurriculumLearning } from "./CurriculumLearning";
 import { curriculumLessons } from "./curriculum";
 import {
@@ -2667,11 +2668,13 @@ function LearningWorkspace({
   logout,
   cloudEnabled,
   recoveryCode,
+  cloudFramework,
 }: {
   profile: LearnerProfile;
   logout: () => void;
   cloudEnabled: boolean;
   recoveryCode: string | null;
+  cloudFramework: "react" | "angular" | "both" | null;
 }) {
   const routeIds: NavId[] = [
     "home",
@@ -2712,6 +2715,10 @@ function LearningWorkspace({
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const store = useForgeStore(profile.id);
   const cloud = useCloudProgress(store, cloudEnabled);
+  useEffect(() => {
+    if (cloudFramework && !store.state.frontendFrameworkPath)
+      store.setFrontendFrameworkPath(cloudFramework);
+  }, [cloudFramework, store]);
   const learningFocus = active === "learn" || catalogLearningFocus;
   const notify = (text: string) => {
     const id = Date.now();
@@ -2982,9 +2989,55 @@ export default function App() {
   const account = useCloudAccount();
   const { activeProfile, activateCloudProfile } = profiles;
   useEffect(() => {
-    if (account.user && activeProfile?.id !== account.user.id)
-      activateCloudProfile(account.user);
-  }, [account.user, activeProfile?.id, activateCloudProfile]);
+    if (!account.user) return;
+    const experience = account.profile?.experience;
+    const level: LearnerProfile["level"] =
+      experience === "experienced-developer"
+        ? "Experienced Developer"
+        : experience === "mid-level-developer" ||
+            experience === "junior-developer"
+          ? "Intermediate"
+          : experience === "some-programming"
+            ? "Beginner"
+            : "Complete Beginner";
+    const goalMap: Record<string, LearnerProfile["goal"]> = {
+      "frontend-engineer": "Become Full-Stack Developer",
+      "full-stack-engineer": "Become Full-Stack Developer",
+      "ai-engineer": "Become AI Engineer",
+      "full-stack-ai-engineer": "Become Full-Stack AI Developer",
+      "interview-ready": "Prepare for Development Interviews",
+      "dsa-focus": "Prepare for Development Interviews",
+    };
+    const dailyMap: Record<number, LearnerProfile["dailyGoal"]> = {
+      30: "30 Minutes",
+      60: "1 Hour",
+      120: "2 Hours",
+      180: "3+ Hours",
+    };
+    if (
+      activeProfile?.id !== account.user.id ||
+      account.profile?.onboardingComplete
+    )
+      activateCloudProfile({
+        ...account.user,
+        level,
+        goal:
+          goalMap[account.profile?.goal ?? ""] ??
+          "Become Full-Stack AI Developer",
+        dailyGoal: dailyMap[account.profile?.dailyMinutes ?? 60] ?? "1 Hour",
+      });
+  }, [account.user, account.profile, activeProfile?.id, activateCloudProfile]);
+  if (account.user && !account.profile)
+    return (
+      <main className="profile-gate">
+        <div className="panel profile-card">
+          <span className="eyebrow teal">FORGE CLOUD</span>
+          <h1>Preparing your learning profile…</h1>
+        </div>
+      </main>
+    );
+  if (account.user && account.profile && !account.profile.onboardingComplete)
+    return <Onboarding account={account} />;
   if (!activeProfile)
     return (
       <Welcome
@@ -3004,6 +3057,7 @@ export default function App() {
       }}
       cloudEnabled={account.user?.id === activeProfile.id}
       recoveryCode={account.recoveryCode}
+      cloudFramework={account.profile?.framework ?? null}
     />
   );
 }

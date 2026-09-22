@@ -75,6 +75,8 @@ The Worker now exposes:
 | `POST /api/auth/login`    | Verify credentials and create a session        | Public            |
 | `POST /api/auth/logout`   | Revoke the current session                     | Cookie if present |
 | `GET /api/me`             | Return the authenticated account               | Required          |
+| `GET /api/profile`        | Read onboarding and personalized path settings | Required          |
+| `PUT /api/profile`        | Score the diagnostic and save the learner plan | Required          |
 | `GET /api/progress`       | Read the user's cloud progress snapshot        | Required          |
 | `PUT /api/progress`       | Save progress with revision conflict detection | Required          |
 
@@ -95,6 +97,8 @@ Migration `0001_accounts_and_progress.sql` creates only the tables justified by 
 Foreign keys enforce ownership. User deletion cascades to private records. Emails and usernames are case-insensitively unique. Large project files do not belong in D1 and will use R2 when that unit is built.
 
 The progress snapshot is a deliberate migration bridge, not the final normalized mastery model. It allows safe cross-device synchronization of the existing typed state before individual attempts, review schedules, notes, and evidence are normalized into dedicated tables.
+
+The profile now stores the chosen goal, experience, framework path, schedule, target, difficulty, server-scored diagnostic result, recommended starting phase, and onboarding completion time. Self-reported experience and possible skips remain recommendations; they never create mastery evidence.
 
 ## API Design Rules
 

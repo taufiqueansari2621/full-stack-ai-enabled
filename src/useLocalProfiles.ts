@@ -72,7 +72,14 @@ export function useLocalProfiles() {
   );
 
   const activateCloudProfile = useCallback(
-    (account: { id: string; fullName: string; username: string }) => {
+    (account: {
+      id: string;
+      fullName: string;
+      username: string;
+      level?: LearnerProfile["level"];
+      goal?: LearnerProfile["goal"];
+      dailyGoal?: LearnerProfile["dailyGoal"];
+    }) => {
       setProfiles((current) => {
         const existing = current.find((profile) => profile.id === account.id);
         const profile: LearnerProfile = existing
@@ -80,6 +87,9 @@ export function useLocalProfiles() {
               ...existing,
               fullName: account.fullName,
               username: account.username,
+              ...(account.level ? { level: account.level } : {}),
+              ...(account.goal ? { goal: account.goal } : {}),
+              ...(account.dailyGoal ? { dailyGoal: account.dailyGoal } : {}),
             }
           : {
               id: account.id,
