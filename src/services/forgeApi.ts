@@ -19,6 +19,23 @@ export type CloudProfile = {
   onboardingComplete: boolean;
 };
 
+export type PublicPortfolio = {
+  username: string;
+  fullName: string;
+  published: boolean;
+  about: string;
+  skills: { name: string; evidence: string }[];
+  projects: { id: string; title: string; progress: number; stack: string[] }[];
+  caseStudies: { title: string; summary: string; evidence: string }[];
+  certificates: {
+    credentialId: string;
+    certificateId: string;
+    issuedAt: string;
+    score: number;
+  }[];
+  updatedAt: string;
+};
+
 type ApiErrorBody = { error?: { code?: string; message?: string } };
 
 export class ForgeApiError extends Error {
@@ -164,4 +181,17 @@ export const forgeApi = {
         createdAt: string;
       };
     }>(`/api/workspace-snapshot?id=${encodeURIComponent(id)}`),
+  portfolio: () =>
+    request<{ portfolio: PublicPortfolio | null }>("/api/portfolio"),
+  savePortfolio: (
+    input: Omit<PublicPortfolio, "username" | "fullName" | "updatedAt">,
+  ) =>
+    request<{ portfolio: PublicPortfolio }>("/api/portfolio", {
+      method: "PUT",
+      body: JSON.stringify(input),
+    }),
+  publicPortfolio: (username: string) =>
+    request<{ portfolio: PublicPortfolio }>(
+      `/api/public-profile?username=${encodeURIComponent(username)}`,
+    ),
 };

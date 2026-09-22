@@ -552,11 +552,15 @@ try {
   );
   await clickText("Save evidence");
   const labArtifacts = await page.evaluate(
-    (id) => JSON.parse(localStorage.getItem(`forge-learning-state-v1:${id}`)).labArtifacts,
+    (id) =>
+      JSON.parse(localStorage.getItem(`forge-learning-state-v1:${id}`))
+        .labArtifacts,
     activeProfileId,
   );
   if (labArtifacts.length !== 1 || labArtifacts[0].lab !== "rag")
-    throw new Error(`Advanced lab evidence was not persisted: ${JSON.stringify(labArtifacts)}`);
+    throw new Error(
+      `Advanced lab evidence was not persisted: ${JSON.stringify(labArtifacts)}`,
+    );
 
   await clickText("AI Help");
   await expectText("Train your tutor");
@@ -760,6 +764,7 @@ try {
     "Quizzes",
     "Projects",
     "Advanced Labs",
+    "Portfolio",
     "Interview Prep",
     "My Notes",
     "Review",
@@ -822,7 +827,7 @@ try {
 
   if (errors.length) throw new Error(`Browser errors: ${errors.join(" | ")}`);
   console.log(
-    "Smoke test passed: four advanced engineering labs, saved lab evidence, evidence-based mastery, weak-signal spaced reviews, focused learning shell, unique npm chapters, saved interactive examples, named icon controls, project action icons, course-topic controls, framework paths, learning resources, topic practice, persistence, quizzes, certificates, plain-English checks, 84 primary responsive checks, and six focused lesson viewport checks.",
+    "Smoke test passed: opt-in portfolio preview, four advanced engineering labs, saved lab evidence, evidence-based mastery, weak-signal spaced reviews, focused learning shell, unique npm chapters, saved interactive examples, named icon controls, project action icons, course-topic controls, framework paths, learning resources, topic practice, persistence, quizzes, certificates, plain-English checks, 90 primary responsive checks, and six focused lesson viewport checks.",
   );
 } finally {
   await browser.close();

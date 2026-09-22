@@ -206,12 +206,36 @@ try {
       (document.querySelector(".ai-response p")?.textContent?.length ?? 0) > 20,
     { timeout: 30_000 },
   );
+  await clickText("Portfolio");
+  await page.type(
+    ".portfolio-editor textarea",
+    "I build accessible full-stack learning products and verify decisions with tests, evidence, and production feedback.",
+  );
+  await clickText("Publish profile");
+  await page.waitForFunction(
+    () => document.body.textContent?.includes("View public profile"),
+    { timeout: 10_000 },
+  );
+  const publicPortfolioStatus = await page.evaluate(
+    async (name) =>
+      (await fetch(`/api/public-profile?username=${encodeURIComponent(name)}`))
+        .status,
+    username,
+  );
+  if (publicPortfolioStatus !== 200)
+    throw new Error(`Public portfolio returned ${publicPortfolioStatus}`);
   const recoveryResult = await page.evaluate(
-    async ({ accountEmail, code }) => {
+    async ({ accountEmail, accountUsername, code }) => {
       await fetch("/api/auth/logout", { method: "POST" });
       const unauthorized = (await fetch("/api/progress")).status;
       const snapshotsUnauthorized = (await fetch("/api/workspace-snapshots"))
         .status;
+      const portfolioUnauthorized = (await fetch("/api/portfolio")).status;
+      const publicStatus = (
+        await fetch(
+          `/api/public-profile?username=${encodeURIComponent(accountUsername)}`,
+        )
+      ).status;
       const response = await fetch("/api/auth/recover", {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -225,11 +249,13 @@ try {
       return {
         unauthorized,
         snapshotsUnauthorized,
+        portfolioUnauthorized,
+        publicStatus,
         status: response.status,
         nextCode: body.recoveryCode,
       };
     },
-    { accountEmail: email, code: recoveryCode },
+    { accountEmail: email, accountUsername: username, code: recoveryCode },
   );
   if (recoveryResult.unauthorized !== 401)
     throw new Error(
@@ -238,6 +264,13 @@ try {
   if (recoveryResult.snapshotsUnauthorized !== 401)
     throw new Error(
       `Expected snapshot 401 after logout, received ${recoveryResult.snapshotsUnauthorized}`,
+    );
+  if (
+    recoveryResult.portfolioUnauthorized !== 401 ||
+    recoveryResult.publicStatus !== 200
+  )
+    throw new Error(
+      `Portfolio authorization failed: ${JSON.stringify(recoveryResult)}`,
     );
   if (recoveryResult.status !== 200 || !recoveryResult.nextCode)
     throw new Error(`Account recovery failed with ${recoveryResult.status}`);
@@ -254,9 +287,23 @@ try {
   }, email);
   if (loginStatus !== 200)
     throw new Error(`Login after recovery returned ${loginStatus}`);
+  const unpublish = await page.evaluate(async (name) => {
+    const portfolio = (await (await fetch("/api/portfolio")).json()).portfolio;
+    const saved = await fetch("/api/portfolio", {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ ...portfolio, published: false }),
+    });
+    const publicStatus = (
+      await fetch(`/api/public-profile?username=${encodeURIComponent(name)}`)
+    ).status;
+    return { saved: saved.status, publicStatus };
+  }, username);
+  if (unpublish.saved !== 200 || unpublish.publicStatus !== 404)
+    throw new Error(`Portfolio unpublish failed: ${JSON.stringify(unpublish)}`);
   if (errors.length) throw new Error(`Browser errors: ${errors.join(" | ")}`);
   console.log(
-    "Account smoke passed: registration, onboarding, diagnostic roadmap, isolated code tests, workspace cloud save and snapshots, Forge AI, recovery, progress sync, and authorization.",
+    "Account smoke passed: registration, onboarding, diagnostic roadmap, isolated code tests, workspace snapshots, Forge AI, opt-in public portfolio, unpublish privacy, recovery, progress sync, and authorization.",
   );
 } finally {
   await browser.close();

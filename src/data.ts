@@ -8,6 +8,7 @@ export type NavId =
   | "projects"
   | "workspace"
   | "labs"
+  | "portfolio"
   | "interview"
   | "knowledge"
   | "reviews"

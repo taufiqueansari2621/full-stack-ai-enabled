@@ -22,6 +22,7 @@ import {
   Flame,
   FlaskConical,
   FolderKanban,
+  IdCard,
   Gauge,
   Home,
   Layers3,
@@ -86,6 +87,12 @@ import { CertificatesPage, QuizzesPage } from "./Assessments";
 const ResourcesPage = lazy(() => import("./ResourcesPage"));
 const Workspace = lazy(() => import("./Workspace"));
 const AdvancedLabs = lazy(() => import("./AdvancedLabs"));
+const Portfolio = lazy(() =>
+  import("./Portfolio").then((module) => ({ default: module.Portfolio })),
+);
+const PublicProfile = lazy(() =>
+  import("./Portfolio").then((module) => ({ default: module.PublicProfile })),
+);
 const CatalogTopicLesson = lazy(() =>
   import("./CatalogTopicLesson").then((module) => ({
     default: module.CatalogTopicLesson,
@@ -102,6 +109,7 @@ const navItems: { id: NavId; label: string; icon: typeof Home }[] = [
   { id: "projects", label: "Projects", icon: FolderKanban },
   { id: "workspace", label: "Workspace", icon: Code2 },
   { id: "labs", label: "Advanced Labs", icon: FlaskConical },
+  { id: "portfolio", label: "Portfolio", icon: IdCard },
   { id: "interview", label: "Interview Prep", icon: BriefcaseBusiness },
   { id: "knowledge", label: "My Notes", icon: BrainCircuit },
   { id: "reviews", label: "Review", icon: TimerReset },
@@ -2690,6 +2698,7 @@ function LearningWorkspace({
     "projects",
     "workspace",
     "labs",
+    "portfolio",
     "interview",
     "knowledge",
     "reviews",
@@ -2846,6 +2855,16 @@ function LearningWorkspace({
         }
       >
         <AdvancedLabs store={store} notify={notify} />
+      </Suspense>
+    );
+  else if (active === "portfolio")
+    view = (
+      <Suspense
+        fallback={
+          <div className="page loading-page panel">Opening portfolio…</div>
+        }
+      >
+        <Portfolio store={store} cloudEnabled={cloudEnabled} notify={notify} />
       </Suspense>
     );
   else if (active === "interview")
@@ -3028,6 +3047,9 @@ function LearningWorkspace({
 }
 
 export default function App() {
+  const publicMatch = window.location.pathname.match(
+    /^\/u\/([a-zA-Z0-9_]{3,30})\/?$/,
+  );
   const profiles = useLocalProfiles();
   const account = useCloudAccount();
   const { activeProfile, activateCloudProfile } = profiles;
@@ -3070,6 +3092,16 @@ export default function App() {
         dailyGoal: dailyMap[account.profile?.dailyMinutes ?? 60] ?? "1 Hour",
       });
   }, [account.user, account.profile, activeProfile?.id, activateCloudProfile]);
+  if (publicMatch)
+    return (
+      <Suspense
+        fallback={
+          <main className="public-profile-shell">Loading public profile…</main>
+        }
+      >
+        <PublicProfile username={publicMatch[1]} />
+      </Suspense>
+    );
   if (account.user && !account.profile)
     return (
       <main className="profile-gate">

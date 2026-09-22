@@ -1,0 +1,118 @@
+.portfolio-page {
+  display: grid;
+  gap: 18px;
+}
+.portfolio-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(340px, 0.9fr);
+  gap: 18px;
+}
+.portfolio-editor,
+.portfolio-preview {
+  padding: 22px;
+}
+.portfolio-editor {
+  display: grid;
+  align-content: start;
+  gap: 18px;
+}
+.portfolio-editor label {
+  display: grid;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+.portfolio-editor textarea {
+  min-height: 180px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  color: var(--text);
+  background: var(--panel-2);
+  resize: vertical;
+}
+.portfolio-counts,
+.portfolio-actions {
+  display: flex;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+.portfolio-counts span,
+.portfolio-skills span {
+  display: flex;
+  gap: 6px;
+  padding: 9px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel-2);
+}
+.portfolio-counts svg {
+  width: 15px;
+}
+.portfolio-preview {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+}
+.portfolio-preview h1,
+.portfolio-preview h2,
+.portfolio-preview p {
+  margin: 0;
+}
+.portfolio-preview h2 {
+  margin-top: 12px;
+  font-size: 15px;
+}
+.portfolio-preview p,
+.portfolio-project span,
+.portfolio-skills small {
+  color: var(--muted);
+  line-height: 1.6;
+}
+.portfolio-skills {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+.portfolio-skills span {
+  display: grid;
+}
+.portfolio-project {
+  display: grid;
+  gap: 3px;
+  padding: 11px;
+  border-left: 3px solid var(--teal);
+  background: var(--panel-2);
+}
+.portfolio-privacy {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  color: var(--amber);
+}
+.portfolio-privacy p {
+  margin: 3px 0 0;
+  color: var(--muted);
+}
+.public-profile-shell {
+  min-height: 100vh;
+  padding: 36px max(20px, calc((100vw - 920px) / 2));
+  background: var(--bg);
+}
+.public-brand {
+  display: inline-block;
+  margin-bottom: 20px;
+  color: var(--teal);
+  font: 800 18px Manrope;
+  text-decoration: none;
+}
+.public-profile-state {
+  padding: 40px;
+  text-align: center;
+}
+@media (max-width: 850px) {
+  .portfolio-layout {
+    grid-template-columns: 1fr;
+  }
+}

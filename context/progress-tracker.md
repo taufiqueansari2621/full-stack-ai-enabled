@@ -61,6 +61,9 @@ Update this file after every meaningful verified implementation change.
 - Added a system-design canvas with twelve production components and ordered connections, an in-browser SQL schema/query/results challenge, and a RAG pipeline explorer showing chunks, retrieved context, token estimates, and grounding quality.
 - Added learner-scoped lab evidence with update-without-duplication behavior, XP/time credit, local and authenticated cloud-sync compatibility, mastery evidence integration, reset coverage, and responsive verification across all four labs.
 - Deployed Advanced Labs as Cloudflare Worker version `1a973791-8598-451d-8eda-cb7307d16838`; the exact live artifact passed SPA routing, console-health, focused-learning, and 390px overflow verification.
+- Added a lazy Portfolio workspace that gathers visible project milestones, challenge results, advanced-lab case studies, skill evidence, and earned certificates into an editable preview without exposing private notes, source code, progress records, or AI conversations.
+- Added authenticated D1 portfolio drafts and explicit publish/unpublish controls. Public `/u/:username` profiles read only the bounded published projection; usernames come from the authenticated server profile and unpublished or unknown profiles return 404.
+- Added lifecycle coverage for opt-in publishing, anonymous reads, authenticated draft denial after logout, continued visibility while published, and immediate public removal after unpublishing; responsive coverage now includes 90 primary workspace combinations.
 - Deployed the account and cloud-sync release as Cloudflare Worker version `cf899c43-ce1d-4144-a8cf-dcfa6de08945`; the complete account lifecycle and existing responsive learner experience pass against production D1 and Workers.
 
 - Created and published the 52-week curriculum and 34-project ladder.
