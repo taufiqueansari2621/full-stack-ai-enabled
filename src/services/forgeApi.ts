@@ -115,4 +115,18 @@ export const forgeApi = {
         body: JSON.stringify({ files, activePath, revision }),
       },
     ),
+  askAi: (input: {
+    mode: string;
+    message: string;
+    level: number;
+    context: Record<string, unknown>;
+  }) =>
+    request<{
+      conversationId: string;
+      response: string;
+      provider: string;
+      model: string;
+      contextIncluded: string[];
+      actions: string[];
+    }>("/api/ai", { method: "POST", body: JSON.stringify(input) }),
 };

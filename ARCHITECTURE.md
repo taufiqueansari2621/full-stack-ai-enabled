@@ -81,6 +81,7 @@ The Worker now exposes:
 | `PUT /api/progress`       | Save progress with revision conflict detection | Required          |
 | `GET /api/workspaces/default` | Read the learner's browser workspace       | Required          |
 | `PUT /api/workspaces/default` | Save bounded text files with revision checks | Required       |
+| `POST /api/ai`            | Generate a rate-limited contextual tutor response | Required      |
 
 This API is intentionally not wired into the current UI yet. The existing local experience remains authoritative until registration, login, import consent, offline behavior, and conflict handling form one tested vertical slice.
 
@@ -131,6 +132,8 @@ UI features will call a typed Forge AI service, never a model SDK. The Worker ga
 The client must preview which lesson, file, error, or project context will be sent. Unrelated files and notes are excluded by default. AI may propose hints or evidence, but deterministic domain services decide persisted progress and eligibility.
 
 The teaching policy escalates through guiding question, concept hint, likely problem location, pseudocode, and partial implementation. A full solution requires deliberate learner action.
+
+The first hosted provider implements this interface with a server-side Cloudflare Workers AI binding and `@cf/meta/llama-3.1-8b-instruct-fast`. Requests require an authenticated session, same-origin mutation, a validated teaching mode, an explicit hint level, and bounded context. The workspace clearly lists whether the active file, challenge, and current error will be sent. The API stores conversations, messages, context labels (not undisclosed files), model usage, character counts, and latency in D1. A D1 rate limit caps each learner at 20 requests per hour. Provider choice stays inside `worker/ai/`, so the UI and API contract do not depend on a model SDK.
 
 ## Code-Runner Architecture
 

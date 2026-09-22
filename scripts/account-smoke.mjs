@@ -165,6 +165,15 @@ try {
     },
     { timeout: 10_000 },
   );
+  await page.type(
+    'textarea[aria-label="Ask Forge AI"]',
+    "Give me one guiding question about why zero is a useful starting total.",
+  );
+  await clickText("Ask Forge AI");
+  await page.waitForFunction(
+    () => (document.querySelector(".ai-response p")?.textContent?.length ?? 0) > 20,
+    { timeout: 30_000 },
+  );
   const recoveryResult = await page.evaluate(
     async ({ accountEmail, code }) => {
       await fetch("/api/auth/logout", { method: "POST" });
@@ -208,7 +217,7 @@ try {
     throw new Error(`Login after recovery returned ${loginStatus}`);
   if (errors.length) throw new Error(`Browser errors: ${errors.join(" | ")}`);
   console.log(
-    "Account smoke passed: registration, onboarding, diagnostic roadmap, isolated code tests, workspace cloud save, recovery, progress sync, and authorization.",
+    "Account smoke passed: registration, onboarding, diagnostic roadmap, isolated code tests, workspace cloud save, Forge AI, recovery, progress sync, and authorization.",
   );
 } finally {
   await browser.close();

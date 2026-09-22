@@ -18,6 +18,13 @@ export interface Env {
   ASSETS: { fetch(request: Request): Promise<Response> };
   ENVIRONMENT?: string;
   REGISTRATION_MODE?: string;
+  AI: {
+    run(
+      model: string,
+      input: Record<string, unknown>,
+      options?: Record<string, unknown>,
+    ): Promise<unknown>;
+  };
 }
 
 export type AuthUser = {

@@ -4,6 +4,7 @@ import { authRoutes } from "./routes/auth";
 import { progressRoutes } from "./routes/progress";
 import { profileRoutes } from "./routes/profile";
 import { workspaceRoutes } from "./routes/workspace";
+import { aiRoutes } from "./routes/ai";
 import type { Env } from "./types";
 
 const routes: Route[] = [
@@ -24,6 +25,7 @@ const routes: Route[] = [
   ...progressRoutes,
   ...profileRoutes,
   ...workspaceRoutes,
+  ...aiRoutes,
 ];
 
 const SECURITY_HEADERS = {

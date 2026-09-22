@@ -177,6 +177,13 @@ export function Workspace({
   >("local");
   const revision = useRef(0);
   const [hydrated, setHydrated] = useState(!cloudEnabled);
+  const [aiMode, setAiMode] = useState("hint");
+  const [aiLevel, setAiLevel] = useState(1);
+  const [aiQuestion, setAiQuestion] = useState("");
+  const [includeActiveFile, setIncludeActiveFile] = useState(true);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiResponse, setAiResponse] = useState<string | null>(null);
+  const [aiError, setAiError] = useState<string | null>(null);
   const activeContent = files[activePath] ?? "";
 
   useEffect(() => {
@@ -250,6 +257,33 @@ export function Workspace({
     link.download = "forge-workspace.json";
     link.click();
     URL.revokeObjectURL(url);
+  };
+  const askForgeAi = async () => {
+    if (!cloudEnabled || aiQuestion.trim().length < 2) return;
+    setAiLoading(true);
+    setAiError(null);
+    try {
+      const answer = await forgeApi.askAi({
+        mode: aiMode,
+        message: aiQuestion.trim(),
+        level: aiLevel,
+        context: {
+          challenge:
+            "Implement sum(numbers) so positive, negative, and empty arrays pass.",
+          ...(result?.error ? { error: result.error } : {}),
+          ...(includeActiveFile
+            ? { activeFile: { path: activePath, content: activeContent } }
+            : {}),
+        },
+      });
+      setAiResponse(answer.response);
+    } catch (reason) {
+      setAiError(
+        reason instanceof Error ? reason.message : "Forge AI is unavailable.",
+      );
+    } finally {
+      setAiLoading(false);
+    }
   };
 
   return (
@@ -374,16 +408,85 @@ export function Workspace({
           </span>
           <h2>Ask without losing the learning</h2>
           <p>
-            Forge can see only the active challenge and file when you
-            deliberately ask.
+            Forge receives only the context listed below when you deliberately
+            ask.
           </p>
-          <button disabled>Explain this file</button>
-          <button disabled>Review my approach</button>
-          <button disabled>Give a debugging hint</button>
+          <label className="ai-field">
+            Teaching mode
+            <select
+              value={aiMode}
+              onChange={(event) => setAiMode(event.target.value)}
+            >
+              <option value="hint">Hint</option>
+              <option value="debug">Debug</option>
+              <option value="review-code">Review code</option>
+              <option value="explain">Explain</option>
+              <option value="quiz-me">Quiz me</option>
+            </select>
+          </label>
+          <label className="ai-field">
+            Hint level {aiLevel}
+            <input
+              type="range"
+              min="1"
+              max="5"
+              value={aiLevel}
+              onChange={(event) => setAiLevel(Number(event.target.value))}
+            />
+          </label>
+          <label className="ai-context-choice">
+            <input
+              type="checkbox"
+              checked={includeActiveFile}
+              onChange={(event) => setIncludeActiveFile(event.target.checked)}
+            />
+            Include active file: <code>{activePath}</code>
+          </label>
           <small>
-            AI connection arrives in the dedicated gateway phase. No code is
-            uploaded silently.
+            Always included: challenge title
+            {result?.error ? " and current error" : ""}. No other files or notes
+            are sent.
           </small>
+          <textarea
+            aria-label="Ask Forge AI"
+            placeholder="Why are my tests failing?"
+            value={aiQuestion}
+            onChange={(event) => setAiQuestion(event.target.value)}
+          />
+          <button
+            className="ask-ai-button"
+            disabled={
+              !cloudEnabled || aiLoading || aiQuestion.trim().length < 2
+            }
+            onClick={() => void askForgeAi()}
+          >
+            <Sparkles />
+            {aiLoading
+              ? "Thinking…"
+              : cloudEnabled
+                ? "Ask Forge AI"
+                : "Sign in to use Forge AI"}
+          </button>
+          {aiError && (
+            <p className="ai-error" role="alert">
+              {aiError}
+            </p>
+          )}
+          {aiResponse && (
+            <div className="ai-response" aria-live="polite">
+              <b>Forge AI</b>
+              <p>{aiResponse}</p>
+              <div>
+                <button onClick={() => setAiMode("explain-simply")}>
+                  Explain simpler
+                </button>
+                <button onClick={() => setAiMode("explain-deeply")}>
+                  Go deeper
+                </button>
+                <button onClick={() => setAiMode("quiz-me")}>Quiz me</button>
+              </div>
+            </div>
+          )}
         </aside>
         <div className="workspace-bottom">
           <div className="bottom-tabs">
