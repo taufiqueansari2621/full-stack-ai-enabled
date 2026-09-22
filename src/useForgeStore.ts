@@ -97,6 +97,14 @@ export type ReviewRecord = {
   updatedAt: string;
 };
 
+export type LabArtifact = {
+  id: string;
+  lab: "dsa" | "system-design" | "sql" | "rag";
+  exerciseId: string;
+  evidence: string;
+  updatedAt: string;
+};
+
 export type ForgeState = {
   version: 1;
   xp: number;
@@ -112,6 +120,7 @@ export type ForgeState = {
   topicPracticeArtifacts: TopicPracticeArtifact[];
   exampleLabRecords: ExampleLabRecord[];
   reviewSchedule: ReviewRecord[];
+  labArtifacts: LabArtifact[];
   frontendFrameworkPath: "react" | "angular" | "both" | null;
   activityDates: string[];
   weeklyGoalMinutes: number;
@@ -167,6 +176,7 @@ const createInitialState = (): ForgeState => ({
   topicPracticeArtifacts: [],
   exampleLabRecords: [],
   reviewSchedule: [],
+  labArtifacts: [],
   frontendFrameworkPath: null,
   activityDates: [],
   weeklyGoalMinutes: 450,
@@ -236,6 +246,9 @@ function loadState(learnerId: string): ForgeState {
         : [],
       reviewSchedule: Array.isArray(candidate.reviewSchedule)
         ? candidate.reviewSchedule
+        : [],
+      labArtifacts: Array.isArray(candidate.labArtifacts)
+        ? candidate.labArtifacts
         : [],
       frontendFrameworkPath:
         candidate.frontendFrameworkPath === "react" ||
@@ -519,6 +532,35 @@ export function useForgeStore(learnerId: string) {
     [touchActivity],
   );
 
+  const saveLabArtifact = useCallback(
+    (artifact: Omit<LabArtifact, "id" | "updatedAt">) =>
+      setState((current) => {
+        const existing = current.labArtifacts.find(
+          (item) =>
+            item.lab === artifact.lab &&
+            item.exerciseId === artifact.exerciseId,
+        );
+        return touchActivity({
+          ...current,
+          xp: current.xp + (existing ? 0 : 40),
+          learnedMinutes: current.learnedMinutes + (existing ? 3 : 12),
+          labArtifacts: [
+            ...current.labArtifacts.filter(
+              (item) =>
+                item.lab !== artifact.lab ||
+                item.exerciseId !== artifact.exerciseId,
+            ),
+            {
+              ...artifact,
+              id: existing?.id ?? newId(),
+              updatedAt: new Date().toISOString(),
+            },
+          ].slice(-200),
+        });
+      }),
+    [touchActivity],
+  );
+
   const saveTopicPracticeArtifact = useCallback(
     (artifact: Omit<TopicPracticeArtifact, "id" | "updatedAt">) =>
       setState((current) => {
@@ -598,6 +640,9 @@ export function useForgeStore(learnerId: string) {
         ...nextState,
         reviewSchedule: Array.isArray(nextState.reviewSchedule)
           ? nextState.reviewSchedule
+          : [],
+        labArtifacts: Array.isArray(nextState.labArtifacts)
+          ? nextState.labArtifacts
           : [],
       });
   }, []);
@@ -680,6 +725,7 @@ export function useForgeStore(learnerId: string) {
     earnCertificate,
     saveMasteryArtifact,
     rateReview,
+    saveLabArtifact,
     saveTopicPracticeArtifact,
     saveExampleLabRecord,
     setFrontendFrameworkPath,

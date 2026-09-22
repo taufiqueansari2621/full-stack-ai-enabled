@@ -7,6 +7,7 @@ export type NavId =
   | "quizzes"
   | "projects"
   | "workspace"
+  | "labs"
   | "interview"
   | "knowledge"
   | "reviews"

@@ -57,6 +57,9 @@ Update this file after every meaningful verified implementation change.
 - Added a real spaced-review schedule to learner state: incorrect coding answers, weak quiz topics, and low interview results become due work; Again, Hard, Good, and Easy recall ratings calculate the next interval and persist through local and authenticated cloud progress.
 - Added backward-compatible cloud hydration for older progress snapshots, a due-now review queue, upcoming-review feedback, optional practice links, responsive recall controls, and browser coverage for creation, rescheduling, profile restoration, and reset.
 - Deployed evidence mastery and spaced reviews as Cloudflare Worker version `6fb88920-ab68-4eed-b14a-67495171f96e`; both the live responsive audit and authenticated account/cloud-sync lifecycle pass against the exact release.
+- Added a lazy Advanced Labs workspace with step-driven array sorting, binary search, BFS, and recursion visualizations; visible operation, step, time, and space state; and reusable previous/next/reset controls.
+- Added a system-design canvas with twelve production components and ordered connections, an in-browser SQL schema/query/results challenge, and a RAG pipeline explorer showing chunks, retrieved context, token estimates, and grounding quality.
+- Added learner-scoped lab evidence with update-without-duplication behavior, XP/time credit, local and authenticated cloud-sync compatibility, mastery evidence integration, reset coverage, and responsive verification across all four labs.
 - Deployed the account and cloud-sync release as Cloudflare Worker version `cf899c43-ce1d-4144-a8cf-dcfa6de08945`; the complete account lifecycle and existing responsive learner experience pass against production D1 and Workers.
 
 - Created and published the 52-week curriculum and 34-project ladder.

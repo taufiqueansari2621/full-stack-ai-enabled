@@ -16,6 +16,7 @@ export type MasteryEvidence = {
   interviews: number;
   reviews: number;
   artifacts: number;
+  labs: number;
   overdueReviews: number;
 };
 
@@ -35,6 +36,7 @@ export function masteryEvidence(
     interviews: state.interviewResults.length,
     reviews: state.reviewSchedule.filter((item) => item.streak > 0).length,
     artifacts: state.masteryArtifacts.length,
+    labs: state.labArtifacts.length,
     overdueReviews: state.reviewSchedule.filter(
       (item) => new Date(item.nextReviewAt).getTime() <= now.getTime(),
     ).length,
@@ -51,7 +53,8 @@ export function masteryState(evidence: MasteryEvidence): MasteryState {
     evidence.reviews >= 2
   )
     return "Strong";
-  if (evidence.projects > 0 || evidence.artifacts >= 3) return "Applied";
+  if (evidence.projects > 0 || evidence.labs > 0 || evidence.artifacts >= 3)
+    return "Applied";
   if (evidence.practiceAttempts > 0 || evidence.artifacts > 0)
     return "Practicing";
   if (evidence.lessons > 0) return "Learning";
@@ -65,6 +68,7 @@ export function evidenceProgress(evidence: MasteryEvidence) {
     evidence.correctPractice >= 3,
     evidence.artifacts >= 3,
     evidence.projects > 0,
+    evidence.labs > 0,
     evidence.interviews > 0,
     evidence.reviews > 0,
   ];

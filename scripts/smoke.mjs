@@ -534,6 +534,30 @@ try {
   await expectText("1/11 saved locally");
   await clickText("All projects");
 
+  await clickText("Advanced Labs");
+  await expectText("Advanced engineering");
+  await clickText("Next");
+  await expectText("Compare 7 and 2");
+  await clickText("System Design");
+  await clickText("+ Cache");
+  await expectText("Clear canvas");
+  await clickText("SQL");
+  await clickText("Run query");
+  await expectText("Ada");
+  await clickText("RAG");
+  await expectText("Pipeline telemetry");
+  await page.type(
+    ".lab-evidence textarea",
+    "The retrieved context stayed grounded, and an empty retrieval must produce an insufficient-context response.",
+  );
+  await clickText("Save evidence");
+  const labArtifacts = await page.evaluate(
+    (id) => JSON.parse(localStorage.getItem(`forge-learning-state-v1:${id}`)).labArtifacts,
+    activeProfileId,
+  );
+  if (labArtifacts.length !== 1 || labArtifacts[0].lab !== "rag")
+    throw new Error(`Advanced lab evidence was not persisted: ${JSON.stringify(labArtifacts)}`);
+
   await clickText("AI Help");
   await expectText("Train your tutor");
   await clickText("Train your tutor");
@@ -717,6 +741,7 @@ try {
     resetState.topicPracticeArtifacts.length ||
     resetState.exampleLabRecords.length ||
     resetState.reviewSchedule.length ||
+    resetState.labArtifacts.length ||
     resetState.interviewResults.length ||
     resetState.quizResults.length ||
     resetState.certificates.length ||
@@ -734,6 +759,7 @@ try {
     "Practice",
     "Quizzes",
     "Projects",
+    "Advanced Labs",
     "Interview Prep",
     "My Notes",
     "Review",
@@ -796,7 +822,7 @@ try {
 
   if (errors.length) throw new Error(`Browser errors: ${errors.join(" | ")}`);
   console.log(
-    "Smoke test passed: evidence-based mastery, weak-signal spaced reviews, focused learning shell, unique npm chapters, saved interactive examples, named icon controls, project action icons, course-topic controls, framework paths, learning resources, topic practice, persistence, quizzes, certificates, plain-English checks, 78 primary responsive checks, and six focused lesson viewport checks.",
+    "Smoke test passed: four advanced engineering labs, saved lab evidence, evidence-based mastery, weak-signal spaced reviews, focused learning shell, unique npm chapters, saved interactive examples, named icon controls, project action icons, course-topic controls, framework paths, learning resources, topic practice, persistence, quizzes, certificates, plain-English checks, 84 primary responsive checks, and six focused lesson viewport checks.",
   );
 } finally {
   await browser.close();

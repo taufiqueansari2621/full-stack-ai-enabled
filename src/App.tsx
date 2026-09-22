@@ -20,6 +20,7 @@ import {
   Code2,
   Command,
   Flame,
+  FlaskConical,
   FolderKanban,
   Gauge,
   Home,
@@ -84,6 +85,7 @@ import { CertificatesPage, QuizzesPage } from "./Assessments";
 
 const ResourcesPage = lazy(() => import("./ResourcesPage"));
 const Workspace = lazy(() => import("./Workspace"));
+const AdvancedLabs = lazy(() => import("./AdvancedLabs"));
 const CatalogTopicLesson = lazy(() =>
   import("./CatalogTopicLesson").then((module) => ({
     default: module.CatalogTopicLesson,
@@ -99,6 +101,7 @@ const navItems: { id: NavId; label: string; icon: typeof Home }[] = [
   { id: "quizzes", label: "Quizzes", icon: CircleHelp },
   { id: "projects", label: "Projects", icon: FolderKanban },
   { id: "workspace", label: "Workspace", icon: Code2 },
+  { id: "labs", label: "Advanced Labs", icon: FlaskConical },
   { id: "interview", label: "Interview Prep", icon: BriefcaseBusiness },
   { id: "knowledge", label: "My Notes", icon: BrainCircuit },
   { id: "reviews", label: "Review", icon: TimerReset },
@@ -2686,6 +2689,7 @@ function LearningWorkspace({
     "quizzes",
     "projects",
     "workspace",
+    "labs",
     "interview",
     "knowledge",
     "reviews",
@@ -2832,6 +2836,16 @@ function LearningWorkspace({
           cloudEnabled={cloudEnabled}
           projectContext={workspaceProject}
         />
+      </Suspense>
+    );
+  else if (active === "labs")
+    view = (
+      <Suspense
+        fallback={
+          <div className="page loading-page panel">Opening advanced labs…</div>
+        }
+      >
+        <AdvancedLabs store={store} notify={notify} />
       </Suspense>
     );
   else if (active === "interview")

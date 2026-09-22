@@ -1,0 +1,112 @@
+.advanced-labs {
+  display: grid;
+  gap: 18px;
+}
+.lab-tabs {
+  display: flex;
+  gap: 8px;
+  overflow: auto;
+}
+.lab-tabs button,
+.lab-controls button,
+.advanced-labs .lab-grid button {
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--text);
+  background: var(--panel-2);
+}
+.lab-tabs button.active {
+  color: var(--teal);
+  border-color: var(--teal);
+}
+.lab-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(220px, 1fr);
+  gap: 22px;
+  padding: 22px;
+}
+.lab-grid > div,
+.lab-grid aside,
+.lab-evidence {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+}
+.lab-grid aside {
+  padding: 18px;
+  border-left: 1px solid var(--line);
+  color: var(--muted);
+}
+.lab-grid label {
+  display: grid;
+  gap: 7px;
+}
+.lab-grid select,
+.lab-grid input,
+.lab-grid textarea,
+.lab-evidence textarea {
+  padding: 11px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--text);
+  background: #07101c;
+}
+.dsa-state {
+  display: grid;
+  place-items: center;
+  min-height: 170px;
+  border: 1px dashed var(--teal);
+  border-radius: 12px;
+  font: 700 18px monospace;
+}
+.lab-controls,
+.component-palette,
+.design-flow,
+.rag-flow {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.design-flow span,
+.rag-flow span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel-2);
+}
+.query-editor {
+  min-height: 130px;
+  font-family: monospace;
+}
+.lab-grid table {
+  border-collapse: collapse;
+}
+.lab-grid th,
+.lab-grid td {
+  padding: 8px;
+  border: 1px solid var(--line);
+  text-align: left;
+}
+.lab-evidence {
+  grid-template-columns: 1fr 1.5fr auto;
+  align-items: end;
+  padding: 20px;
+}
+.lab-evidence textarea {
+  min-height: 100px;
+}
+@media (max-width: 800px) {
+  .lab-grid,
+  .lab-evidence {
+    grid-template-columns: 1fr;
+  }
+  .lab-grid aside {
+    border-left: 0;
+    border-top: 1px solid var(--line);
+  }
+}
