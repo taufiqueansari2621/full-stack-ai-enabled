@@ -15,6 +15,7 @@ import {
   verifyPassword,
 } from "../security";
 import type { AuthUser, Env } from "../types";
+import { enforceRateLimit } from "../rateLimit";
 
 type UserRow = AuthUser & { passwordHash: string; passwordSalt: string };
 
@@ -56,6 +57,7 @@ export const authRoutes: Route[] = [
       const fullName = field(body.fullName);
       const username = field(body.username).toLowerCase();
       const password = typeof body.password === "string" ? body.password : "";
+      await enforceRateLimit(env, request, "register", email, 3, 60 * 60);
       if (!EMAIL.test(email) || email.length > 254)
         throw new HttpError(
           400,
@@ -111,10 +113,71 @@ export const authRoutes: Route[] = [
           .run();
         throw error;
       }
+      const recoveryCode = randomToken(24);
+      await env.DB.prepare(
+        "INSERT INTO recovery_codes (id, user_id, code_hash, created_at) VALUES (?, ?, ?, ?)",
+      )
+        .bind(crypto.randomUUID(), userId, await sha256(recoveryCode), now)
+        .run();
       const cookie = await createSession(env, userId, request);
-      return json({ user: { id: userId, email, fullName, username } }, 201, {
-        "set-cookie": cookie,
-      });
+      return json(
+        { user: { id: userId, email, fullName, username }, recoveryCode },
+        201,
+        { "set-cookie": cookie },
+      );
+    },
+  },
+  {
+    method: "POST",
+    pattern: "/api/auth/recover",
+    async handler({ request, env }) {
+      assertSameOrigin(request);
+      const body = await readJsonObject(request);
+      const email = field(body.email).toLowerCase();
+      const recoveryCode = field(body.recoveryCode);
+      const password = typeof body.password === "string" ? body.password : "";
+      await enforceRateLimit(env, request, "recover", email, 5, 60 * 60);
+      if (password.length < 10 || password.length > 128)
+        throw new HttpError(
+          400,
+          "WEAK_PASSWORD",
+          "Password must be between 10 and 128 characters.",
+        );
+      const record = await env.DB.prepare(
+        `SELECT r.id, r.user_id AS userId FROM recovery_codes r
+         JOIN users u ON u.id = r.user_id
+         WHERE u.email = ? AND r.code_hash = ? AND r.used_at IS NULL`,
+      )
+        .bind(email, await sha256(recoveryCode))
+        .first<{ id: string; userId: string }>();
+      if (!record)
+        return apiError(
+          401,
+          "INVALID_RECOVERY",
+          "Email or recovery code is incorrect.",
+        );
+      const next = await hashPassword(password);
+      const now = new Date().toISOString();
+      await env.DB.prepare(
+        "UPDATE users SET password_hash = ?, password_salt = ?, updated_at = ? WHERE id = ?",
+      )
+        .bind(next.hash, next.salt, now, record.userId)
+        .run();
+      await env.DB.prepare("UPDATE recovery_codes SET used_at = ? WHERE id = ?")
+        .bind(now, record.id)
+        .run();
+      await env.DB.prepare(
+        "UPDATE sessions SET revoked_at = ? WHERE user_id = ? AND revoked_at IS NULL",
+      )
+        .bind(now, record.userId)
+        .run();
+      const newCode = randomToken(24);
+      await env.DB.prepare(
+        "INSERT INTO recovery_codes (id, user_id, code_hash, created_at) VALUES (?, ?, ?, ?)",
+      )
+        .bind(crypto.randomUUID(), record.userId, await sha256(newCode), now)
+        .run();
+      return json({ ok: true, recoveryCode: newCode });
     },
   },
   {
@@ -125,6 +188,7 @@ export const authRoutes: Route[] = [
       const body = await readJsonObject(request);
       const email = field(body.email).toLowerCase();
       const password = typeof body.password === "string" ? body.password : "";
+      await enforceRateLimit(env, request, "login", email, 10, 15 * 60);
       const user = await env.DB.prepare(
         `SELECT u.id, u.email, u.password_hash AS passwordHash, u.password_salt AS passwordSalt,
                 p.full_name AS fullName, p.username
@@ -176,7 +240,6 @@ export const authRoutes: Route[] = [
   {
     method: "GET",
     pattern: "/api/me",
-    auth: true,
     async handler({ user }) {
       return json({ user });
     },

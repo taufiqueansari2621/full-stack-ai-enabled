@@ -49,7 +49,7 @@ export async function hashPassword(
       name: "PBKDF2",
       hash: "SHA-256",
       salt: base64ToBytes(salt),
-      iterations: 210_000,
+      iterations: 100_000,
     },
     key,
     256,

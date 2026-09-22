@@ -13,6 +13,7 @@
     "db:migrate:remote": "wrangler d1 migrations apply forge-production --remote",
     "preview": "vite preview",
     "test:smoke": "node scripts/smoke.mjs",
+    "test:account": "node scripts/account-smoke.mjs",
     "lint": "eslint ."
   },
   "dependencies": {

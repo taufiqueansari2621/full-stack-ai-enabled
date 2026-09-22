@@ -37,7 +37,7 @@ async function handleApi(request: Request, env: Env) {
   );
   if (!route) return apiError(404, "NOT_FOUND", "API route not found.");
   try {
-    const user = route.auth ? await authenticate(request, env) : null;
+    const user = await authenticate(request, env);
     if (route.auth && !user)
       return apiError(401, "AUTH_REQUIRED", "Log in to continue.");
     return await route.handler({ request, env, url, user });

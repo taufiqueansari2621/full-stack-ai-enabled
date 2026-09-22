@@ -71,10 +71,38 @@ export function useLocalProfiles() {
     [],
   );
 
+  const activateCloudProfile = useCallback(
+    (account: { id: string; fullName: string; username: string }) => {
+      setProfiles((current) => {
+        const existing = current.find((profile) => profile.id === account.id);
+        const profile: LearnerProfile = existing
+          ? {
+              ...existing,
+              fullName: account.fullName,
+              username: account.username,
+            }
+          : {
+              id: account.id,
+              fullName: account.fullName,
+              username: account.username,
+              level: "Complete Beginner",
+              goal: "Become Full-Stack AI Developer",
+              dailyGoal: "1 Hour",
+              speed: "Normal",
+              createdAt: new Date().toISOString(),
+            };
+        return [...current.filter((item) => item.id !== account.id), profile];
+      });
+      setActiveId(account.id);
+    },
+    [],
+  );
+
   return {
     profiles,
     activeProfile,
     createProfile,
+    activateCloudProfile,
     login: setActiveId,
     logout: () => setActiveId(null),
   };

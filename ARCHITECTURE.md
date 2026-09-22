@@ -80,7 +80,7 @@ The Worker now exposes:
 
 This API is intentionally not wired into the current UI yet. The existing local experience remains authoritative until registration, login, import consent, offline behavior, and conflict handling form one tested vertical slice.
 
-Production registration is explicitly closed until rate limiting, abuse protection, recovery, and the account UI ship together. The endpoint is fully exercised against local D1 and can later be enabled with a Worker environment value.
+Production registration is guarded by D1-backed IP-and-identifier rate limits. A one-time recovery code is generated during registration, stored only as a hash, and rotated after use. The account UI, explicit local import, debounced cloud saving, and conflict detection ship as one tested vertical slice. Email verification and OAuth remain separate hardening units.
 
 ## Database Design
 
@@ -109,7 +109,7 @@ The progress snapshot is a deliberate migration bridge, not the final normalized
 
 ## Authentication and Security Boundaries
 
-- Passwords are derived with Web Crypto PBKDF2-SHA-256, a unique random salt, and 210,000 iterations. Plaintext passwords are never stored.
+- Passwords are derived with Web Crypto PBKDF2-SHA-256, a unique random salt, and Cloudflare Workers' supported maximum of 100,000 iterations. Plaintext passwords are never stored.
 - Sessions use high-entropy random tokens. Only SHA-256 token hashes are stored in D1.
 - Production cookies use `HttpOnly`, `Secure`, `SameSite=Lax`, `Path=/`, and the `__Host-` prefix.
 - Cross-origin state-changing API requests are rejected using the browser `Origin` header.

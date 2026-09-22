@@ -35,7 +35,10 @@ Update this file after every meaningful verified implementation change.
 - Added password hashing, hashed opaque sessions, secure production cookies, same-origin mutation checks, request limits, consistent API errors, ownership derived from authenticated sessions, and response security headers.
 - Kept the existing local learner experience unchanged until the authenticated UI, explicit import consent, offline caching, and conflict resolution can ship together as a tested vertical slice.
 - Applied the initial migration to the remote `forge-production` D1 database and deployed Worker version `df02a222-278d-4e85-8aa8-a65d9780f860` with the API and existing SPA assets.
-- Kept production registration closed by configuration until rate limiting, abuse protection, recovery, and the account UI are delivered; registration and session behavior were verified against local D1 rather than exposed prematurely.
+- Added the production account interface, authenticated-session restoration, explicit local-progress import, debounced cloud saves, offline messaging, and revision-conflict protection while retaining local profiles as an offline/migration path.
+- Added D1-backed registration, login, and recovery rate limits plus one-time recovery codes stored only as hashes and rotated after use; registration can now open with a usable recovery path.
+- Added a real-browser account suite covering registration, session creation, recovery-code delivery, explicit progress import, cloud reads, logout authorization, password recovery, recovery-code rotation, and login with the replacement password.
+- Deployed the account and cloud-sync release as Cloudflare Worker version `cf899c43-ce1d-4144-a8cf-dcfa6de08945`; the complete account lifecycle and existing responsive learner experience pass against production D1 and Workers.
 
 - Created and published the 52-week curriculum and 34-project ladder.
 - Built the responsive Forge application shell and dashboard.
@@ -181,5 +184,5 @@ Update this file after every meaningful verified implementation change.
 - Latest implementation state: distraction-free Complete Lessons, hideable course-topic-only navigation, prediction-first interactive examples, deeper practice, five skill levels, React/Angular/Both paths, 684 topics, 74 trusted resources, curriculum-wide three-level topic practice, and plain-English learner copy.
 - Headless Chrome confirmed the Angular-only path, lesson resources, Resource Academy, Medium practice artifact, logout/login restoration, clean reset, and every existing learner workflow.
 - Lint, production build, all 78 responsive workspace checks, and six focused catalog-lesson viewport checks pass; feature-level lazy loading keeps the initial production chunk below Vite's advisory threshold.
-- Production is live at `https://forge-ai-engineering.taufiqueansari895.workers.dev` on Cloudflare version `df02a222-278d-4e85-8aa8-a65d9780f860`; the prior live Chrome audit confirmed SPA routes, the deep npm lesson, three interactive examples, meaningful project icons, named project controls, focused learning, course-rail controls, console health, and 390px overflow safety. The Forge 2.0 deployment additionally provides a D1-backed Worker API.
+- Production is live at `https://forge-ai-engineering.taufiqueansari895.workers.dev` on Cloudflare version `cf899c43-ce1d-4144-a8cf-dcfa6de08945`; live Chrome audits confirm account creation and recovery, cloud progress import, SPA routes, the deep npm lesson, interactive examples, project controls, focused learning, course-rail controls, console health, and 390px overflow safety.
 - Preserve the current visual identity while improving architecture and real behavior.

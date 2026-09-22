@@ -68,6 +68,8 @@ import {
 } from "./FunctionalPages";
 import { useForgeStore, type ForgeStore } from "./useForgeStore";
 import { useLocalProfiles, type LearnerProfile } from "./useLocalProfiles";
+import { useCloudAccount, type CloudAccount } from "./useCloudAccount";
+import { useCloudProgress } from "./useCloudProgress";
 import { CurriculumLearning } from "./CurriculumLearning";
 import { curriculumLessons } from "./curriculum";
 import {
@@ -424,9 +426,7 @@ function Dashboard({
           <h1>
             Welcome back, {profile.fullName.split(" ")[0]} <span>👋</span>
           </h1>
-          <p>
-            Your work is saved in this browser. Choose one clear next step.
-          </p>
+          <p>Your work is saved in this browser. Choose one clear next step.</p>
         </div>
         <button className="outline-button" onClick={() => navigate("reviews")}>
           <CalendarDays size={17} /> See today’s review
@@ -820,8 +820,7 @@ function RoadmapPage({
               if (lesson) {
                 onLearningFocusChange(false);
                 openLesson(topic, selected.id);
-              }
-              else
+              } else
                 openTopicPreview({
                   module: nextModule.title,
                   topic,
@@ -846,7 +845,10 @@ function RoadmapPage({
               {topicPreview.module.toUpperCase()}
             </span>
             <h1>{topicPreview.topic}</h1>
-            <p>You can open this topic at any time in your Full-Stack + AI course.</p>
+            <p>
+              You can open this topic at any time in your Full-Stack + AI
+              course.
+            </p>
           </div>
           <span className="status-pill active">Open access</span>
         </section>
@@ -890,8 +892,7 @@ function RoadmapPage({
                   if (lesson) {
                     onLearningFocusChange(false);
                     openLesson(topic, selected.id);
-                  }
-                  else
+                  } else
                     openTopicPreview({
                       ...topicPreview,
                       topic,
@@ -939,7 +940,10 @@ function RoadmapPage({
           </div>
         </section>
         {selected.id === "frontend" && (
-          <section className="framework-choice panel" aria-labelledby="framework-choice-title">
+          <section
+            className="framework-choice panel"
+            aria-labelledby="framework-choice-title"
+          >
             <div className="framework-choice-copy">
               <span className="eyebrow teal">CHOOSE A FRONTEND FRAMEWORK</span>
               <h2 id="framework-choice-title">Learn React, Angular, or both</h2>
@@ -949,26 +953,49 @@ function RoadmapPage({
               </p>
             </div>
             <div className="framework-choice-options">
-              {([
-                ["react", "R", "React", "Build modern websites with a flexible library and Next.js"],
-                ["angular", "A", "Angular", "Build large, structured business apps with Angular and RxJS"],
-                ["both", "R+A", "Learn both", "Learn both and understand when to use each one"],
-              ] as const).map(([value, mark, label, description]) => (
+              {(
+                [
+                  [
+                    "react",
+                    "R",
+                    "React",
+                    "Build modern websites with a flexible library and Next.js",
+                  ],
+                  [
+                    "angular",
+                    "A",
+                    "Angular",
+                    "Build large, structured business apps with Angular and RxJS",
+                  ],
+                  [
+                    "both",
+                    "R+A",
+                    "Learn both",
+                    "Learn both and understand when to use each one",
+                  ],
+                ] as const
+              ).map(([value, mark, label, description]) => (
                 <button
                   key={value}
-                  className={store.state.frontendFrameworkPath === value ? "active" : ""}
+                  className={
+                    store.state.frontendFrameworkPath === value ? "active" : ""
+                  }
                   aria-pressed={store.state.frontendFrameworkPath === value}
                   onClick={() => store.setFrontendFrameworkPath(value)}
                 >
                   <span>{mark}</span>
-                  <div><b>{label}</b><small>{description}</small></div>
+                  <div>
+                    <b>{label}</b>
+                    <small>{description}</small>
+                  </div>
                   {store.state.frontendFrameworkPath === value && <Check />}
                 </button>
               ))}
             </div>
             {!store.state.frontendFrameworkPath && (
               <div className="framework-choice-prompt">
-                <Lightbulb /> Choose one option to show its lessons. You can change it at any time.
+                <Lightbulb /> Choose one option to show its lessons. You can
+                change it at any time.
               </div>
             )}
           </section>
@@ -992,20 +1019,18 @@ function RoadmapPage({
                   return (
                     <button
                       key={topic}
-                      title={
-                        !lesson ? "Open the full topic lesson" : undefined
-                      }
+                      title={!lesson ? "Open the full topic lesson" : undefined}
                       onClick={() => {
                         if (available) {
                           onLearningFocusChange(false);
                           openLesson(topic, selected.id);
                         } else
                           openTopicPreview({
-                              module: item.title,
-                              topic,
-                              position: topicIndex,
-                              topics: item.topics,
-                            });
+                            module: item.title,
+                            topic,
+                            position: topicIndex,
+                            topics: item.topics,
+                          });
                       }}
                     >
                       <span>{topicIndex + 1}</span>
@@ -1047,97 +1072,161 @@ function RoadmapPage({
           </div>
         </div>
       </section>
-      <div className="roadmap-view-switch" role="group" aria-label="Learning path view">
-        <button className={roadmapView === "cards" ? "active" : ""} aria-pressed={roadmapView === "cards"} onClick={() => setRoadmapView("cards")}><Layers3 /> Card view</button>
-        <button className={roadmapView === "flow" ? "active" : ""} aria-pressed={roadmapView === "flow"} onClick={() => setRoadmapView("flow")}><Network /> Interactive flow</button>
+      <div
+        className="roadmap-view-switch"
+        role="group"
+        aria-label="Learning path view"
+      >
+        <button
+          className={roadmapView === "cards" ? "active" : ""}
+          aria-pressed={roadmapView === "cards"}
+          onClick={() => setRoadmapView("cards")}
+        >
+          <Layers3 /> Card view
+        </button>
+        <button
+          className={roadmapView === "flow" ? "active" : ""}
+          aria-pressed={roadmapView === "flow"}
+          onClick={() => setRoadmapView("flow")}
+        >
+          <Network /> Interactive flow
+        </button>
       </div>
       {roadmapView === "flow" ? (
-        <section className="roadmap-flow panel" aria-label="Interactive learning path flow">
-          <div className="roadmap-flow-intro"><span className="eyebrow teal">ZERO TO PROFESSIONAL</span><h2>Click any stage to explore its learning tree</h2><p>Follow the main path from top to bottom. Branches show the major sections inside each stage.</p></div>
+        <section
+          className="roadmap-flow panel"
+          aria-label="Interactive learning path flow"
+        >
+          <div className="roadmap-flow-intro">
+            <span className="eyebrow teal">ZERO TO PROFESSIONAL</span>
+            <h2>Click any stage to explore its learning tree</h2>
+            <p>
+              Follow the main path from top to bottom. Branches show the major
+              sections inside each stage.
+            </p>
+          </div>
           <div className="roadmap-flow-tree">
             {curriculumPhases.map((node, index) => {
               const progress = phaseProgress(node);
-              return <div className="flow-stage" key={node.id}>
-                {index > 0 && <span className="flow-connector" aria-hidden="true" />}
-                <button onClick={() => setSelected(node)} aria-label={`Explore ${node.title}`}>
-                  <span>{String(node.order).padStart(2, "0")}</span><div><small>{node.difficulty} · {node.duration}</small><b>{node.title}</b><em>{node.modules.length} sections · {node.modules.reduce((sum, module) => sum + module.topics.length, 0)} topics</em></div><strong>{progress}%</strong><ArrowRight />
-                </button>
-                <div className="flow-branches" aria-label={`${node.title} sections`}>
-                  {node.modules.slice(0, 6).map((module) => <button key={module.id} onClick={() => setSelected(node)}><span>{module.title}</span><small>{module.topics.length} topics</small></button>)}
-                  {node.modules.length > 6 && <button onClick={() => setSelected(node)}><span>+ {node.modules.length - 6} more sections</span><small>Open stage</small></button>}
+              return (
+                <div className="flow-stage" key={node.id}>
+                  {index > 0 && (
+                    <span className="flow-connector" aria-hidden="true" />
+                  )}
+                  <button
+                    onClick={() => setSelected(node)}
+                    aria-label={`Explore ${node.title}`}
+                  >
+                    <span>{String(node.order).padStart(2, "0")}</span>
+                    <div>
+                      <small>
+                        {node.difficulty} · {node.duration}
+                      </small>
+                      <b>{node.title}</b>
+                      <em>
+                        {node.modules.length} sections ·{" "}
+                        {node.modules.reduce(
+                          (sum, module) => sum + module.topics.length,
+                          0,
+                        )}{" "}
+                        topics
+                      </em>
+                    </div>
+                    <strong>{progress}%</strong>
+                    <ArrowRight />
+                  </button>
+                  <div
+                    className="flow-branches"
+                    aria-label={`${node.title} sections`}
+                  >
+                    {node.modules.slice(0, 6).map((module) => (
+                      <button key={module.id} onClick={() => setSelected(node)}>
+                        <span>{module.title}</span>
+                        <small>{module.topics.length} topics</small>
+                      </button>
+                    ))}
+                    {node.modules.length > 6 && (
+                      <button onClick={() => setSelected(node)}>
+                        <span>+ {node.modules.length - 6} more sections</span>
+                        <small>Open stage</small>
+                      </button>
+                    )}
+                  </div>
                 </div>
-              </div>;
+              );
             })}
           </div>
         </section>
-      ) : <div className="roadmap-layout">
-        <div className="roadmap-line" />
-        {curriculumPhases.map((node) => {
-          const progress = phaseProgress(node),
-            status = progress === 100 ? "complete" : "active";
-          return (
-            <article key={node.id} className={`roadmap-card panel ${status}`}>
-              <div className="roadmap-index">
-                {status === "complete" ? (
-                  <Check size={20} />
-                ) : (
-                  String(node.order).padStart(2, "0")
-                )}
-              </div>
-              <div className="roadmap-main">
-                <div className="roadmap-card-top">
-                  <div>
-                    <span className="roadmap-phase">
-                      STAGE {String(node.order).padStart(2, "0")}
+      ) : (
+        <div className="roadmap-layout">
+          <div className="roadmap-line" />
+          {curriculumPhases.map((node) => {
+            const progress = phaseProgress(node),
+              status = progress === 100 ? "complete" : "active";
+            return (
+              <article key={node.id} className={`roadmap-card panel ${status}`}>
+                <div className="roadmap-index">
+                  {status === "complete" ? (
+                    <Check size={20} />
+                  ) : (
+                    String(node.order).padStart(2, "0")
+                  )}
+                </div>
+                <div className="roadmap-main">
+                  <div className="roadmap-card-top">
+                    <div>
+                      <span className="roadmap-phase">
+                        STAGE {String(node.order).padStart(2, "0")}
+                      </span>
+                      <h2>{node.title}</h2>
+                    </div>
+                    <span className={`status-pill ${status}`}>
+                      {status === "complete"
+                        ? "Completed"
+                        : progress > 0
+                          ? "In progress"
+                          : "Open"}
                     </span>
-                    <h2>{node.title}</h2>
                   </div>
-                  <span className={`status-pill ${status}`}>
-                    {status === "complete"
-                      ? "Completed"
-                      : progress > 0
-                        ? "In progress"
-                        : "Open"}
-                  </span>
-                </div>
-                <p>{node.description}</p>
-                <div className="topic-chips">
-                  {node.modules.slice(0, 5).map((item) => (
-                    <span key={item.id}>{item.title}</span>
-                  ))}
-                </div>
-                <div className="roadmap-meta">
-                  <span>
-                    <Gauge size={15} />
-                    {node.difficulty}
-                  </span>
-                  <span>
-                    <Clock3 size={15} />
-                    {node.duration}
-                  </span>
-                  <span>
-                    <FolderKanban size={15} />
-                    {node.modules.length} sections
-                  </span>
-                </div>
-                <div className="roadmap-progress">
-                  <div className="bar">
-                    <i style={{ width: `${progress}%` }} />
+                  <p>{node.description}</p>
+                  <div className="topic-chips">
+                    {node.modules.slice(0, 5).map((item) => (
+                      <span key={item.id}>{item.title}</span>
+                    ))}
                   </div>
-                  <b>{progress}%</b>
+                  <div className="roadmap-meta">
+                    <span>
+                      <Gauge size={15} />
+                      {node.difficulty}
+                    </span>
+                    <span>
+                      <Clock3 size={15} />
+                      {node.duration}
+                    </span>
+                    <span>
+                      <FolderKanban size={15} />
+                      {node.modules.length} sections
+                    </span>
+                  </div>
+                  <div className="roadmap-progress">
+                    <div className="bar">
+                      <i style={{ width: `${progress}%` }} />
+                    </div>
+                    <b>{progress}%</b>
+                  </div>
                 </div>
-              </div>
-              <button
-                className="round-action"
-                onClick={() => setSelected(node)}
-                aria-label={`Open ${node.title}`}
-              >
-                <ArrowRight size={18} />
-              </button>
-            </article>
-          );
-        })}
-      </div>}
+                <button
+                  className="round-action"
+                  onClick={() => setSelected(node)}
+                  aria-label={`Open ${node.title}`}
+                >
+                  <ArrowRight size={18} />
+                </button>
+              </article>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
@@ -1779,14 +1868,14 @@ export function ReviewsPage({
             className={`queue-row ${done.includes(r.title) ? "complete" : ""}`}
             key={r.title}
           >
-          <button
-            className="check-button"
-            aria-label={
-              done.includes(r.title)
-                ? `Mark ${r.title} as not reviewed`
-                : `Mark ${r.title} as reviewed`
-            }
-            onClick={() =>
+            <button
+              className="check-button"
+              aria-label={
+                done.includes(r.title)
+                  ? `Mark ${r.title} as not reviewed`
+                  : `Mark ${r.title} as reviewed`
+              }
+              onClick={() =>
                 setDone(
                   done.includes(r.title)
                     ? done.filter((x) => x !== r.title)
@@ -2101,7 +2190,8 @@ function SettingsOverlay({
           <div>
             <b>Where your work is saved</b>
             <span>
-              Your lessons and progress stay in this browser under profile {profile.id}.
+              Your lessons and progress stay in this browser under profile{" "}
+              {profile.id}.
             </span>
           </div>
           <span className="local-status">
@@ -2120,7 +2210,9 @@ function SettingsOverlay({
         <div className="setting-row danger">
           <div>
             <b>Delete this profile’s progress</b>
-            <span>This removes all saved learning work and cannot be undone.</span>
+            <span>
+              This removes all saved learning work and cannot be undone.
+            </span>
           </div>
           {confirmReset ? (
             <div className="confirm-actions">
@@ -2153,12 +2245,28 @@ function Welcome({
   profiles,
   createProfile,
   login,
+  account,
 }: {
   profiles: LearnerProfile[];
   createProfile: (profile: Omit<LearnerProfile, "id" | "createdAt">) => void;
   login: (id: string) => void;
+  account: CloudAccount;
 }) {
-  const [mode, setMode] = useState<"welcome" | "create" | "login">("welcome");
+  const [mode, setMode] = useState<
+    | "welcome"
+    | "create"
+    | "login"
+    | "account-login"
+    | "account-create"
+    | "account-recover"
+  >("welcome");
+  const [accountForm, setAccountForm] = useState({
+    email: "",
+    password: "",
+    fullName: "",
+    username: "",
+    recoveryCode: "",
+  });
   const [form, setForm] = useState({
     fullName: "",
     username: "",
@@ -2178,33 +2286,218 @@ function Welcome({
           <h1>Learn web development and AI, one clear step at a time.</h1>
           <p>
             Start with no experience. Learn with simple lessons, practice,
-            projects, review, and interview preparation. Your work stays in
-            this browser.
+            projects, review, and interview preparation. Your work stays in this
+            browser.
           </p>
           <div className="profile-actions">
             <button
               className="primary-button"
-              onClick={() => setMode("create")}
+              onClick={() => setMode("account-login")}
             >
-              Start learning <ArrowRight />
+              Sign in to Forge <ArrowRight />
             </button>
             <button
               className="secondary-button"
+              onClick={() => setMode("create")}
+            >
+              Start learning on this device
+            </button>
+            <button
+              className="text-button"
               onClick={() => setMode("login")}
               disabled={!profiles.length}
             >
-              Login
+              Login to saved local profile
             </button>
           </div>
-          <button className="text-button" onClick={() => setMode("create")}>
-            See the 52-week learning path
-          </button>
           <small>
-            This is a profile on this device. It is not an online account.
+            Cloud accounts synchronize across devices. Local learning remains
+            available offline.
           </small>
         </div>
       </main>
     );
+  if (
+    mode === "account-login" ||
+    mode === "account-create" ||
+    mode === "account-recover"
+  ) {
+    const creating = mode === "account-create";
+    const recovering = mode === "account-recover";
+    return (
+      <main className="profile-gate">
+        <form
+          className="profile-card panel"
+          onSubmit={async (event) => {
+            event.preventDefault();
+            if (creating) await account.register(accountForm);
+            else if (recovering) {
+              const recovered = await account.recover({
+                email: accountForm.email,
+                recoveryCode: accountForm.recoveryCode,
+                password: accountForm.password,
+              });
+              if (recovered) setMode("account-login");
+            } else
+              await account.login({
+                email: accountForm.email,
+                password: accountForm.password,
+              });
+          }}
+        >
+          <button
+            type="button"
+            className="back-link"
+            onClick={() => setMode("welcome")}
+          >
+            <ChevronLeft /> Back
+          </button>
+          <span className="eyebrow teal">FORGE CLOUD ACCOUNT</span>
+          <h1>
+            {creating
+              ? "Create your account"
+              : recovering
+                ? "Recover your account"
+                : "Welcome back"}
+          </h1>
+          <p>
+            {creating
+              ? "Save your learning securely and continue on another device."
+              : recovering
+                ? "Enter the recovery code you saved when creating your account."
+                : "Continue your lessons, projects, reviews, and practice."}
+          </p>
+          {account.error && (
+            <div className="account-error" role="alert">
+              {account.error}
+            </div>
+          )}
+          {!creating && !recovering && account.recoveryCode && (
+            <div className="account-recovery-result" role="status">
+              <b>Password changed. Save your new recovery code:</b>
+              <code>{account.recoveryCode}</code>
+            </div>
+          )}
+          <div className="profile-form account-form">
+            {creating && (
+              <>
+                <label>
+                  Full name
+                  <input
+                    required
+                    autoComplete="name"
+                    value={accountForm.fullName}
+                    onChange={(event) =>
+                      setAccountForm({
+                        ...accountForm,
+                        fullName: event.target.value,
+                      })
+                    }
+                  />
+                </label>
+                <label>
+                  Username
+                  <input
+                    required
+                    autoComplete="username"
+                    pattern="[a-z0-9_-]{3,30}"
+                    value={accountForm.username}
+                    onChange={(event) =>
+                      setAccountForm({
+                        ...accountForm,
+                        username: event.target.value.toLowerCase(),
+                      })
+                    }
+                  />
+                </label>
+              </>
+            )}
+            <label>
+              Email
+              <input
+                required
+                type="email"
+                autoComplete="email"
+                value={accountForm.email}
+                onChange={(event) =>
+                  setAccountForm({ ...accountForm, email: event.target.value })
+                }
+              />
+            </label>
+            {recovering && (
+              <label>
+                Recovery code
+                <input
+                  required
+                  autoComplete="off"
+                  value={accountForm.recoveryCode}
+                  onChange={(event) =>
+                    setAccountForm({
+                      ...accountForm,
+                      recoveryCode: event.target.value,
+                    })
+                  }
+                />
+              </label>
+            )}
+            <label>
+              Password
+              <input
+                required
+                type="password"
+                minLength={10}
+                maxLength={128}
+                autoComplete={
+                  creating || recovering ? "new-password" : "current-password"
+                }
+                value={accountForm.password}
+                onChange={(event) =>
+                  setAccountForm({
+                    ...accountForm,
+                    password: event.target.value,
+                  })
+                }
+              />
+            </label>
+          </div>
+          <button
+            className="primary-button"
+            type="submit"
+            disabled={account.loading}
+          >
+            {account.loading
+              ? "Please wait…"
+              : creating
+                ? "Create secure account"
+                : recovering
+                  ? "Set new password"
+                  : "Sign in"}
+          </button>
+          <button
+            className="text-button account-mode-switch"
+            type="button"
+            onClick={() => {
+              account.clearError();
+              setMode(creating ? "account-login" : "account-create");
+            }}
+          >
+            {creating
+              ? "Already have an account? Sign in"
+              : "New to Forge? Create an account"}
+          </button>
+          {!creating && !recovering && (
+            <button
+              className="text-button account-mode-switch"
+              type="button"
+              onClick={() => setMode("account-recover")}
+            >
+              Recover access with a saved code
+            </button>
+          )}
+        </form>
+      </main>
+    );
+  }
   if (mode === "login")
     return (
       <main className="profile-gate">
@@ -2372,9 +2665,13 @@ function Welcome({
 function LearningWorkspace({
   profile,
   logout,
+  cloudEnabled,
+  recoveryCode,
 }: {
   profile: LearnerProfile;
   logout: () => void;
+  cloudEnabled: boolean;
+  recoveryCode: string | null;
 }) {
   const routeIds: NavId[] = [
     "home",
@@ -2406,12 +2703,15 @@ function LearningWorkspace({
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [catalogLearningFocus, setCatalogLearningFocus] = useState(false);
   const [focusNavOpen, setFocusNavOpen] = useState(false);
-  const [fullScreen, setFullScreen] = useState(Boolean(document.fullscreenElement));
+  const [fullScreen, setFullScreen] = useState(
+    Boolean(document.fullscreenElement),
+  );
   const [roadmapReturnPhaseId, setRoadmapReturnPhaseId] = useState<
     string | null
   >(null);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const store = useForgeStore(profile.id);
+  const cloud = useCloudProgress(store, cloudEnabled);
   const learningFocus = active === "learn" || catalogLearningFocus;
   const notify = (text: string) => {
     const id = Date.now();
@@ -2510,7 +2810,9 @@ function LearningWorkspace({
     view = (
       <Suspense
         fallback={
-          <div className="page loading-page panel">Opening learning resources…</div>
+          <div className="page loading-page panel">
+            Opening learning resources…
+          </div>
         }
       >
         <ResourcesPage />
@@ -2539,20 +2841,88 @@ function LearningWorkspace({
       )}
       {learningFocus && (
         <>
-          <button className="focus-nav-edge" onClick={() => setFocusNavOpen(true)} aria-label="Open main navigation"><Menu /><span>Menu</span></button>
+          <button
+            className="focus-nav-edge"
+            onClick={() => setFocusNavOpen(true)}
+            aria-label="Open main navigation"
+          >
+            <Menu />
+            <span>Menu</span>
+          </button>
           <div className="focus-screen-actions">
-            <button onClick={() => setFocusNavOpen(true)}><Menu /><span>Menu</span></button>
-            <button onClick={() => {
-              if (document.fullscreenElement) void document.exitFullscreen();
-              else void document.documentElement.requestFullscreen();
-            }} aria-label={fullScreen ? "Exit full screen" : "Enter full screen"}>
-              {fullScreen ? <Minimize2 /> : <Maximize2 />}<span>{fullScreen ? "Exit full screen" : "Full screen"}</span>
+            <button onClick={() => setFocusNavOpen(true)}>
+              <Menu />
+              <span>Menu</span>
+            </button>
+            <button
+              onClick={() => {
+                if (document.fullscreenElement) void document.exitFullscreen();
+                else void document.documentElement.requestFullscreen();
+              }}
+              aria-label={fullScreen ? "Exit full screen" : "Enter full screen"}
+            >
+              {fullScreen ? <Minimize2 /> : <Maximize2 />}
+              <span>{fullScreen ? "Exit full screen" : "Full screen"}</span>
             </button>
           </div>
-          {focusNavOpen && <div className="focus-navigation"><Sidebar active={active} onNavigate={(id) => { setActive(id); setFocusNavOpen(false); }} open close={() => setFocusNavOpen(false)} store={store} profile={profile} /></div>}
+          {focusNavOpen && (
+            <div className="focus-navigation">
+              <Sidebar
+                active={active}
+                onNavigate={(id) => {
+                  setActive(id);
+                  setFocusNavOpen(false);
+                }}
+                open
+                close={() => setFocusNavOpen(false)}
+                store={store}
+                profile={profile}
+              />
+            </div>
+          )}
         </>
       )}
       <div className="main-shell">
+        {!learningFocus && recoveryCode && (
+          <div className="recovery-code-banner" role="alert">
+            <span>
+              <b>Save your one-time account recovery code now</b>
+              Store it in a password manager. Forge only stores a secure hash
+              and cannot show it again.
+            </span>
+            <code>{recoveryCode}</code>
+            <button
+              className="secondary-button"
+              onClick={() =>
+                void navigator.clipboard
+                  .writeText(recoveryCode)
+                  .then(() => notify("Recovery code copied"))
+              }
+            >
+              Copy code
+            </button>
+          </div>
+        )}
+        {!learningFocus && cloudEnabled && cloud.status === "needs-import" && (
+          <div className="cloud-import-banner" role="status">
+            <span>
+              <b>Bring this device’s progress into your account</b>
+              Your local work stays untouched and will sync after import.
+            </span>
+            <button
+              className="primary-button"
+              onClick={cloud.importLocalProgress}
+            >
+              Import my Forge progress
+            </button>
+          </div>
+        )}
+        {!learningFocus && cloudEnabled && cloud.status === "offline" && (
+          <div className="cloud-status-banner" role="status">
+            Offline — changes remain saved on this device and will sync when
+            Forge reconnects.
+          </div>
+        )}
         {!learningFocus && (
           <Topbar
             title={title}
@@ -2565,7 +2935,10 @@ function LearningWorkspace({
         )}
         {view}
         {!learningFocus && (
-          <button className="floating-mentor" onClick={() => setActive("mentor")}>
+          <button
+            className="floating-mentor"
+            onClick={() => setActive("mentor")}
+          >
             <Sparkles size={19} />
             <span>Ask for help</span>
           </button>
@@ -2606,19 +2979,31 @@ function LearningWorkspace({
 
 export default function App() {
   const profiles = useLocalProfiles();
-  if (!profiles.activeProfile)
+  const account = useCloudAccount();
+  const { activeProfile, activateCloudProfile } = profiles;
+  useEffect(() => {
+    if (account.user && activeProfile?.id !== account.user.id)
+      activateCloudProfile(account.user);
+  }, [account.user, activeProfile?.id, activateCloudProfile]);
+  if (!activeProfile)
     return (
       <Welcome
         profiles={profiles.profiles}
         createProfile={profiles.createProfile}
         login={profiles.login}
+        account={account}
       />
     );
   return (
     <LearningWorkspace
-      key={profiles.activeProfile.id}
-      profile={profiles.activeProfile}
-      logout={profiles.logout}
+      key={activeProfile.id}
+      profile={activeProfile}
+      logout={() => {
+        if (account.user) void account.logout();
+        profiles.logout();
+      }}
+      cloudEnabled={account.user?.id === activeProfile.id}
+      recoveryCode={account.recoveryCode}
     />
   );
 }

@@ -18,6 +18,6 @@
   ],
   "vars": {
     "ENVIRONMENT": "production",
-    "REGISTRATION_MODE": "closed",
+    "REGISTRATION_MODE": "open",
   },
 }

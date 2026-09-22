@@ -478,6 +478,10 @@ export function useForgeStore(learnerId: string) {
 
   const resetProgress = useCallback(() => setState(createInitialState()), []);
 
+  const replaceState = useCallback((nextState: ForgeState) => {
+    if (nextState.version === 1) setState(nextState);
+  }, []);
+
   const setLearningPosition = useCallback(
     (position: Partial<ForgeState["currentPosition"]>) =>
       setState((current) =>
@@ -567,6 +571,7 @@ export function useForgeStore(learnerId: string) {
     setFrontendFrameworkPath,
     setLearningPosition,
     resetProgress,
+    replaceState,
   };
 }
 
