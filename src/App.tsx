@@ -83,6 +83,7 @@ import { catalogLessonId } from "./topicIds";
 import { CertificatesPage, QuizzesPage } from "./Assessments";
 
 const ResourcesPage = lazy(() => import("./ResourcesPage"));
+const Workspace = lazy(() => import("./Workspace"));
 const CatalogTopicLesson = lazy(() =>
   import("./CatalogTopicLesson").then((module) => ({
     default: module.CatalogTopicLesson,
@@ -97,6 +98,7 @@ const navItems: { id: NavId; label: string; icon: typeof Home }[] = [
   { id: "practice", label: "Practice", icon: Code2 },
   { id: "quizzes", label: "Quizzes", icon: CircleHelp },
   { id: "projects", label: "Projects", icon: FolderKanban },
+  { id: "workspace", label: "Workspace", icon: Code2 },
   { id: "interview", label: "Interview Prep", icon: BriefcaseBusiness },
   { id: "knowledge", label: "My Notes", icon: BrainCircuit },
   { id: "reviews", label: "Review", icon: TimerReset },
@@ -2684,6 +2686,7 @@ function LearningWorkspace({
     "practice",
     "quizzes",
     "projects",
+    "workspace",
     "interview",
     "knowledge",
     "reviews",
@@ -2805,6 +2808,16 @@ function LearningWorkspace({
     );
   else if (active === "projects")
     view = <ProjectsHub store={store} notify={notify} />;
+  else if (active === "workspace")
+    view = (
+      <Suspense
+        fallback={
+          <div className="page loading-page panel">Opening workspace…</div>
+        }
+      >
+        <Workspace learnerId={profile.id} cloudEnabled={cloudEnabled} />
+      </Suspense>
+    );
   else if (active === "interview")
     view = <InterviewTrainer store={store} notify={notify} />;
   else if (active === "reviews")

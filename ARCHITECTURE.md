@@ -79,6 +79,8 @@ The Worker now exposes:
 | `PUT /api/profile`        | Score the diagnostic and save the learner plan | Required          |
 | `GET /api/progress`       | Read the user's cloud progress snapshot        | Required          |
 | `PUT /api/progress`       | Save progress with revision conflict detection | Required          |
+| `GET /api/workspaces/default` | Read the learner's browser workspace       | Required          |
+| `PUT /api/workspaces/default` | Save bounded text files with revision checks | Required       |
 
 This API is intentionally not wired into the current UI yet. The existing local experience remains authoritative until registration, login, import consent, offline behavior, and conflict handling form one tested vertical slice.
 
@@ -140,6 +142,8 @@ CodeRunner interface
 ```
 
 Learner code never runs in the Forge UI thread or primary API Worker. Browser execution requires an isolated Worker or sandboxed iframe, strict message validation, time and output limits, and reset/termination controls. Python, Node, package installation, and framework builds require a separate sandbox with CPU, memory, filesystem, network, dependency, and wall-time limits.
+
+The first runner unit implements dependency-free JavaScript inside a disposable Web Worker. Network-oriented globals are removed where the runtime permits, console output is bounded, the Worker is terminated after 1.5 seconds, and challenge tests execute inside the same disposable boundary. HTML/CSS/JavaScript previews use a sandboxed iframe without same-origin permission. The editor and runner are lazy-loaded only on `/workspace`; they are not part of the Home bundle. Small text workspaces use bounded D1 JSON with optimistic revisions, while larger future project artifacts remain reserved for R2.
 
 ## Local-to-Cloud Migration
 

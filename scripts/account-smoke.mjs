@@ -108,6 +108,63 @@ try {
     },
     { timeout: 10_000 },
   );
+  await clickText("Workspace");
+  await page.waitForSelector('textarea[aria-label="Editing src/index.js"]');
+  const solution =
+    "function sum(numbers) { return numbers.reduce((total, value) => total + value, 0); }\nconsole.log(sum([2, 3, 4]));";
+  await page.$eval(
+    'textarea[aria-label="Editing src/index.js"]',
+    (element, nextValue) => {
+      const setter = Object.getOwnPropertyDescriptor(
+        HTMLTextAreaElement.prototype,
+        "value",
+      )?.set;
+      setter?.call(element, nextValue);
+      element.dispatchEvent(new InputEvent("input", { bubbles: true, inputType: "insertText", data: nextValue }));
+    },
+    solution,
+  );
+  await page.waitForFunction(
+    (expected) =>
+      document.querySelector('textarea[aria-label="Editing src/index.js"]')?.value === expected,
+    { timeout: 5_000 },
+    solution,
+  );
+  await clickText("Run tests");
+  await page.waitForFunction(
+    () => document.body.textContent?.includes("Execution:"),
+    { timeout: 10_000 },
+  );
+  await clickText("Tests");
+  try {
+    await page.waitForFunction(
+      () => document.body.textContent?.includes("3 passed"),
+      { timeout: 10_000 },
+    );
+  } catch (error) {
+    const workspaceText = await page.evaluate(
+      () => document.querySelector(".workspace-bottom")?.textContent,
+    );
+    await clickText("Output");
+    const outputText = await page.evaluate(
+      () => document.querySelector(".terminal-output")?.textContent,
+    );
+    const editorText = await page.$eval(
+      'textarea[aria-label="Editing src/index.js"]',
+      (element) => element.value,
+    );
+    throw new Error(`Workspace tests did not pass: ${workspaceText}; output=${outputText}; editor=${editorText}`, {
+      cause: error,
+    });
+  }
+  await page.waitForFunction(
+    async () => {
+      const response = await fetch("/api/workspaces/default");
+      const data = await response.json();
+      return response.ok && data.revision >= 1 && data.files?.["src/index.js"]?.includes("reduce");
+    },
+    { timeout: 10_000 },
+  );
   const recoveryResult = await page.evaluate(
     async ({ accountEmail, code }) => {
       await fetch("/api/auth/logout", { method: "POST" });
@@ -151,7 +208,7 @@ try {
     throw new Error(`Login after recovery returned ${loginStatus}`);
   if (errors.length) throw new Error(`Browser errors: ${errors.join(" | ")}`);
   console.log(
-    "Account smoke passed: registration, seven-step onboarding, diagnostic roadmap, recovery, session renewal, explicit local import, cloud progress, and logout authorization.",
+    "Account smoke passed: registration, onboarding, diagnostic roadmap, isolated code tests, workspace cloud save, recovery, progress sync, and authorization.",
   );
 } finally {
   await browser.close();

@@ -6,6 +6,7 @@ export type NavId =
   | "practice"
   | "quizzes"
   | "projects"
+  | "workspace"
   | "interview"
   | "knowledge"
   | "reviews"
@@ -126,8 +127,17 @@ export const roadmapNodes: RoadmapNode[] = [
 
 export const projectCards = [
   {
-    id: "p02", code: "P02", title: "Accessible Product Website", type: "Frontend", level: "Beginner", progress: 0,
-    description: "Turn a product brief into a responsive, keyboard-friendly website with strong HTML, CSS, forms, and performance.", accent: "green", tasks: "0 / 10", hours: "10h",
+    id: "p02",
+    code: "P02",
+    title: "Accessible Product Website",
+    type: "Frontend",
+    level: "Beginner",
+    progress: 0,
+    description:
+      "Turn a product brief into a responsive, keyboard-friendly website with strong HTML, CSS, forms, and performance.",
+    accent: "green",
+    tasks: "0 / 10",
+    hours: "10h",
   },
   {
     id: "p05",
@@ -156,12 +166,30 @@ export const projectCards = [
     hours: "24h",
   },
   {
-    id: "p11", code: "P11", title: "Production Design System", type: "React", level: "Intermediate", progress: 0,
-    description: "Create accessible reusable components, design tokens, documentation, tests, and a versioned package.", accent: "blue", tasks: "0 / 10", hours: "18h",
+    id: "p11",
+    code: "P11",
+    title: "Production Design System",
+    type: "React",
+    level: "Intermediate",
+    progress: 0,
+    description:
+      "Create accessible reusable components, design tokens, documentation, tests, and a versioned package.",
+    accent: "blue",
+    tasks: "0 / 10",
+    hours: "18h",
   },
   {
-    id: "p20", code: "P20", title: "Secure API Platform", type: "Backend", level: "Intermediate", progress: 0,
-    description: "Design a typed REST API with PostgreSQL, authentication, authorization, tests, rate limits, and OpenAPI docs.", accent: "amber", tasks: "0 / 10", hours: "22h",
+    id: "p20",
+    code: "P20",
+    title: "Secure API Platform",
+    type: "Backend",
+    level: "Intermediate",
+    progress: 0,
+    description:
+      "Design a typed REST API with PostgreSQL, authentication, authorization, tests, rate limits, and OpenAPI docs.",
+    accent: "amber",
+    tasks: "0 / 10",
+    hours: "22h",
   },
   {
     id: "p25",
@@ -190,8 +218,17 @@ export const projectCards = [
     hours: "40h",
   },
   {
-    id: "p34", code: "P34", title: "Production ML Product", type: "AI + ML", level: "Professional", progress: 0,
-    description: "Train and evaluate a model, serve it through an API, monitor quality and drift, and publish a responsible model card.", accent: "violet", tasks: "0 / 11", hours: "45h",
+    id: "p34",
+    code: "P34",
+    title: "Production ML Product",
+    type: "AI + ML",
+    level: "Professional",
+    progress: 0,
+    description:
+      "Train and evaluate a model, serve it through an API, monitor quality and drift, and publish a responsible model card.",
+    accent: "violet",
+    tasks: "0 / 11",
+    hours: "45h",
   },
 ];
 

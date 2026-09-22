@@ -96,4 +96,23 @@ export const forgeApi = {
       method: "PUT",
       body: JSON.stringify({ state, revision }),
     }),
+  workspace: () =>
+    request<{
+      files: Record<string, string> | null;
+      activePath: string | null;
+      revision: number;
+      updatedAt: string | null;
+    }>("/api/workspaces/default"),
+  saveWorkspace: (
+    files: Record<string, string>,
+    activePath: string,
+    revision: number,
+  ) =>
+    request<{ revision: number; updatedAt: string }>(
+      "/api/workspaces/default",
+      {
+        method: "PUT",
+        body: JSON.stringify({ files, activePath, revision }),
+      },
+    ),
 };
