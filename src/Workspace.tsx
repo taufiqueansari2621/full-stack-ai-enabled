@@ -6,12 +6,15 @@ import {
   Download,
   FileCode2,
   Folder,
+  History,
   Lightbulb,
+  Plus,
   Play,
   RotateCcw,
   Save,
   Sparkles,
   TerminalSquare,
+  X,
 } from "lucide-react";
 import { ForgeApiError, forgeApi } from "./services/forgeApi";
 import "./workspace.css";
@@ -49,6 +52,57 @@ button { padding: .7rem 1rem; border: 0; border-radius: .5rem; background: #5eea
 };
 
 const localKey = (learnerId: string) => `forge-workspace-v1:${learnerId}`;
+
+type ProjectContext = { id: string; title: string } | null;
+
+function projectFiles(project: { title: string; template: string }): Files {
+  const metadata = JSON.stringify(
+    {
+      name: project.title,
+      template: project.template,
+      createdAt: new Date().toISOString(),
+    },
+    null,
+    2,
+  );
+  const shared = {
+    "README.md": `# ${project.title}\n\nBuilt in Forge. Edit, run, preview, and save snapshots from this workspace.`,
+    ".forge/project.json": metadata,
+  };
+  if (project.template === "python")
+    return {
+      ...shared,
+      "main.py": `def main():\n    print("Hello from ${project.title}")\n\nif __name__ == "__main__":\n    main()\n`,
+    };
+  if (project.template === "node")
+    return {
+      ...shared,
+      "src/index.js": `function main() {\n  console.log("Hello from ${project.title}");\n}\n\nmain();\n`,
+      "package.json": JSON.stringify(
+        {
+          name:
+            project.title.toLowerCase().replace(/[^a-z0-9]+/g, "-") ||
+            "forge-project",
+          scripts: { start: "node src/index.js" },
+        },
+        null,
+        2,
+      ),
+    };
+  if (project.template === "ai-rag")
+    return {
+      ...shared,
+      "src/index.js": `const knowledge = ["Forge projects are learned by building."];\n\nfunction retrieve(query) {\n  return knowledge.filter((item) => item.toLowerCase().includes(query.toLowerCase()));\n}\n\nconsole.log(retrieve("projects"));\n`,
+      "src/prompt.md":
+        "Answer only from the retrieved context. Say when the context is insufficient.",
+    };
+  return {
+    ...shared,
+    "web/index.html": `<main><h1>${project.title}</h1><p>Start building in Forge.</p><button id="action">Try it</button></main>`,
+    "web/styles.css": `body { font-family: system-ui; padding: 2rem; background: #07101c; color: #e8f0f8; }\nbutton { padding: .7rem 1rem; }`,
+    "web/app.js": `document.querySelector("#action")?.addEventListener("click", () => alert("It works!"));`,
+  };
+}
 
 function loadLocal(learnerId: string) {
   try {
@@ -158,11 +212,20 @@ async function runJavaScript(code: string): Promise<RunResult> {
 export function Workspace({
   learnerId,
   cloudEnabled,
+  projectContext,
 }: {
   learnerId: string;
   cloudEnabled: boolean;
+  projectContext: ProjectContext;
 }) {
-  const initial = useMemo(() => loadLocal(learnerId), [learnerId]);
+  const initial = useMemo(() => {
+    if (!projectContext) return loadLocal(learnerId);
+    const files = projectFiles({
+      title: projectContext.title,
+      template: "html",
+    });
+    return { files, activePath: "web/index.html" };
+  }, [learnerId, projectContext]);
   const [files, setFiles] = useState<Files>(initial.files);
   const [activePath, setActivePath] = useState(initial.activePath);
   const [openFiles, setOpenFiles] = useState(() => [initial.activePath]);
@@ -184,6 +247,14 @@ export function Workspace({
   const [aiLoading, setAiLoading] = useState(false);
   const [aiResponse, setAiResponse] = useState<string | null>(null);
   const [aiError, setAiError] = useState<string | null>(null);
+  const [dialog, setDialog] = useState<"new" | "versions" | null>(null);
+  const [snapshots, setSnapshots] = useState<
+    { id: string; label: string; activePath: string; createdAt: string }[]
+  >([]);
+  const [snapshotLabel, setSnapshotLabel] = useState("");
+  const [projectName, setProjectName] = useState("");
+  const [projectTemplate, setProjectTemplate] = useState("html");
+  const [workspaceMessage, setWorkspaceMessage] = useState<string | null>(null);
   const activeContent = files[activePath] ?? "";
 
   useEffect(() => {
@@ -194,7 +265,7 @@ export function Workspace({
       .workspace()
       .then((remote) => {
         revision.current = remote.revision;
-        if (remote.files && remote.activePath) {
+        if (!projectContext && remote.files && remote.activePath) {
           setFiles(remote.files);
           setActivePath(remote.activePath);
           setOpenFiles([remote.activePath]);
@@ -206,7 +277,7 @@ export function Workspace({
         setHydrated(true);
         setSaveState("offline");
       });
-  }, [cloudEnabled]);
+  }, [cloudEnabled, projectContext]);
 
   useEffect(() => {
     localStorage.setItem(
@@ -258,6 +329,71 @@ export function Workspace({
     link.click();
     URL.revokeObjectURL(url);
   };
+  const openVersions = async () => {
+    setDialog("versions");
+    setWorkspaceMessage(null);
+    if (!cloudEnabled) return;
+    try {
+      setSnapshots((await forgeApi.workspaceSnapshots()).snapshots);
+    } catch (reason) {
+      setWorkspaceMessage(
+        reason instanceof Error ? reason.message : "Could not load versions.",
+      );
+    }
+  };
+  const createSnapshot = async () => {
+    if (!cloudEnabled) {
+      setWorkspaceMessage("Sign in to keep version history in the cloud.");
+      return;
+    }
+    try {
+      const created = await forgeApi.createWorkspaceSnapshot({
+        label:
+          snapshotLabel.trim() || `Snapshot ${new Date().toLocaleString()}`,
+        files,
+        activePath,
+      });
+      setSnapshots((current) => [created.snapshot, ...current].slice(0, 20));
+      setSnapshotLabel("");
+      setWorkspaceMessage("Snapshot saved.");
+    } catch (reason) {
+      setWorkspaceMessage(
+        reason instanceof Error ? reason.message : "Could not save snapshot.",
+      );
+    }
+  };
+  const restoreSnapshot = async (id: string) => {
+    try {
+      const { snapshot } = await forgeApi.workspaceSnapshot(id);
+      setFiles(snapshot.files);
+      setActivePath(snapshot.activePath);
+      setOpenFiles([snapshot.activePath]);
+      setDialog(null);
+      setWorkspaceMessage(`Restored ${snapshot.label}.`);
+    } catch (reason) {
+      setWorkspaceMessage(
+        reason instanceof Error
+          ? reason.message
+          : "Could not restore snapshot.",
+      );
+    }
+  };
+  const createProject = () => {
+    const title = projectName.trim();
+    if (title.length < 2) return;
+    const nextFiles = projectFiles({ title, template: projectTemplate });
+    const nextPath =
+      Object.keys(nextFiles).find(
+        (path) => !path.endsWith(".json") && path !== "README.md",
+      ) ?? Object.keys(nextFiles)[0];
+    setFiles(nextFiles);
+    setActivePath(nextPath);
+    setOpenFiles([nextPath]);
+    setProjectName("");
+    setDialog(null);
+    setResult(null);
+    setWorkspaceMessage(`Created ${title}.`);
+  };
   const askForgeAi = async () => {
     if (!cloudEnabled || aiQuestion.trim().length < 2) return;
     setAiLoading(true);
@@ -286,12 +422,23 @@ export function Workspace({
     }
   };
 
+  const metadata = useMemo(() => {
+    try {
+      return JSON.parse(files[".forge/project.json"] ?? "null") as {
+        name?: string;
+        template?: string;
+      } | null;
+    } catch {
+      return null;
+    }
+  }, [files]);
+
   return (
     <main className="workspace-page">
       <header className="workspace-toolbar">
         <div>
           <span className="eyebrow teal">BUILD · BROWSER WORKSPACE</span>
-          <h1>JavaScript Foundations Lab</h1>
+          <h1>{metadata?.name ?? "JavaScript Foundations Lab"}</h1>
         </div>
         <div className="workspace-toolbar-actions">
           <span className={`save-state ${saveState}`}>
@@ -306,6 +453,12 @@ export function Workspace({
                     ? "Saved locally"
                     : "Local draft"}
           </span>
+          <button onClick={() => setDialog("new")}>
+            <Plus /> New project
+          </button>
+          <button onClick={() => void openVersions()}>
+            <History /> Versions
+          </button>
           <button onClick={() => setFiles({ ...starterFiles })}>
             <RotateCcw /> Reset
           </button>
@@ -322,12 +475,22 @@ export function Workspace({
           </button>
         </div>
       </header>
+      {workspaceMessage && (
+        <p className="workspace-message" role="status">
+          {workspaceMessage}
+        </p>
+      )}
       <section className="workspace-instructions">
         <div>
-          <b>Challenge: Build a reliable sum function</b>
+          <b>
+            {metadata
+              ? `${metadata.name} project brief`
+              : "Challenge: Build a reliable sum function"}
+          </b>
           <p>
-            Return the total of every number. Your code must handle positive
-            values, negative values, and an empty array.
+            {metadata
+              ? `A ${metadata.template ?? "custom"} starter you can extend, preview, export, and restore from cloud snapshots.`
+              : "Return the total of every number. Your code must handle positive values, negative values, and an empty array."}
           </p>
         </div>
         <div className="challenge-meta">
@@ -571,6 +734,103 @@ export function Workspace({
           )}
         </div>
       </section>
+      {dialog && (
+        <div
+          className="workspace-dialog-backdrop"
+          role="presentation"
+          onMouseDown={() => setDialog(null)}
+        >
+          <section
+            className="workspace-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-label={dialog === "new" ? "Create project" : "Version history"}
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <header>
+              <div>
+                <span className="eyebrow teal">WORKSPACE</span>
+                <h2>
+                  {dialog === "new" ? "Create a project" : "Version history"}
+                </h2>
+              </div>
+              <button aria-label="Close dialog" onClick={() => setDialog(null)}>
+                <X />
+              </button>
+            </header>
+            {dialog === "new" ? (
+              <div className="workspace-dialog-form">
+                <label>
+                  Project name
+                  <input
+                    value={projectName}
+                    maxLength={60}
+                    onChange={(event) => setProjectName(event.target.value)}
+                    placeholder="My production app"
+                    autoFocus
+                  />
+                </label>
+                <label>
+                  Starter
+                  <select
+                    value={projectTemplate}
+                    onChange={(event) => setProjectTemplate(event.target.value)}
+                  >
+                    <option value="html">HTML / CSS / JavaScript</option>
+                    <option value="node">Node.js</option>
+                    <option value="python">Python</option>
+                    <option value="ai-rag">AI / RAG</option>
+                  </select>
+                </label>
+                <button
+                  className="run-button"
+                  disabled={projectName.trim().length < 2}
+                  onClick={createProject}
+                >
+                  Create project
+                </button>
+              </div>
+            ) : (
+              <div className="workspace-versions">
+                <div className="snapshot-create">
+                  <input
+                    value={snapshotLabel}
+                    maxLength={80}
+                    onChange={(event) => setSnapshotLabel(event.target.value)}
+                    placeholder="What changed?"
+                  />
+                  <button
+                    onClick={() => void createSnapshot()}
+                    disabled={!cloudEnabled}
+                  >
+                    <Save /> Save snapshot
+                  </button>
+                </div>
+                {!cloudEnabled && (
+                  <p>Sign in to create and restore cloud snapshots.</p>
+                )}
+                {snapshots.map((snapshot) => (
+                  <article key={snapshot.id}>
+                    <div>
+                      <b>{snapshot.label}</b>
+                      <span>
+                        {new Date(snapshot.createdAt).toLocaleString()} ·{" "}
+                        {snapshot.activePath}
+                      </span>
+                    </div>
+                    <button onClick={() => void restoreSnapshot(snapshot.id)}>
+                      Restore
+                    </button>
+                  </article>
+                ))}
+                {cloudEnabled && snapshots.length === 0 && (
+                  <p>No snapshots yet. Save one before a major change.</p>
+                )}
+              </div>
+            )}
+          </section>
+        </div>
+      )}
     </main>
   );
 }

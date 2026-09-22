@@ -2715,6 +2715,10 @@ function LearningWorkspace({
   const [roadmapReturnPhaseId, setRoadmapReturnPhaseId] = useState<
     string | null
   >(null);
+  const [workspaceProject, setWorkspaceProject] = useState<{
+    id: string;
+    title: string;
+  } | null>(null);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const store = useForgeStore(profile.id);
   const cloud = useCloudProgress(store, cloudEnabled);
@@ -2807,7 +2811,16 @@ function LearningWorkspace({
       />
     );
   else if (active === "projects")
-    view = <ProjectsHub store={store} notify={notify} />;
+    view = (
+      <ProjectsHub
+        store={store}
+        notify={notify}
+        openCodeWorkspace={(project) => {
+          setWorkspaceProject(project);
+          setActive("workspace");
+        }}
+      />
+    );
   else if (active === "workspace")
     view = (
       <Suspense
@@ -2815,7 +2828,11 @@ function LearningWorkspace({
           <div className="page loading-page panel">Opening workspace…</div>
         }
       >
-        <Workspace learnerId={profile.id} cloudEnabled={cloudEnabled} />
+        <Workspace
+          learnerId={profile.id}
+          cloudEnabled={cloudEnabled}
+          projectContext={workspaceProject}
+        />
       </Suspense>
     );
   else if (active === "interview")

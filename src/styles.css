@@ -1954,6 +1954,9 @@ h3 {
   font: 700 9px monospace;
   color: var(--faint);
 }
+.project-code-workspace-action {
+  margin: 14px 0;
+}
 .project-symbol {
   width: 52px;
   height: 52px;

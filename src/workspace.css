@@ -42,6 +42,102 @@
   background: var(--teal);
   font-weight: 800;
 }
+.workspace-message {
+  margin: 0 0 10px;
+  color: var(--teal);
+  font-size: 12px;
+}
+.workspace-dialog-backdrop {
+  position: fixed;
+  z-index: 100;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgb(1 7 15 / 78%);
+  backdrop-filter: blur(8px);
+}
+.workspace-dialog {
+  width: min(560px, 100%);
+  max-height: min(720px, 90vh);
+  overflow: auto;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--panel);
+  box-shadow: 0 24px 80px rgb(0 0 0 / 45%);
+}
+.workspace-dialog > header,
+.workspace-versions article,
+.snapshot-create {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.workspace-dialog h2 {
+  margin: 4px 0 16px;
+}
+.workspace-dialog > header > button {
+  border: 0;
+  color: var(--muted);
+  background: transparent;
+}
+.workspace-dialog svg {
+  width: 16px;
+}
+.workspace-dialog-form {
+  display: grid;
+  gap: 14px;
+}
+.workspace-dialog-form label {
+  display: grid;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+.workspace-dialog input,
+.workspace-dialog select {
+  min-height: 42px;
+  padding: 0 11px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--text);
+  background: var(--panel-2);
+}
+.workspace-dialog .run-button,
+.workspace-versions button {
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--teal);
+  border-radius: 8px;
+  color: var(--bg);
+  background: var(--teal);
+  font-weight: 800;
+}
+.snapshot-create input {
+  flex: 1;
+}
+.workspace-versions {
+  display: grid;
+  gap: 10px;
+}
+.workspace-versions article {
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--panel-2);
+}
+.workspace-versions article div {
+  display: grid;
+  gap: 3px;
+}
+.workspace-versions article span,
+.workspace-versions p {
+  color: var(--muted);
+  font-size: 11px;
+}
 .save-state {
   display: flex;
   align-items: center;

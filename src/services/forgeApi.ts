@@ -129,4 +129,39 @@ export const forgeApi = {
       contextIncluded: string[];
       actions: string[];
     }>("/api/ai", { method: "POST", body: JSON.stringify(input) }),
+  workspaceSnapshots: () =>
+    request<{
+      snapshots: {
+        id: string;
+        label: string;
+        activePath: string;
+        createdAt: string;
+      }[];
+    }>("/api/workspace-snapshots"),
+  createWorkspaceSnapshot: (input: {
+    label: string;
+    files: Record<string, string>;
+    activePath: string;
+  }) =>
+    request<{
+      snapshot: {
+        id: string;
+        label: string;
+        activePath: string;
+        createdAt: string;
+      };
+    }>("/api/workspace-snapshots", {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
+  workspaceSnapshot: (id: string) =>
+    request<{
+      snapshot: {
+        id: string;
+        label: string;
+        files: Record<string, string>;
+        activePath: string;
+        createdAt: string;
+      };
+    }>(`/api/workspace-snapshot?id=${encodeURIComponent(id)}`),
 };

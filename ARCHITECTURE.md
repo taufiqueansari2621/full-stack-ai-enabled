@@ -68,22 +68,25 @@ Cloudflare products are added only when their operational purpose is demonstrate
 
 The Worker now exposes:
 
-| Endpoint                  | Purpose                                        | Authentication    |
-| ------------------------- | ---------------------------------------------- | ----------------- |
-| `GET /api/health`         | Verify Worker and D1 connectivity              | Public            |
-| `POST /api/auth/register` | Create an account, profile, and session        | Public            |
-| `POST /api/auth/login`    | Verify credentials and create a session        | Public            |
-| `POST /api/auth/logout`   | Revoke the current session                     | Cookie if present |
-| `GET /api/me`             | Return the authenticated account               | Required          |
-| `GET /api/profile`        | Read onboarding and personalized path settings | Required          |
-| `PUT /api/profile`        | Score the diagnostic and save the learner plan | Required          |
-| `GET /api/progress`       | Read the user's cloud progress snapshot        | Required          |
-| `PUT /api/progress`       | Save progress with revision conflict detection | Required          |
-| `GET /api/workspaces/default` | Read the learner's browser workspace       | Required          |
-| `PUT /api/workspaces/default` | Save bounded text files with revision checks | Required       |
-| `POST /api/ai`            | Generate a rate-limited contextual tutor response | Required      |
+| Endpoint                           | Purpose                                           | Authentication    |
+| ---------------------------------- | ------------------------------------------------- | ----------------- |
+| `GET /api/health`                  | Verify Worker and D1 connectivity                 | Public            |
+| `POST /api/auth/register`          | Create an account, profile, and session           | Public            |
+| `POST /api/auth/login`             | Verify credentials and create a session           | Public            |
+| `POST /api/auth/logout`            | Revoke the current session                        | Cookie if present |
+| `GET /api/me`                      | Return the authenticated account                  | Required          |
+| `GET /api/profile`                 | Read onboarding and personalized path settings    | Required          |
+| `PUT /api/profile`                 | Score the diagnostic and save the learner plan    | Required          |
+| `GET /api/progress`                | Read the user's cloud progress snapshot           | Required          |
+| `PUT /api/progress`                | Save progress with revision conflict detection    | Required          |
+| `GET /api/workspaces/default`      | Read the learner's browser workspace              | Required          |
+| `PUT /api/workspaces/default`      | Save bounded text files with revision checks      | Required          |
+| `GET /api/workspace-snapshots`     | List the learner's 20 newest workspace versions   | Required          |
+| `POST /api/workspace-snapshots`    | Create an immutable bounded workspace version     | Required          |
+| `GET /api/workspace-snapshot?id=…` | Restore one version owned by the learner          | Required          |
+| `POST /api/ai`                     | Generate a rate-limited contextual tutor response | Required          |
 
-This API is intentionally not wired into the current UI yet. The existing local experience remains authoritative until registration, login, import consent, offline behavior, and conflict handling form one tested vertical slice.
+The account, onboarding, progress, workspace, version-history, and contextual AI APIs are wired into tested UI flows. Local learner state remains an offline cache and explicit import source; authenticated D1 records provide cross-device continuity with revision-conflict feedback.
 
 Production registration is guarded by D1-backed IP-and-identifier rate limits. A one-time recovery code is generated during registration, stored only as a hash, and rotated after use. The account UI, explicit local import, debounced cloud saving, and conflict detection ship as one tested vertical slice. Email verification and OAuth remain separate hardening units.
 

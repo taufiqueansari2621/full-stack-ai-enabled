@@ -50,6 +50,9 @@ Update this file after every meaningful verified implementation change.
 - Added D1 conversations, messages, and usage telemetry with model, mode, bounded context labels, input/output character counts, and latency; model credentials and bindings remain entirely server-side.
 - Connected the workspace AI panel with Explain, Hint, Debug, Review Code, and Quiz modes, five progressive teaching levels, an active-file consent toggle, exact context disclosure, and follow-up actions.
 - Deployed Forge AI as Cloudflare Worker version `6fb94668-9987-4166-b96b-239b683a1e2f`; the production lifecycle received a real guiding response from `@cf/meta/llama-3.1-8b-instruct-fast`, recorded model/mode/character/latency telemetry, and passed the existing UI audit.
+- Connected every project card to the real coding workspace and added new-project starters for browser web apps, Node.js, Python, and AI/RAG work, with readable README and Forge project metadata files.
+- Added immutable D1 workspace snapshots with user-derived ownership, bounded file validation, 20-version history, named saves, and one-click restore; signed-out reads are denied.
+- Deployed the project workspace and version-history unit as Cloudflare Worker version `eae69cb5-8cc9-48bf-b241-ec7151afd5d8`; production browser tests prove workspace execution, D1 autosave, snapshot creation, contextual AI, recovery, and authorization, and the responsive live audit passes.
 - Deployed the account and cloud-sync release as Cloudflare Worker version `cf899c43-ce1d-4144-a8cf-dcfa6de08945`; the complete account lifecycle and existing responsive learner experience pass against production D1 and Workers.
 
 - Created and published the 52-week curriculum and 34-project ladder.
@@ -188,7 +191,7 @@ Update this file after every meaningful verified implementation change.
 - `src/App.tsx` is intentionally oversized from the prototype and must be decomposed incrementally.
 - `src/styles.css` contains prototype-era raw color values and very small metadata type; migrate touched areas to documented tokens and accessible sizing.
 - Legacy prototype-only components remain in `src/App.tsx` while the new functional views are incrementally separated in `src/FunctionalPages.tsx`.
-- Local state is intentionally browser-only; account sync, backups, and multi-device conflict handling are future work.
+- Some feature-specific learning records remain local-first; account progress, onboarding, workspaces, snapshots, and AI usage are cloud-backed with conflict-aware workspace/progress writes.
 - Browser smoke coverage exists; focused component and state-repository tests are still needed.
 
 ## Session Notes
@@ -196,5 +199,5 @@ Update this file after every meaningful verified implementation change.
 - Latest implementation state: distraction-free Complete Lessons, hideable course-topic-only navigation, prediction-first interactive examples, deeper practice, five skill levels, React/Angular/Both paths, 684 topics, 74 trusted resources, curriculum-wide three-level topic practice, and plain-English learner copy.
 - Headless Chrome confirmed the Angular-only path, lesson resources, Resource Academy, Medium practice artifact, logout/login restoration, clean reset, and every existing learner workflow.
 - Lint, production build, all 78 responsive workspace checks, and six focused catalog-lesson viewport checks pass; feature-level lazy loading keeps the initial production chunk below Vite's advisory threshold.
-- Production is live at `https://forge-ai-engineering.taufiqueansari895.workers.dev` on Cloudflare version `6fb94668-9987-4166-b96b-239b683a1e2f`; live Chrome audits confirm accounts, onboarding, personalized roadmaps, isolated code tests, cloud workspace/progress persistence, contextual Forge AI, deep lessons, interactive examples, focused learning, console health, and 390px overflow safety.
+- Production is live at `https://forge-ai-engineering.taufiqueansari895.workers.dev` on Cloudflare version `eae69cb5-8cc9-48bf-b241-ec7151afd5d8`; live Chrome audits confirm accounts, onboarding, personalized roadmaps, isolated code tests, project templates, cloud workspace snapshots/progress persistence, contextual Forge AI, deep lessons, interactive examples, focused learning, console health, and 390px overflow safety.
 - Preserve the current visual identity while improving architecture and real behavior.

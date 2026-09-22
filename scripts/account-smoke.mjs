@@ -120,13 +120,20 @@ try {
         "value",
       )?.set;
       setter?.call(element, nextValue);
-      element.dispatchEvent(new InputEvent("input", { bubbles: true, inputType: "insertText", data: nextValue }));
+      element.dispatchEvent(
+        new InputEvent("input", {
+          bubbles: true,
+          inputType: "insertText",
+          data: nextValue,
+        }),
+      );
     },
     solution,
   );
   await page.waitForFunction(
     (expected) =>
-      document.querySelector('textarea[aria-label="Editing src/index.js"]')?.value === expected,
+      document.querySelector('textarea[aria-label="Editing src/index.js"]')
+        ?.value === expected,
     { timeout: 5_000 },
     solution,
   );
@@ -153,31 +160,58 @@ try {
       'textarea[aria-label="Editing src/index.js"]',
       (element) => element.value,
     );
-    throw new Error(`Workspace tests did not pass: ${workspaceText}; output=${outputText}; editor=${editorText}`, {
-      cause: error,
-    });
+    throw new Error(
+      `Workspace tests did not pass: ${workspaceText}; output=${outputText}; editor=${editorText}`,
+      {
+        cause: error,
+      },
+    );
   }
   await page.waitForFunction(
     async () => {
       const response = await fetch("/api/workspaces/default");
       const data = await response.json();
-      return response.ok && data.revision >= 1 && data.files?.["src/index.js"]?.includes("reduce");
+      return (
+        response.ok &&
+        data.revision >= 1 &&
+        data.files?.["src/index.js"]?.includes("reduce")
+      );
     },
     { timeout: 10_000 },
   );
+  await clickText("Versions");
+  await page.type(".snapshot-create input", "Passing sum implementation");
+  await clickText("Save snapshot");
+  await page.waitForFunction(
+    async () => {
+      const response = await fetch("/api/workspace-snapshots");
+      const data = await response.json();
+      return (
+        response.ok &&
+        data.snapshots?.some(
+          (item) => item.label === "Passing sum implementation",
+        )
+      );
+    },
+    { timeout: 10_000 },
+  );
+  await page.click('button[aria-label="Close dialog"]');
   await page.type(
     'textarea[aria-label="Ask Forge AI"]',
     "Give me one guiding question about why zero is a useful starting total.",
   );
   await clickText("Ask Forge AI");
   await page.waitForFunction(
-    () => (document.querySelector(".ai-response p")?.textContent?.length ?? 0) > 20,
+    () =>
+      (document.querySelector(".ai-response p")?.textContent?.length ?? 0) > 20,
     { timeout: 30_000 },
   );
   const recoveryResult = await page.evaluate(
     async ({ accountEmail, code }) => {
       await fetch("/api/auth/logout", { method: "POST" });
       const unauthorized = (await fetch("/api/progress")).status;
+      const snapshotsUnauthorized = (await fetch("/api/workspace-snapshots"))
+        .status;
       const response = await fetch("/api/auth/recover", {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -190,6 +224,7 @@ try {
       const body = await response.json();
       return {
         unauthorized,
+        snapshotsUnauthorized,
         status: response.status,
         nextCode: body.recoveryCode,
       };
@@ -199,6 +234,10 @@ try {
   if (recoveryResult.unauthorized !== 401)
     throw new Error(
       `Expected 401 after logout, received ${recoveryResult.unauthorized}`,
+    );
+  if (recoveryResult.snapshotsUnauthorized !== 401)
+    throw new Error(
+      `Expected snapshot 401 after logout, received ${recoveryResult.snapshotsUnauthorized}`,
     );
   if (recoveryResult.status !== 200 || !recoveryResult.nextCode)
     throw new Error(`Account recovery failed with ${recoveryResult.status}`);
@@ -217,7 +256,7 @@ try {
     throw new Error(`Login after recovery returned ${loginStatus}`);
   if (errors.length) throw new Error(`Browser errors: ${errors.join(" | ")}`);
   console.log(
-    "Account smoke passed: registration, onboarding, diagnostic roadmap, isolated code tests, workspace cloud save, Forge AI, recovery, progress sync, and authorization.",
+    "Account smoke passed: registration, onboarding, diagnostic roadmap, isolated code tests, workspace cloud save and snapshots, Forge AI, recovery, progress sync, and authorization.",
   );
 } finally {
   await browser.close();

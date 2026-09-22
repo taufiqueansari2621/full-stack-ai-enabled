@@ -131,4 +131,97 @@ export const workspaceRoutes: Route[] = [
       return json({ revision: nextRevision, updatedAt });
     },
   },
+  {
+    method: "GET",
+    pattern: "/api/workspace-snapshots",
+    auth: true,
+    async handler({ env, user }) {
+      const result = await env.DB.prepare(
+        "SELECT id, label, active_path AS activePath, created_at AS createdAt FROM workspace_snapshots WHERE user_id = ? ORDER BY created_at DESC LIMIT 20",
+      )
+        .bind(user!.id)
+        .run<{
+          id: string;
+          label: string;
+          activePath: string;
+          createdAt: string;
+        }>();
+      return json({ snapshots: result.results ?? [] });
+    },
+  },
+  {
+    method: "POST",
+    pattern: "/api/workspace-snapshots",
+    auth: true,
+    async handler({ request, env, user }) {
+      assertSameOrigin(request);
+      const body = await readJsonObject(request, 550_000);
+      const filesJson = validateFiles(body.files);
+      const label = typeof body.label === "string" ? body.label.trim() : "";
+      const activePath =
+        typeof body.activePath === "string" ? body.activePath : "";
+      const files = JSON.parse(filesJson) as Record<string, string>;
+      if (label.length < 1 || label.length > 80)
+        throw new HttpError(
+          400,
+          "INVALID_SNAPSHOT_LABEL",
+          "Snapshot label must be 1–80 characters.",
+        );
+      if (!(activePath in files))
+        throw new HttpError(
+          400,
+          "INVALID_ACTIVE_FILE",
+          "Snapshot active file is invalid.",
+        );
+      const snapshot = {
+        id: crypto.randomUUID(),
+        label,
+        activePath,
+        createdAt: new Date().toISOString(),
+      };
+      await env.DB.prepare(
+        "INSERT INTO workspace_snapshots (id, user_id, label, files_json, active_path, created_at) VALUES (?, ?, ?, ?, ?, ?)",
+      )
+        .bind(
+          snapshot.id,
+          user!.id,
+          label,
+          filesJson,
+          activePath,
+          snapshot.createdAt,
+        )
+        .run();
+      return json({ snapshot }, 201);
+    },
+  },
+  {
+    method: "GET",
+    pattern: "/api/workspace-snapshot",
+    auth: true,
+    async handler({ env, user, url }) {
+      const id = url.searchParams.get("id") ?? "";
+      const row = await env.DB.prepare(
+        "SELECT id, label, files_json AS filesJson, active_path AS activePath, created_at AS createdAt FROM workspace_snapshots WHERE id = ? AND user_id = ?",
+      )
+        .bind(id, user!.id)
+        .first<{
+          id: string;
+          label: string;
+          filesJson: string;
+          activePath: string;
+          createdAt: string;
+        }>();
+      if (!row)
+        throw new HttpError(404, "SNAPSHOT_NOT_FOUND", "Snapshot not found.");
+      return json({
+        snapshot: {
+          id: row.id,
+          label: row.label,
+          files: JSON.parse(row.filesJson),
+          activePath: row.activePath,
+          createdAt: row.createdAt,
+        },
+      });
+    },
+  },
 ];
