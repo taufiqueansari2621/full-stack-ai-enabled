@@ -27,18 +27,18 @@ Future boundaries
 
 ## Stack
 
-| Layer | Technology | Role |
-|---|---|---|
-| Language | TypeScript, strict mode | Domain and UI type safety |
-| UI runtime | React | Component rendering and interaction |
-| Build tool | Vite | Local development and production bundling |
-| Production hosting | Cloudflare Workers Static Assets | Global asset delivery with SPA route fallback |
-| Styling | Tokenized plain CSS | Visual system, responsive layout, animation |
-| Icons | Lucide React | Consistent stroke-based interface icons |
-| Current data | Typed objects in `src/data.ts` | Representative curriculum and progress data |
+| Layer               | Technology                        | Role                                                                   |
+| ------------------- | --------------------------------- | ---------------------------------------------------------------------- |
+| Language            | TypeScript, strict mode           | Domain and UI type safety                                              |
+| UI runtime          | React                             | Component rendering and interaction                                    |
+| Build tool          | Vite                              | Local development and production bundling                              |
+| Production hosting  | Cloudflare Workers Static Assets  | Global asset delivery with SPA route fallback                          |
+| Styling             | Tokenized plain CSS               | Visual system, responsive layout, animation                            |
+| Icons               | Lucide React                      | Consistent stroke-based interface icons                                |
+| Current data        | Typed objects in `src/data.ts`    | Representative curriculum and progress data                            |
 | Current persistence | Versioned `localStorage` adapters | Local profiles, learner-scoped progress, and non-sensitive preferences |
-| Quality | TypeScript and ESLint | Static verification |
-| Curriculum | Markdown directories `00_`–`14_` | Human-readable roadmap source material |
+| Quality             | TypeScript and ESLint             | Static verification                                                    |
+| Curriculum          | Markdown directories `00_`–`14_`  | Human-readable roadmap source material                                 |
 
 The application catalog in `src/curriculumCatalog.ts` owns navigable phase/module/topic metadata. Detailed lesson records remain separate in `src/curriculum.ts`, allowing the full hierarchy to exist before each lesson is populated without presenting outline-only topics as finished content.
 
@@ -59,10 +59,14 @@ to the application shell. Both paths remove global navigation chrome, retain a
 lesson-owned Back action, and expose only course-topic navigation. This state is
 presentational and never changes progress or mastery evidence.
 
-Production deployment is assets-only through `wrangler.jsonc`. Cloudflare
-serves the Vite `dist` directory and uses `single-page-application` not-found
-handling so direct navigation to client routes returns the application shell.
-There is no server-side Worker entry point, binding, or production secret.
+Forge 2.0 introduces a Worker entry point while preserving the Vite asset
+binding and `single-page-application` fallback. `/api/*` requests are handled by
+the Worker and all other requests retain the existing static application
+behavior. The first cloud unit uses D1 for accounts, hashed sessions, profiles,
+and revision-controlled progress snapshots. The authenticated UI and explicit
+local-to-cloud import remain a later verified unit, so the current local learner
+experience is not silently replaced. See the root `ARCHITECTURE.md` for the
+audited target architecture and migration plan.
 
 ## Intended Source Boundaries
 

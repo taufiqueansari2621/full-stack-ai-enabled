@@ -2,8 +2,22 @@
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "forge-ai-engineering",
   "compatibility_date": "2026-09-17",
+  "main": "./worker/index.ts",
   "assets": {
+    "binding": "ASSETS",
     "directory": "./dist",
-    "not_found_handling": "single-page-application"
-  }
+    "not_found_handling": "single-page-application",
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "forge-production",
+      "database_id": "6587d47b-fef4-4173-a64e-6904da7e018e",
+      "migrations_dir": "migrations",
+    },
+  ],
+  "vars": {
+    "ENVIRONMENT": "production",
+    "REGISTRATION_MODE": "closed",
+  },
 }

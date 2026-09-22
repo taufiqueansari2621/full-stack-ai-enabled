@@ -5,10 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && tsc -p tsconfig.worker.json && vite build",
     "predeploy:cloudflare": "npm run build",
     "deploy:cloudflare": "wrangler deploy",
     "verify:cloudflare": "node scripts/verify-cloudflare.mjs",
+    "db:migrate:local": "wrangler d1 migrations apply forge-production --local",
+    "db:migrate:remote": "wrangler d1 migrations apply forge-production --remote",
     "preview": "vite preview",
     "test:smoke": "node scripts/smoke.mjs",
     "lint": "eslint ."
