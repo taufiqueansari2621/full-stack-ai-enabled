@@ -99,7 +99,9 @@ const expectNamedButtons = async (context) => {
     [...document.querySelectorAll("button")]
       .filter((button) => {
         const visible = Boolean(
-          button.offsetWidth || button.offsetHeight || button.getClientRects().length,
+          button.offsetWidth ||
+          button.offsetHeight ||
+          button.getClientRects().length,
         );
         const name =
           button.getAttribute("aria-label")?.trim() ||
@@ -118,16 +120,25 @@ const expectNamedButtons = async (context) => {
 
 const expectFocusedLearningShell = async (context) => {
   const state = await page.evaluate(() => ({
-    focused: document.querySelector(".app-shell")?.classList.contains("learning-focus"),
+    focused: document
+      .querySelector(".app-shell")
+      ?.classList.contains("learning-focus"),
     globalChrome: Boolean(
-      document.querySelector(".learning-focus .sidebar, .learning-focus .topbar, .learning-focus .floating-mentor"),
+      document.querySelector(
+        ".learning-focus .sidebar, .learning-focus .topbar, .learning-focus .floating-mentor",
+      ),
     ),
     topicRail: Boolean(
-      document.querySelector(".learning-focus .related-topics, .learning-focus .day-list"),
+      document.querySelector(
+        ".learning-focus .related-topics, .learning-focus .day-list",
+      ),
     ),
     backControl: Boolean(document.querySelector(".learning-focus .back-link")),
-    focusControls: document.querySelectorAll(".learning-focus .focus-screen-actions button").length,
-    mainMargin: getComputedStyle(document.querySelector(".main-shell")).marginLeft,
+    focusControls: document.querySelectorAll(
+      ".learning-focus .focus-screen-actions button",
+    ).length,
+    mainMargin: getComputedStyle(document.querySelector(".main-shell"))
+      .marginLeft,
     mobileRail:
       window.innerWidth <= 900
         ? (() => {
@@ -143,7 +154,8 @@ const expectFocusedLearningShell = async (context) => {
           })()
         : null,
   }));
-  if (!state.focused) throw new Error(`${context} did not enter focused learning mode`);
+  if (!state.focused)
+    throw new Error(`${context} did not enter focused learning mode`);
   if (state.globalChrome)
     throw new Error(`${context} still rendered global navigation chrome`);
   if (!state.topicRail)
@@ -153,12 +165,16 @@ const expectFocusedLearningShell = async (context) => {
   if (state.focusControls !== 2)
     throw new Error(`${context} did not provide menu and full-screen controls`);
   if (state.mainMargin !== "0px")
-    throw new Error(`${context} kept a ${state.mainMargin} desktop shell offset`);
+    throw new Error(
+      `${context} kept a ${state.mainMargin} desktop shell offset`,
+    );
   if (
     state.mobileRail &&
     (state.mobileRail.direction !== "row" || !state.mobileRail.scrollable)
   )
-    throw new Error(`${context} did not provide a horizontal swipeable topic rail`);
+    throw new Error(
+      `${context} did not provide a horizontal swipeable topic rail`,
+    );
 };
 
 try {
@@ -191,7 +207,9 @@ try {
   await expectText("Click any stage to explore its learning tree");
   const flowStages = await page.$$(".flow-stage");
   if (flowStages.length !== 17)
-    throw new Error(`Expected 17 interactive flow stages, found ${flowStages.length}`);
+    throw new Error(
+      `Expected 17 interactive flow stages, found ${flowStages.length}`,
+    );
   await clickText("Card view");
   await page.click('button[aria-label="Open Frontend Engineering"]');
   await expectText("CHOOSE A FRONTEND FRAMEWORK");
@@ -213,7 +231,9 @@ try {
   await expectText("Angular Tutorials");
   const renderedAngularChapters = await page.$$(".full-learning-chapter");
   if (renderedAngularChapters.length !== 9)
-    throw new Error("Angular Full Learning Mode is missing professional chapters");
+    throw new Error(
+      "Angular Full Learning Mode is missing professional chapters",
+    );
   await clickText("Frontend Engineering · Angular · Foundations");
   await clickText("Back to the full learning path");
   const selectedFrameworkPath = await page.evaluate(
@@ -276,7 +296,9 @@ try {
   await expectText("INTERACTIVE EXAMPLE LAB");
   await expectText("npm install date-fns");
   const npmLessonQuality = await page.evaluate(() => {
-    const examples = [...document.querySelectorAll(".full-learning-example code")]
+    const examples = [
+      ...document.querySelectorAll(".full-learning-example code"),
+    ]
       .map((element) => element.textContent?.trim())
       .filter(Boolean);
     return {
@@ -317,7 +339,9 @@ try {
   await clickText("Hide course topics");
   const hiddenTopicRail = await page.$(".related-topics");
   if (hiddenTopicRail)
-    throw new Error("Course topics remained visible after the learner hid them");
+    throw new Error(
+      "Course topics remained visible after the learner hid them",
+    );
   await clickText("Show course topics");
   await expectFocusedLearningShell("npm lesson after restoring course topics");
   await clickText("Orientation & Developer Setup · Developer Setup");
@@ -333,9 +357,7 @@ try {
   await expectText("REAL-WORLD EXAMPLE");
   await expectText("PRACTICE NOW");
   await expectText("INTERVIEW + REVIEW");
-  const foundationSelectorStillVisible = await page.$(
-    ".lesson-subtopic-menu",
-  );
+  const foundationSelectorStillVisible = await page.$(".lesson-subtopic-menu");
   if (foundationSelectorStillVisible)
     throw new Error("The removed foundation task selector is still visible");
   const focusedPages = await page.$$(".focused-lesson-page");
@@ -360,13 +382,22 @@ try {
   await clickText("A → D → C → B");
   await clickText("Check answer");
   await expectText("Correct");
+  await page.click(".challenge-list button:nth-child(2)");
+  await page.waitForFunction(
+    () =>
+      document.querySelector(".challenge-workspace h2")?.textContent ===
+      "Closure reasoning",
+  );
+  await page.click(".challenge-options button");
+  await clickText("Check answer");
+  await expectText("Try again");
   const attemptsBeforeReload = await page.evaluate(
     (id) =>
       JSON.parse(localStorage.getItem(`forge-learning-state-v1:${id}`))
         .practiceAttempts.length,
     activeProfileId,
   );
-  if (attemptsBeforeReload !== 1)
+  if (attemptsBeforeReload !== 2)
     throw new Error("Practice attempt was not persisted");
   await page.reload({ waitUntil: "networkidle0" });
   await clickText("Practice");
@@ -419,9 +450,7 @@ try {
   ];
   for (let index = 0; index < quizAnswers.length; index += 1) {
     await clickText(quizAnswers[index]);
-    await clickText(
-      index === quizAnswers.length - 1 ? "Finish test" : "Next",
-    );
+    await clickText(index === quizAnswers.length - 1 ? "Finish test" : "Next");
   }
   await expectText("PASSED");
   const quizResults = await page.evaluate(
@@ -475,14 +504,18 @@ try {
   await expectText("Start P05");
   const projectCardCount = await page.$$(".project-card");
   if (projectCardCount.length < 8)
-    throw new Error(`Expected at least 8 guided projects, found ${projectCardCount.length}`);
+    throw new Error(
+      `Expected at least 8 guided projects, found ${projectCardCount.length}`,
+    );
   const projectControls = await page.evaluate(() => ({
     uniqueSymbols: new Set(
       [...document.querySelectorAll(".project-symbol svg")].map((icon) =>
         [...icon.classList].find((name) => name.startsWith("lucide-")),
       ),
     ).size,
-    labeledActions: [...document.querySelectorAll(".project-open-button")].every(
+    labeledActions: [
+      ...document.querySelectorAll(".project-open-button"),
+    ].every(
       (button) =>
         button.textContent?.includes("Open project") &&
         button.getBoundingClientRect().height >= 40 &&
@@ -504,26 +537,39 @@ try {
   await clickText("AI Help");
   await expectText("Train your tutor");
   await clickText("Train your tutor");
-  await page.type('.mentor-training-form input', "Smoke authentication guide");
-  await page.type('.mentor-training-form textarea', "Authentication uses short-lived access tokens and rotating refresh tokens. Every protected request verifies the signature, issuer, audience, expiry, and user permissions before data access.");
+  await page.type(".mentor-training-form input", "Smoke authentication guide");
+  await page.type(
+    ".mentor-training-form textarea",
+    "Authentication uses short-lived access tokens and rotating refresh tokens. Every protected request verifies the signature, issuer, audience, expiry, and user permissions before data access.",
+  );
   await clickText("Add to knowledge base");
   await expectText("1 custom sources");
-  await page.type('.mentor-input textarea', "How does authentication verify access tokens?");
-  await page.click('.mentor-input button');
+  await page.type(
+    ".mentor-input textarea",
+    "How does authentication verify access tokens?",
+  );
+  await page.click(".mentor-input button");
   await expectText("Based on your training material");
   await expectText("Your source: Smoke authentication guide");
 
   await clickText("Review");
   await expectText("Make knowledge");
-  await page.click(".check-button");
-  const completedReviews = await page.evaluate(
+  await expectText("new weak signal");
+  await clickText("Good");
+  const scheduledReview = await page.evaluate(
     (id) =>
       JSON.parse(localStorage.getItem(`forge-learning-state-v1:${id}`))
-        .completedReviews.length,
+        .reviewSchedule[0],
     activeProfileId,
   );
-  if (completedReviews !== 1)
-    throw new Error("Review completion was not persisted");
+  if (
+    scheduledReview.streak !== 1 ||
+    scheduledReview.lastRating !== "good" ||
+    new Date(scheduledReview.nextReviewAt).getTime() <= Date.now()
+  )
+    throw new Error(
+      `Spaced review was not rescheduled: ${JSON.stringify(scheduledReview)}`,
+    );
 
   await clickText("Interview Prep");
   await expectText("10,260 questions");
@@ -565,15 +611,12 @@ try {
   await clickText("Score my answer");
   await expectText("structure score");
   await expectText("Strong-answer outline");
-  const savedInterview = await page.evaluate(
-    (id) => {
-      const results = JSON.parse(
-        localStorage.getItem(`forge-learning-state-v1:${id}`),
-      ).interviewResults;
-      return results.at(-1);
-    },
-    activeProfileId,
-  );
+  const savedInterview = await page.evaluate((id) => {
+    const results = JSON.parse(
+      localStorage.getItem(`forge-learning-state-v1:${id}`),
+    ).interviewResults;
+    return results.at(-1);
+  }, activeProfileId);
   if (
     !savedInterview?.questionId ||
     !savedInterview?.topic ||
@@ -606,7 +649,7 @@ try {
         .practiceAttempts.length,
     activeProfileId,
   );
-  if (restoredAttempts !== 1)
+  if (restoredAttempts !== 2)
     throw new Error("Profile progress was not restored after logout/login");
   const restoredMasteryArtifacts = await page.evaluate(
     (id) =>
@@ -623,7 +666,9 @@ try {
     activeProfileId,
   );
   if (restoredTopicPracticeArtifacts !== 1)
-    throw new Error("Topic practice artifact was not restored after logout/login");
+    throw new Error(
+      "Topic practice artifact was not restored after logout/login",
+    );
   const restoredExampleLabRecords = await page.evaluate(
     (id) =>
       JSON.parse(localStorage.getItem(`forge-learning-state-v1:${id}`))
@@ -631,7 +676,9 @@ try {
     activeProfileId,
   );
   if (restoredExampleLabRecords !== 1)
-    throw new Error("Interactive example work was not restored after logout/login");
+    throw new Error(
+      "Interactive example work was not restored after logout/login",
+    );
   const restoredInterviewResults = await page.evaluate(
     (id) =>
       JSON.parse(localStorage.getItem(`forge-learning-state-v1:${id}`))
@@ -642,7 +689,9 @@ try {
     restoredInterviewResults.length !== 1 ||
     !restoredInterviewResults[0].questionId
   )
-    throw new Error("Interview Academy history was not restored after logout/login");
+    throw new Error(
+      "Interview Academy history was not restored after logout/login",
+    );
   const restoredFrameworkPath = await page.evaluate(
     (id) =>
       JSON.parse(localStorage.getItem(`forge-learning-state-v1:${id}`))
@@ -667,6 +716,7 @@ try {
     resetState.masteryArtifacts.length ||
     resetState.topicPracticeArtifacts.length ||
     resetState.exampleLabRecords.length ||
+    resetState.reviewSchedule.length ||
     resetState.interviewResults.length ||
     resetState.quizResults.length ||
     resetState.certificates.length ||
@@ -746,7 +796,7 @@ try {
 
   if (errors.length) throw new Error(`Browser errors: ${errors.join(" | ")}`);
   console.log(
-    "Smoke test passed: focused learning shell, unique npm chapters, saved interactive examples, named icon controls, project action icons, course-topic controls, framework paths, learning resources, topic practice, persistence, quizzes, certificates, plain-English checks, 78 primary responsive checks, and six focused lesson viewport checks.",
+    "Smoke test passed: evidence-based mastery, weak-signal spaced reviews, focused learning shell, unique npm chapters, saved interactive examples, named icon controls, project action icons, course-topic controls, framework paths, learning resources, topic practice, persistence, quizzes, certificates, plain-English checks, 78 primary responsive checks, and six focused lesson viewport checks.",
   );
 } finally {
   await browser.close();

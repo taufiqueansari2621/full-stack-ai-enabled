@@ -53,6 +53,9 @@ Update this file after every meaningful verified implementation change.
 - Connected every project card to the real coding workspace and added new-project starters for browser web apps, Node.js, Python, and AI/RAG work, with readable README and Forge project metadata files.
 - Added immutable D1 workspace snapshots with user-derived ownership, bounded file validation, 20-version history, named saves, and one-click restore; signed-out reads are denied.
 - Deployed the project workspace and version-history unit as Cloudflare Worker version `83c7ea16-709d-47ae-810d-f3a6267348bc`; production browser tests prove workspace execution, D1 autosave, snapshot creation, contextual AI, recovery, and authorization, and the responsive live audit passes.
+- Replaced the synthetic mastery percentage with six understandable states—Not started, Learning, Practicing, Applied, Review due, and Strong—derived from visible lesson, practice, artifact, project, interview, and retention evidence.
+- Added a real spaced-review schedule to learner state: incorrect coding answers, weak quiz topics, and low interview results become due work; Again, Hard, Good, and Easy recall ratings calculate the next interval and persist through local and authenticated cloud progress.
+- Added backward-compatible cloud hydration for older progress snapshots, a due-now review queue, upcoming-review feedback, optional practice links, responsive recall controls, and browser coverage for creation, rescheduling, profile restoration, and reset.
 - Deployed the account and cloud-sync release as Cloudflare Worker version `cf899c43-ce1d-4144-a8cf-dcfa6de08945`; the complete account lifecycle and existing responsive learner experience pass against production D1 and Workers.
 
 - Created and published the 52-week curriculum and 34-project ladder.

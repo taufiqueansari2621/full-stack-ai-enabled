@@ -2258,6 +2258,68 @@ h3 {
   max-width: 1000px;
   margin: 0 auto;
 }
+.review-due-row {
+  align-items: center;
+}
+.review-ratings {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.review-ratings button {
+  min-height: 34px;
+  padding: 0 9px;
+  border: 1px solid var(--line-2);
+  border-radius: 7px;
+  color: var(--muted);
+  background: var(--panel-2);
+  font-size: 8px;
+}
+.review-ratings button:hover,
+.review-ratings button:focus-visible {
+  color: var(--teal);
+  border-color: var(--teal);
+}
+.review-empty {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 24px 8px;
+  color: var(--green);
+}
+.review-empty > div,
+.review-recommendations button > span {
+  display: grid;
+  gap: 3px;
+}
+.review-empty span,
+.review-recommendations small {
+  color: var(--muted);
+  font-size: 8px;
+}
+.review-recommendations {
+  display: grid;
+  gap: 8px;
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+.review-recommendations > button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 48px;
+  padding: 9px 11px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--text);
+  background: var(--panel-2);
+  text-align: left;
+}
+.review-recommendations svg {
+  width: 15px;
+}
 .queue-row {
   display: flex;
   align-items: center;
@@ -2616,6 +2678,11 @@ h3 {
   }
   .queue-row {
     flex-wrap: wrap;
+  }
+  .review-ratings {
+    width: 100%;
+    justify-content: flex-start;
+    padding-left: 47px;
   }
   .memory-strength {
     width: 100%;

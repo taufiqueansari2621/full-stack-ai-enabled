@@ -747,9 +747,9 @@ export function ProgressPage({
         </div>
         <div className="mastery-hero">
           <div>
-            <span>Overall progress</span>
-            <b>{store.metrics.mastery}%</b>
-            <small>Saved in this browser</small>
+            <span>Current evidence state</span>
+            <b>{store.metrics.masteryState}</b>
+            <small>{store.metrics.mastery}% of evidence types present</small>
           </div>
           <Target />
         </div>
@@ -1665,7 +1665,20 @@ export function ReviewsWorkspace({
   notify,
   navigate,
 }: PageProps & { navigate: (id: NavId) => void }) {
-  const done = store.state.completedReviews;
+  const [now] = useState(() => Date.now());
+  const scheduled = [...store.state.reviewSchedule].sort(
+    (a, b) =>
+      new Date(a.nextReviewAt).getTime() - new Date(b.nextReviewAt).getTime(),
+  );
+  const due = scheduled.filter(
+    (item) => new Date(item.nextReviewAt).getTime() <= now,
+  );
+  const labels = {
+    again: "Again · 10 min",
+    hard: "Hard · 1 day",
+    good: "Good",
+    easy: "Easy",
+  } as const;
   return (
     <div className="page">
       <section className="page-title">
@@ -1674,61 +1687,81 @@ export function ReviewsWorkspace({
           <h1>
             Make knowledge <span className="gradient-text">stick</span>
           </h1>
-          <p>Your review list is saved in this browser.</p>
+          <p>
+            Weak answers return sooner. Confident recall earns a longer gap.
+            Signed-in schedules sync across devices.
+          </p>
         </div>
         <div className="review-summary">
           <div>
-            <b>{reviewItems.length - done.length}</b>
-            <span>left</span>
+            <b>{due.length}</b>
+            <span>due now</span>
           </div>
         </div>
       </section>
       <div className="review-queue panel">
-        {reviewItems.map((item, i) => {
-          const complete = done.includes(item.title);
-          return (
-            <div
-              className={`queue-row ${complete ? "complete" : ""}`}
-              key={item.title}
-            >
-              <button
-                className="check-button"
-                aria-label={
-                  complete
-                    ? `Mark ${item.title} as not reviewed`
-                    : `Mark ${item.title} as reviewed`
-                }
-                onClick={() => {
-                  if (complete) store.undoReview(item.title);
-                  else store.completeReview(item.title);
-                  notify(
-                    complete ? "Returned to queue" : "Review complete — +25 XP",
-                  );
-                }}
-              >
-                {complete ? <Check /> : i + 1}
-              </button>
-              <div className={`review-icon r${i}`}>
-                <RotateCcw />
-              </div>
-              <div className="queue-main">
-                <b>{item.title}</b>
-                <span>{item.type}</span>
-              </div>
-              <button
-                className="round-action"
-                aria-label={`Open practice for ${item.title}`}
-                onClick={() =>
-                  navigate(
-                    i === 1 ? "practice" : i === 3 ? "interview" : "learn",
-                  )
-                }
-              >
-                <ArrowRight aria-hidden="true" />
-              </button>
+        {due.map((item, index) => (
+          <article className="queue-row review-due-row" key={item.id}>
+            <div className={`review-icon r${index % 4}`}>
+              <RotateCcw />
             </div>
-          );
-        })}
+            <div className="queue-main">
+              <b>{item.topic}</b>
+              <span>
+                {item.kind} recall ·{" "}
+                {item.streak
+                  ? `${item.streak} successful recalls`
+                  : "new weak signal"}
+              </span>
+            </div>
+            <div
+              className="review-ratings"
+              aria-label={`Rate recall for ${item.topic}`}
+            >
+              {(Object.keys(labels) as (keyof typeof labels)[]).map(
+                (rating) => (
+                  <button
+                    key={rating}
+                    onClick={() => {
+                      store.rateReview(item.id, rating);
+                      notify(`Next review scheduled: ${labels[rating]}`);
+                    }}
+                  >
+                    {labels[rating]}
+                  </button>
+                ),
+              )}
+            </div>
+          </article>
+        ))}
+        {!due.length && (
+          <div className="review-empty">
+            <CheckCircle2 />
+            <div>
+              <b>You are caught up</b>
+              <span>
+                {scheduled.length
+                  ? `Next review ${new Date(scheduled[0].nextReviewAt).toLocaleString()}.`
+                  : "Weak quiz, coding, and interview signals will appear here automatically."}
+              </span>
+            </div>
+          </div>
+        )}
+        <div className="review-recommendations">
+          <span className="eyebrow">OPTIONAL PRACTICE</span>
+          {reviewItems.slice(0, 3).map((item, index) => (
+            <button
+              key={item.title}
+              onClick={() => navigate(index === 1 ? "practice" : "learn")}
+            >
+              <span>
+                <b>{item.title}</b>
+                <small>{item.type}</small>
+              </span>
+              <ArrowRight />
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );

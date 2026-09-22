@@ -477,7 +477,7 @@ function Dashboard({
               <span className="orb-dot d2" />
               <span className="orb-dot d3" />
             </div>
-            <span>JavaScript progress</span>
+            <span>Evidence coverage</span>
             <ProgressRing value={store.metrics.mastery} size={70} />
           </div>
         </article>
@@ -525,12 +525,11 @@ function Dashboard({
             <Trophy size={20} />
           </div>
           <div>
-            <span>Overall skill progress</span>
-            <h3>
-              {store.metrics.mastery}
-              <span>%</span>
-            </h3>
-            <small className="positive">Based on your saved work</small>
+            <span>Current skill state</span>
+            <h3>{store.metrics.masteryState}</h3>
+            <small className="positive">
+              {store.metrics.mastery}% evidence coverage
+            </small>
           </div>
           <ProgressRing value={store.metrics.mastery} size={55} stroke={5} />
         </article>
@@ -624,7 +623,7 @@ function Dashboard({
               </small>
             </div>
             <div className="stage-progress">
-              <strong>{store.metrics.mastery}%</strong>
+              <strong>{store.metrics.mastery}% evidence</strong>
               <div className="bar">
                 <i style={{ width: `${store.metrics.mastery}%` }} />
               </div>

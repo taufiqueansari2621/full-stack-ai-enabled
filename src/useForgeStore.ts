@@ -1,4 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  evidenceProgress,
+  masteryEvidence,
+  masteryState,
+} from "./domain/mastery";
 
 const LEGACY_STORAGE_KEY = "forge-learning-state-v1";
 const storageKey = (learnerId: string) =>
@@ -78,6 +83,20 @@ export type ExampleLabRecord = {
   updatedAt: string;
 };
 
+export type ReviewRating = "again" | "hard" | "good" | "easy";
+
+export type ReviewRecord = {
+  id: string;
+  topic: string;
+  kind: "flashcard" | "coding" | "concept" | "debugging" | "interview";
+  sourceId: string;
+  nextReviewAt: string;
+  intervalDays: number;
+  streak: number;
+  lastRating: ReviewRating | null;
+  updatedAt: string;
+};
+
 export type ForgeState = {
   version: 1;
   xp: number;
@@ -92,6 +111,7 @@ export type ForgeState = {
   masteryArtifacts: MasteryArtifact[];
   topicPracticeArtifacts: TopicPracticeArtifact[];
   exampleLabRecords: ExampleLabRecord[];
+  reviewSchedule: ReviewRecord[];
   frontendFrameworkPath: "react" | "angular" | "both" | null;
   activityDates: string[];
   weeklyGoalMinutes: number;
@@ -109,6 +129,29 @@ export type ForgeState = {
 const todayKey = () => new Date().toISOString().slice(0, 10);
 const newId = () => `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
+function queueReview(
+  records: ReviewRecord[],
+  item: Pick<ReviewRecord, "topic" | "kind" | "sourceId">,
+) {
+  const now = new Date().toISOString();
+  const existing = records.find((record) => record.sourceId === item.sourceId);
+  const next: ReviewRecord = existing
+    ? { ...existing, ...item, nextReviewAt: now, updatedAt: now }
+    : {
+        ...item,
+        id: newId(),
+        nextReviewAt: now,
+        intervalDays: 0,
+        streak: 0,
+        lastRating: null,
+        updatedAt: now,
+      };
+  return [
+    ...records.filter((record) => record.sourceId !== item.sourceId),
+    next,
+  ].slice(-500);
+}
+
 const createInitialState = (): ForgeState => ({
   version: 1,
   xp: 0,
@@ -123,6 +166,7 @@ const createInitialState = (): ForgeState => ({
   masteryArtifacts: [],
   topicPracticeArtifacts: [],
   exampleLabRecords: [],
+  reviewSchedule: [],
   frontendFrameworkPath: null,
   activityDates: [],
   weeklyGoalMinutes: 450,
@@ -189,6 +233,9 @@ function loadState(learnerId: string): ForgeState {
         : [],
       exampleLabRecords: Array.isArray(candidate.exampleLabRecords)
         ? candidate.exampleLabRecords
+        : [],
+      reviewSchedule: Array.isArray(candidate.reviewSchedule)
+        ? candidate.reviewSchedule
         : [],
       frontendFrameworkPath:
         candidate.frontendFrameworkPath === "react" ||
@@ -268,6 +315,13 @@ export function useForgeStore(learnerId: string) {
           !current.practiceAttempts.some(
             (item) => item.challengeId === attempt.challengeId && item.correct,
           );
+        const reviewSchedule = attempt.correct
+          ? current.reviewSchedule
+          : queueReview(current.reviewSchedule, {
+              topic: attempt.challengeId,
+              kind: "coding",
+              sourceId: `practice:${attempt.challengeId}`,
+            });
         return touchActivity({
           ...current,
           xp: current.xp + (firstCorrect ? 60 : 0),
@@ -276,6 +330,7 @@ export function useForgeStore(learnerId: string) {
             ...current.practiceAttempts,
             { ...attempt, attemptedAt: new Date().toISOString() },
           ].slice(-100),
+          reviewSchedule,
         });
       }),
     [touchActivity],
@@ -325,24 +380,44 @@ export function useForgeStore(learnerId: string) {
 
   const saveInterview = useCallback(
     (result: Omit<InterviewResult, "id" | "createdAt">) =>
-      setState((current) =>
-        touchActivity({
+      setState((current) => {
+        const saved = {
+          ...result,
+          id: newId(),
+          createdAt: new Date().toISOString(),
+        };
+        const reviewSchedule =
+          result.score < 70
+            ? queueReview(current.reviewSchedule, {
+                topic: result.topic ?? result.question,
+                kind: "interview",
+                sourceId: `interview:${result.questionId ?? result.question}`,
+              })
+            : current.reviewSchedule;
+        return touchActivity({
           ...current,
           xp: current.xp + Math.round(result.score / 4),
           learnedMinutes: current.learnedMinutes + 5,
-          interviewResults: [
-            ...current.interviewResults,
-            { ...result, id: newId(), createdAt: new Date().toISOString() },
-          ].slice(-500),
-        }),
-      ),
+          interviewResults: [...current.interviewResults, saved].slice(-500),
+          reviewSchedule,
+        });
+      }),
     [touchActivity],
   );
 
   const saveQuiz = useCallback(
     (result: Omit<QuizResult, "id" | "completedAt">) =>
-      setState((current) =>
-        touchActivity({
+      setState((current) => {
+        const reviewSchedule = result.weakTopics.reduce(
+          (records, topic) =>
+            queueReview(records, {
+              topic,
+              kind: "concept",
+              sourceId: `quiz:${result.quizId}:${topic}`,
+            }),
+          current.reviewSchedule,
+        );
+        return touchActivity({
           ...current,
           xp: current.xp + (result.score >= 80 ? 150 : 25),
           learnedMinutes: current.learnedMinutes + 15,
@@ -350,8 +425,9 @@ export function useForgeStore(learnerId: string) {
             ...current.quizResults,
             { ...result, id: newId(), completedAt: new Date().toISOString() },
           ].slice(-50),
-        }),
-      ),
+          reviewSchedule,
+        });
+      }),
     [touchActivity],
   );
 
@@ -401,6 +477,43 @@ export function useForgeStore(learnerId: string) {
             ),
             nextArtifact,
           ].slice(-500),
+        });
+      }),
+    [touchActivity],
+  );
+
+  const rateReview = useCallback(
+    (id: string, rating: ReviewRating) =>
+      setState((current) => {
+        const now = new Date();
+        const multipliers: Record<ReviewRating, number> = {
+          again: 0,
+          hard: 1,
+          good: 2,
+          easy: 4,
+        };
+        return touchActivity({
+          ...current,
+          xp: current.xp + (rating === "again" ? 0 : 15),
+          learnedMinutes: current.learnedMinutes + 4,
+          reviewSchedule: current.reviewSchedule.map((record) => {
+            if (record.id !== id) return record;
+            const intervalDays =
+              rating === "again"
+                ? 0
+                : Math.max(1, (record.intervalDays || 1) * multipliers[rating]);
+            const next = new Date(now);
+            if (rating === "again") next.setMinutes(next.getMinutes() + 10);
+            else next.setDate(next.getDate() + intervalDays);
+            return {
+              ...record,
+              intervalDays,
+              streak: rating === "again" ? 0 : record.streak + 1,
+              lastRating: rating,
+              nextReviewAt: next.toISOString(),
+              updatedAt: now.toISOString(),
+            };
+          }),
         });
       }),
     [touchActivity],
@@ -479,7 +592,14 @@ export function useForgeStore(learnerId: string) {
   const resetProgress = useCallback(() => setState(createInitialState()), []);
 
   const replaceState = useCallback((nextState: ForgeState) => {
-    if (nextState.version === 1) setState(nextState);
+    if (nextState.version === 1)
+      setState({
+        ...createInitialState(),
+        ...nextState,
+        reviewSchedule: Array.isArray(nextState.reviewSchedule)
+          ? nextState.reviewSchedule
+          : [],
+      });
   }, []);
 
   const setLearningPosition = useCallback(
@@ -516,17 +636,8 @@ export function useForgeStore(learnerId: string) {
       (sum, tasks) => sum + tasks.length,
       0,
     );
-    const mastery = Math.min(
-      100,
-      Math.round(
-        (state.completedLessons.length * 5 +
-          uniqueCorrect * 7 +
-          state.completedReviews.length * 3 +
-          completedTasks +
-          interviewAverage * 0.25) /
-          1.7,
-      ),
-    );
+    const evidence = masteryEvidence(state);
+    const mastery = evidenceProgress(evidence);
     const weeklyPercent = Math.min(
       100,
       Math.round((state.learnedMinutes / state.weeklyGoalMinutes) * 100),
@@ -547,6 +658,8 @@ export function useForgeStore(learnerId: string) {
       interviewAverage,
       completedTasks,
       mastery,
+      masteryState: masteryState(evidence),
+      masteryEvidence: evidence,
       weeklyPercent,
       streak,
     };
@@ -566,6 +679,7 @@ export function useForgeStore(learnerId: string) {
     saveQuiz,
     earnCertificate,
     saveMasteryArtifact,
+    rateReview,
     saveTopicPracticeArtifact,
     saveExampleLabRecord,
     setFrontendFrameworkPath,
