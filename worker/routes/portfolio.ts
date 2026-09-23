@@ -140,7 +140,7 @@ export const portfolioRoutes: Route[] = [
           "Public profile not found.",
         );
       return json({ portfolio: response(row) }, 200, {
-        "cache-control": "public, max-age=60",
+        "cache-control": "no-store, private",
       });
     },
   },

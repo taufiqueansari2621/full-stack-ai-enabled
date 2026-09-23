@@ -207,6 +207,7 @@ try {
     { timeout: 30_000 },
   );
   await clickText("Portfolio");
+  await page.waitForSelector(".portfolio-editor textarea", { timeout: 10_000 });
   await page.type(
     ".portfolio-editor textarea",
     "I build accessible full-stack learning products and verify decisions with tests, evidence, and production feedback.",
