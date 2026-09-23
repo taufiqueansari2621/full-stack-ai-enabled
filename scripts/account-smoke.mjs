@@ -288,6 +288,65 @@ try {
   }, email);
   if (loginStatus !== 200)
     throw new Error(`Login after recovery returned ${loginStatus}`);
+  const certificateResult = await page.evaluate(async () => {
+    const progressResponse = await fetch("/api/progress");
+    const progress = await progressResponse.json();
+    const state = progress.state;
+    state.completedLessons = ["l1", "l2", "l3", "l4", "l5", "l6"];
+    state.quizResults = [
+      {
+        id: "q",
+        quizId: "foundation-assessment",
+        score: 90,
+        correct: 9,
+        total: 10,
+        weakTopics: [],
+        completedAt: new Date().toISOString(),
+      },
+    ];
+    state.practiceAttempts = [1, 2, 3].map((index) => ({
+      challengeId: `c${index}`,
+      correct: true,
+      answer: "verified",
+      attemptedAt: new Date().toISOString(),
+    }));
+    state.projectTasks = { p05: ["p05-1", "p05-2", "p05-3"] };
+    state.masteryArtifacts = ["foundation", "guided", "applied"].map(
+      (level, index) => ({
+        id: `m${index}`,
+        lessonId: "foundation",
+        level,
+        response:
+          "Verified evidence response with sufficient detail for server-side certificate testing.",
+        updatedAt: new Date().toISOString(),
+      }),
+    );
+    const saved = await fetch("/api/progress", {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ state, revision: progress.revision }),
+    });
+    const issued = await fetch("/api/certificates/issue", { method: "POST" });
+    const body = await issued.json();
+    const verified = await fetch(
+      `/api/certificate?id=${encodeURIComponent(body.certificate?.credentialId ?? "")}`,
+    );
+    return {
+      saved: saved.status,
+      issued: issued.status,
+      verified: verified.status,
+      certificate: body.certificate,
+    };
+  });
+  if (
+    certificateResult.saved !== 200 ||
+    ![200, 201].includes(certificateResult.issued) ||
+    certificateResult.verified !== 200 ||
+    certificateResult.certificate?.evidence?.projectMilestones !== 3
+  )
+    throw new Error(
+      `Server certificate verification failed: ${JSON.stringify(certificateResult)}`,
+    );
   const unpublish = await page.evaluate(async (name) => {
     const portfolio = (await (await fetch("/api/portfolio")).json()).portfolio;
     const saved = await fetch("/api/portfolio", {
@@ -304,7 +363,7 @@ try {
     throw new Error(`Portfolio unpublish failed: ${JSON.stringify(unpublish)}`);
   if (errors.length) throw new Error(`Browser errors: ${errors.join(" | ")}`);
   console.log(
-    "Account smoke passed: registration, onboarding, diagnostic roadmap, isolated code tests, workspace snapshots, Forge AI, opt-in public portfolio, unpublish privacy, recovery, progress sync, and authorization.",
+    "Account smoke passed: registration, onboarding, diagnostic roadmap, isolated code tests, workspace snapshots, Forge AI, opt-in public portfolio, unpublish privacy, server-verified certificate, recovery, progress sync, and authorization.",
   );
 } finally {
   await browser.close();

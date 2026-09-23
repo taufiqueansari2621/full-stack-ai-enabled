@@ -88,6 +88,9 @@ The Worker now exposes:
 | `GET /api/portfolio`                 | Read the learner's private portfolio draft        | Required          |
 | `PUT /api/portfolio`                 | Save or explicitly publish a bounded projection   | Required          |
 | `GET /api/public-profile?username=…` | Read only an opted-in public projection           | Public            |
+| `GET /api/certificates`              | List authenticated server-issued credentials      | Required          |
+| `POST /api/certificates/issue`       | Verify synced evidence and issue one credential   | Required          |
+| `GET /api/certificate?id=…`          | Verify a server-issued credential                 | Public            |
 
 The account, onboarding, progress, workspace, version-history, and contextual AI APIs are wired into tested UI flows. Local learner state remains an offline cache and explicit import source; authenticated D1 records provide cross-device continuity with revision-conflict feedback.
 

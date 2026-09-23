@@ -35,6 +35,21 @@ export type PublicPortfolio = {
   }[];
   updatedAt: string;
 };
+export type VerifiedCertificate = {
+  credentialId: string;
+  certificateId: string;
+  score: number;
+  issuedAt: string;
+  fullName: string;
+  username: string;
+  evidence: {
+    lessons: number;
+    assessmentScore: number;
+    correctPractice: number;
+    projectMilestones: number;
+    masteryArtifacts: number;
+  };
+};
 
 type ApiErrorBody = { error?: { code?: string; message?: string } };
 
@@ -193,5 +208,15 @@ export const forgeApi = {
   publicPortfolio: (username: string) =>
     request<{ portfolio: PublicPortfolio }>(
       `/api/public-profile?username=${encodeURIComponent(username)}`,
+    ),
+  certificates: () =>
+    request<{ certificates: VerifiedCertificate[] }>("/api/certificates"),
+  issueCertificate: () =>
+    request<{ certificate: VerifiedCertificate }>("/api/certificates/issue", {
+      method: "POST",
+    }),
+  verifyCertificate: (id: string) =>
+    request<{ certificate: VerifiedCertificate }>(
+      `/api/certificate?id=${encodeURIComponent(id)}`,
     ),
 };

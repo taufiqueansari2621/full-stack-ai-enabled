@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -15,6 +15,7 @@ import {
 import type { LearnerProfile } from "./useLocalProfiles";
 import type { ForgeStore } from "./useForgeStore";
 import { curriculumLessons } from "./curriculum";
+import { forgeApi, type VerifiedCertificate } from "./services/forgeApi";
 
 type Question = {
   id: string;
@@ -385,10 +386,12 @@ export function CertificatesPage({
   store,
   profile,
   notify,
+  cloudEnabled = false,
 }: {
   store: ForgeStore;
   profile: LearnerProfile;
   notify: (text: string) => void;
+  cloudEnabled?: boolean;
 }) {
   const required = curriculumLessons.map((item) => item.id),
     completed = required.filter((id) =>
@@ -399,12 +402,42 @@ export function CertificatesPage({
     .find(
       (item) => item.quizId === "foundation-assessment" && item.score >= 80,
     );
+  const correctPractice = store.state.practiceAttempts.filter(
+    (item) => item.correct,
+  ).length;
+  const projectMilestones = Object.values(store.state.projectTasks).reduce(
+    (total, items) => total + items.length,
+    0,
+  );
+  const masteryEvidence = store.state.masteryArtifacts.length;
   const certificate = store.state.certificates.find(
     (item) => item.certificateId === "forge-foundations",
   );
-  const eligible = completed === required.length && Boolean(passing);
-  const issue = () => {
+  const eligible =
+    completed === required.length &&
+    Boolean(passing) &&
+    (!cloudEnabled ||
+      (correctPractice >= 3 && projectMilestones >= 3 && masteryEvidence >= 3));
+  const issue = async () => {
     if (!passing) return;
+    if (cloudEnabled) {
+      try {
+        const { certificate: verified } = await forgeApi.issueCertificate();
+        store.earnCertificate({
+          certificateId: verified.certificateId,
+          credentialId: verified.credentialId,
+          score: verified.score,
+        });
+        notify("Verified Foundation Certificate issued");
+      } catch (reason) {
+        notify(
+          reason instanceof Error
+            ? reason.message
+            : "Certificate evidence could not be verified",
+        );
+      }
+      return;
+    }
     const credentialId = `FORGE-FND-${new Date().getFullYear()}-${profile.id.slice(-6).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
     store.earnCertificate({
       certificateId: "forge-foundations",
@@ -421,8 +454,11 @@ export function CertificatesPage({
             <span className="eyebrow teal">YOUR CERTIFICATE</span>
             <h1>Certificate of Completion</h1>
             <p>
-              You earned this certificate by completing the required lessons
-              and passing the test. It is saved in this browser.
+              You earned this certificate by completing the required lessons and
+              passing the test.{" "}
+              {cloudEnabled
+                ? "Its evidence is verified by Forge Cloud."
+                : "It is saved in this browser."}
             </p>
           </div>
           <button className="primary-button" onClick={() => window.print()}>
@@ -473,8 +509,7 @@ export function CertificatesPage({
           <span className="eyebrow teal">CERTIFICATES</span>
           <h1>Certificates earned from completed work</h1>
           <p>
-            Finish the required lessons and pass the test to earn a
-            certificate.
+            Finish the required lessons and pass the test to earn a certificate.
           </p>
         </div>
       </section>
@@ -498,13 +533,97 @@ export function CertificatesPage({
               {passing ? <Check /> : <span />} Foundation test:{" "}
               {passing ? `${passing.score}% passed` : "80% required"}
             </li>
+            {cloudEnabled && (
+              <>
+                <li className={correctPractice >= 3 ? "done" : ""}>
+                  {correctPractice >= 3 ? <Check /> : <span />} Correct
+                  practice: {correctPractice}/3
+                </li>
+                <li className={projectMilestones >= 3 ? "done" : ""}>
+                  {projectMilestones >= 3 ? <Check /> : <span />} Project
+                  milestones: {projectMilestones}/3
+                </li>
+                <li className={masteryEvidence >= 3 ? "done" : ""}>
+                  {masteryEvidence >= 3 ? <Check /> : <span />} Mastery
+                  artifacts: {masteryEvidence}/3
+                </li>
+              </>
+            )}
           </ul>
         </div>
-        <button className="primary-button" disabled={!eligible} onClick={issue}>
+        <button
+          className="primary-button"
+          disabled={!eligible}
+          onClick={() => void issue()}
+        >
           {eligible ? "Get certificate" : "Finish the requirements"}
           <Award />
         </button>
       </article>
     </div>
+  );
+}
+
+export function CertificateVerification({
+  credentialId,
+}: {
+  credentialId: string;
+}) {
+  const [certificate, setCertificate] = useState<VerifiedCertificate | null>(
+    null,
+  );
+  const [error, setError] = useState("");
+  useEffect(() => {
+    forgeApi
+      .verifyCertificate(credentialId)
+      .then((result) => setCertificate(result.certificate))
+      .catch(() => setError("Credential not found."));
+  }, [credentialId]);
+  return (
+    <main className="public-profile-shell">
+      <a className="public-brand" href="/">
+        FORGE
+      </a>
+      <article className="certificate-card panel">
+        {certificate ? (
+          <>
+            <div className="certificate-lock">
+              <Award />
+            </div>
+            <div>
+              <span className="eyebrow teal">VERIFIED FORGE CREDENTIAL</span>
+              <h1>{certificate.fullName}</h1>
+              <h2>Full-Stack + AI Foundations</h2>
+              <p>
+                Issued {new Date(certificate.issuedAt).toLocaleDateString()} ·
+                Score {certificate.score}%
+              </p>
+              <p>
+                <b>{certificate.credentialId}</b>
+              </p>
+              <ul>
+                <li className="done">
+                  <Check /> {certificate.evidence.lessons} lessons
+                </li>
+                <li className="done">
+                  <Check /> {certificate.evidence.correctPractice} correct
+                  practice attempts
+                </li>
+                <li className="done">
+                  <Check /> {certificate.evidence.projectMilestones} project
+                  milestones
+                </li>
+                <li className="done">
+                  <Check /> {certificate.evidence.masteryArtifacts} mastery
+                  artifacts
+                </li>
+              </ul>
+            </div>
+          </>
+        ) : (
+          <p>{error || "Verifying credential…"}</p>
+        )}
+      </article>
+    </main>
   );
 }

@@ -82,7 +82,11 @@ import {
   type CurriculumPhase,
 } from "./curriculumCatalog";
 import { catalogLessonId } from "./topicIds";
-import { CertificatesPage, QuizzesPage } from "./Assessments";
+import {
+  CertificateVerification,
+  CertificatesPage,
+  QuizzesPage,
+} from "./Assessments";
 
 const ResourcesPage = lazy(() => import("./ResourcesPage"));
 const Workspace = lazy(() => import("./Workspace"));
@@ -2894,7 +2898,14 @@ function LearningWorkspace({
   else if (active === "progress")
     view = <ProgressPage store={store} navigate={setActive} />;
   else if (active === "certificates")
-    view = <CertificatesPage store={store} profile={profile} notify={notify} />;
+    view = (
+      <CertificatesPage
+        store={store}
+        profile={profile}
+        notify={notify}
+        cloudEnabled={cloudEnabled}
+      />
+    );
   else view = <MentorPage store={store} navigate={setActive} />;
   return (
     <div className={`app-shell ${learningFocus ? "learning-focus" : ""}`}>
@@ -3050,6 +3061,9 @@ export default function App() {
   const publicMatch = window.location.pathname.match(
     /^\/u\/([a-zA-Z0-9_]{3,30})\/?$/,
   );
+  const certificateMatch = window.location.pathname.match(
+    /^\/certificate\/(FORGE-FND-\d{4}-[A-F0-9]{8})\/?$/,
+  );
   const profiles = useLocalProfiles();
   const account = useCloudAccount();
   const { activeProfile, activateCloudProfile } = profiles;
@@ -3102,6 +3116,8 @@ export default function App() {
         <PublicProfile username={publicMatch[1]} />
       </Suspense>
     );
+  if (certificateMatch)
+    return <CertificateVerification credentialId={certificateMatch[1]} />;
   if (account.user && !account.profile)
     return (
       <main className="profile-gate">

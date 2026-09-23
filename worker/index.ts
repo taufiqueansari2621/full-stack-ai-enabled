@@ -6,6 +6,7 @@ import { profileRoutes } from "./routes/profile";
 import { workspaceRoutes } from "./routes/workspace";
 import { aiRoutes } from "./routes/ai";
 import { portfolioRoutes } from "./routes/portfolio";
+import { certificateRoutes } from "./routes/certificates";
 import type { Env } from "./types";
 
 const routes: Route[] = [
@@ -28,6 +29,7 @@ const routes: Route[] = [
   ...workspaceRoutes,
   ...aiRoutes,
   ...portfolioRoutes,
+  ...certificateRoutes,
 ];
 
 const SECURITY_HEADERS = {
