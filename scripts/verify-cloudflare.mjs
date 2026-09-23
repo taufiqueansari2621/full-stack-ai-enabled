@@ -10,6 +10,7 @@ const browser = await puppeteer.launch({
   args: ["--no-sandbox"],
 });
 const page = await browser.newPage();
+page.setDefaultTimeout(12_000);
 const browserErrors = [];
 
 page.on("console", (message) => {
@@ -39,6 +40,41 @@ const open = async (path, expectedText) => {
 try {
   await page.setViewport({ width: 1440, height: 900 });
   await open("/", "Learn web development and AI, one clear step at a time.");
+  const pwa = await page.evaluate(async () => {
+    const [manifestResponse, workerResponse] = await Promise.all([
+      fetch("/manifest.webmanifest"),
+      fetch("/sw.js"),
+    ]);
+    const manifest = await manifestResponse.json();
+    const worker = await workerResponse.text();
+    const registration = await Promise.race([
+      navigator.serviceWorker.ready,
+      new Promise((_, reject) =>
+        window.setTimeout(
+          () => reject(new Error("Service worker registration timed out")),
+          12_000,
+        ),
+      ),
+    ]);
+    return {
+      manifestStatus: manifestResponse.status,
+      workerStatus: workerResponse.status,
+      display: manifest.display,
+      startUrl: manifest.start_url,
+      workerScope: registration.scope,
+      hasOfflineShell: worker.includes("navigationResponse"),
+    };
+  });
+  if (
+    pwa.manifestStatus !== 200 ||
+    pwa.workerStatus !== 200 ||
+    pwa.display !== "standalone" ||
+    pwa.startUrl !== "/" ||
+    !pwa.workerScope.startsWith(baseUrl) ||
+    !pwa.hasOfflineShell
+  )
+    throw new Error(`Production PWA setup failed: ${JSON.stringify(pwa)}`);
+  console.log("PWA manifest and service worker registration passed.");
   await page.evaluate(() => {
     const profile = {
       id: "production_audit",
@@ -69,7 +105,8 @@ try {
     { timeout: 8000 },
   );
   await page.waitForFunction(
-    () => document.body.textContent?.includes("npm ci: clean, repeatable installs"),
+    () =>
+      document.body.textContent?.includes("npm ci: clean, repeatable installs"),
     { timeout: 8000 },
   );
   const npmLesson = await page.evaluate(() => {
@@ -99,7 +136,9 @@ try {
     npmLesson.chapterCount !== 11 ||
     npmLesson.caseCount !== 3
   )
-    throw new Error(`Production npm lesson failed: ${JSON.stringify(npmLesson)}`);
+    throw new Error(
+      `Production npm lesson failed: ${JSON.stringify(npmLesson)}`,
+    );
   await page.$eval(".topic-rail-toggle", (button) => button.click());
   await page.waitForFunction(() => !document.querySelector(".related-topics"));
   await page.$eval(".topic-rail-toggle", (button) => button.click());
@@ -114,7 +153,8 @@ try {
   await open("/resources", "LEARNING RESOURCES");
   await open("/projects", "Project workshop");
   const projectUi = await page.evaluate(() => ({
-    startAction: document.querySelector(".page-title .primary-button")?.textContent,
+    startAction: document.querySelector(".page-title .primary-button")
+      ?.textContent,
     uniqueSymbols: new Set(
       [...document.querySelectorAll(".project-symbol svg")].map((icon) =>
         [...icon.classList].find((name) => name.startsWith("lucide-")),
@@ -126,16 +166,20 @@ try {
         button.getBoundingClientRect().height >= 40 &&
         button.getAttribute("aria-label")?.startsWith("Open "),
     ),
-    unnamedButtons: [...document.querySelectorAll("button")].filter((button) => {
-      const visible = Boolean(
-        button.offsetWidth || button.offsetHeight || button.getClientRects().length,
-      );
-      const name =
-        button.getAttribute("aria-label")?.trim() ||
-        button.getAttribute("title")?.trim() ||
-        button.textContent?.trim();
-      return visible && !name;
-    }).length,
+    unnamedButtons: [...document.querySelectorAll("button")].filter(
+      (button) => {
+        const visible = Boolean(
+          button.offsetWidth ||
+          button.offsetHeight ||
+          button.getClientRects().length,
+        );
+        const name =
+          button.getAttribute("aria-label")?.trim() ||
+          button.getAttribute("title")?.trim() ||
+          button.textContent?.trim();
+        return visible && !name;
+      },
+    ).length,
   }));
   if (
     !projectUi.startAction?.includes("Start P05") ||
@@ -143,15 +187,31 @@ try {
     !projectUi.namedActions ||
     projectUi.unnamedButtons !== 0
   )
-    throw new Error(`Production project controls failed: ${JSON.stringify(projectUi)}`);
+    throw new Error(
+      `Production project controls failed: ${JSON.stringify(projectUi)}`,
+    );
   await page.setViewport({ width: 390, height: 844 });
   await open("/projects", "Open project");
   await open("/learn", "COURSE TOPICS");
+  await page.setOfflineMode(true);
+  await page.goto(`${baseUrl}/resources`, {
+    waitUntil: "domcontentloaded",
+    timeout: 12_000,
+  });
+  await page.waitForFunction(
+    () => document.body.textContent?.includes("LEARNING RESOURCES"),
+    { timeout: 8000 },
+  );
+  await page.setOfflineMode(false);
+  console.log("Cached offline navigation passed.");
 
-  if (browserErrors.length)
-    throw new Error(`Browser errors: ${browserErrors.join(" | ")}`);
+  const unexpectedBrowserErrors = browserErrors.filter(
+    (message) => !message.includes("ERR_INTERNET_DISCONNECTED"),
+  );
+  if (unexpectedBrowserErrors.length)
+    throw new Error(`Browser errors: ${unexpectedBrowserErrors.join(" | ")}`);
   console.log(
-    `Cloudflare verification passed for ${baseUrl}: SPA routes, deep npm lesson, interactive examples, project icons and named controls, focused learning, course-rail controls, console health, and 390px overflow.`,
+    `Cloudflare verification passed for ${baseUrl}: installable PWA metadata, registered offline shell, cached offline navigation, SPA routes, deep npm lesson, interactive examples, project icons and named controls, focused learning, course-rail controls, console health, and 390px overflow.`,
   );
 } finally {
   await browser.close();

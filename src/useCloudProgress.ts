@@ -65,23 +65,59 @@ export function useCloudProgress(store: ForgeStore, enabled: boolean) {
     }
   }, []);
 
+  const loadCloudProgress = useCallback(async () => {
+    setStatus("loading");
+    try {
+      const result = await forgeApi.progress();
+      revision.current = result.revision;
+      setUpdatedAt(result.updatedAt);
+      if (!isForgeState(result.state)) {
+        setStatus(result.state === null ? "needs-import" : "conflict");
+        return;
+      }
+      lastSaved.current = JSON.stringify(result.state);
+      replaceState(result.state);
+      hydrated.current = true;
+      setStatus("synced");
+    } catch {
+      setStatus("offline");
+    }
+  }, [replaceState]);
+
+  const keepLocalProgress = useCallback(async () => {
+    setStatus("saving");
+    try {
+      const latest = await forgeApi.progress();
+      revision.current = latest.revision;
+      await save(store.state);
+    } catch {
+      setStatus("offline");
+    }
+  }, [save, store.state]);
+
   useEffect(() => {
-    if (
-      !enabled ||
-      !hydrated.current ||
-      status === "needs-import" ||
-      status === "conflict"
-    )
-      return;
+    if (!enabled || !hydrated.current || status !== "synced") return;
     const serialized = JSON.stringify(store.state);
     if (serialized === lastSaved.current) return;
     const timer = window.setTimeout(() => void save(store.state), 1_200);
     return () => window.clearTimeout(timer);
   }, [enabled, save, status, store.state]);
 
+  useEffect(() => {
+    if (!enabled) return;
+    const reconnect = () => {
+      if (hydrated.current && status === "offline") void save(store.state);
+    };
+    window.addEventListener("online", reconnect);
+    return () => window.removeEventListener("online", reconnect);
+  }, [enabled, save, status, store.state]);
+
   return {
     status,
     updatedAt,
     importLocalProgress: () => save(store.state),
+    retrySync: () => save(store.state),
+    loadCloudProgress,
+    keepLocalProgress,
   };
 }

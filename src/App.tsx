@@ -2622,6 +2622,7 @@ function LearningWorkspace({
   const [searchOpen, setSearchOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [online, setOnline] = useState(() => navigator.onLine);
   const [shellNow] = useState(() => Date.now());
   const [catalogLearningFocus, setCatalogLearningFocus] = useState(false);
   const [focusNavOpen, setFocusNavOpen] = useState(false);
@@ -2638,6 +2639,16 @@ function LearningWorkspace({
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const store = useForgeStore(profile.id);
   const cloud = useCloudProgress(store, cloudEnabled);
+  useEffect(() => {
+    const connected = () => setOnline(true);
+    const disconnected = () => setOnline(false);
+    window.addEventListener("online", connected);
+    window.addEventListener("offline", disconnected);
+    return () => {
+      window.removeEventListener("online", connected);
+      window.removeEventListener("offline", disconnected);
+    };
+  }, []);
   useEffect(() => {
     if (cloudFramework && !store.state.frontendFrameworkPath)
       store.setFrontendFrameworkPath(cloudFramework);
@@ -2905,10 +2916,39 @@ function LearningWorkspace({
             </button>
           </div>
         )}
-        {!learningFocus && cloudEnabled && cloud.status === "offline" && (
+        {!learningFocus && (!online || cloud.status === "offline") && (
           <div className="cloud-status-banner" role="status">
-            Offline — changes remain saved on this device and will sync when
-            Forge reconnects.
+            <span>
+              <b>Offline</b> — lessons and visited pages remain available, and
+              edits stay saved on this device.
+            </span>
+            {online && cloudEnabled && (
+              <button className="secondary-button" onClick={cloud.retrySync}>
+                Retry sync
+              </button>
+            )}
+          </div>
+        )}
+        {!learningFocus && cloudEnabled && cloud.status === "conflict" && (
+          <div className="cloud-status-banner conflict-banner" role="alert">
+            <span>
+              <b>Sync conflict</b> — this account changed on another device.
+              Choose which progress Forge should keep.
+            </span>
+            <div>
+              <button
+                className="secondary-button"
+                onClick={cloud.loadCloudProgress}
+              >
+                Use cloud progress
+              </button>
+              <button
+                className="primary-button"
+                onClick={cloud.keepLocalProgress}
+              >
+                Keep this device
+              </button>
+            </div>
           </div>
         )}
         {!learningFocus && (

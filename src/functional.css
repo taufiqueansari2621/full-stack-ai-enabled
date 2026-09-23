@@ -3587,13 +3587,29 @@ h3,
   border-color: color-mix(in srgb, var(--amber) 45%, var(--line));
   background: color-mix(in srgb, var(--amber) 7%, var(--panel));
 }
+.cloud-status-banner span {
+  flex: 1 1 280px;
+}
+.cloud-status-banner b {
+  color: var(--text);
+}
+.conflict-banner {
+  flex-wrap: wrap;
+}
+.conflict-banner > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
 @media (max-width: 700px) {
-  .cloud-import-banner {
+  .cloud-import-banner,
+  .cloud-status-banner {
     align-items: stretch;
     flex-direction: column;
     margin: 12px 14px 0;
   }
-  .cloud-import-banner button {
+  .cloud-import-banner button,
+  .cloud-status-banner button {
     justify-content: center;
   }
 }

@@ -194,6 +194,9 @@ try {
     localStorage.getItem("forge-active-profile-v1"),
   );
   if (!activeProfileId) throw new Error("Profile session was not persisted");
+  await page.evaluate(() => window.dispatchEvent(new Event("offline")));
+  await expectText("lessons and visited pages remain available");
+  await page.evaluate(() => window.dispatchEvent(new Event("online")));
 
   await clickText("Learning Path");
   await expectText("17 stages");
@@ -503,9 +506,7 @@ try {
   await clickText("Save");
   await expectText("Smoke test note");
   await expectText("const token = verify();");
-  await page.click(
-    'button[aria-label="Add Smoke test note to favorites"]',
-  );
+  await page.click('button[aria-label="Add Smoke test note to favorites"]');
   await clickText("Flashcard");
   await clickText("Add to Review");
   await clickText("Favorites");
