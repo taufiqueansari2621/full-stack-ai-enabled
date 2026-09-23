@@ -66,6 +66,7 @@ Learn → Understand → Visualize → Practice → Build → Debug
 - Spaced-repetition review queue.
 - Mastery calculated across understanding, recall, coding, project usage, and interview performance.
 - Weakness detection with targeted remediation plans.
+- Evidence-derived XP, named levels, badges, and next milestones that ignore page views and repeated submissions.
 - Notes, flashcards, bookmarks, code snippets, architecture decisions, and mistake journal.
 
 ### Interview and Career

@@ -394,14 +394,54 @@ try {
   await page.click(".challenge-options button");
   await clickText("Check answer");
   await expectText("Try again");
+  await clickText("Retry");
+  await clickText(
+    "A function that remembers variables from where it was created",
+  );
+  await clickText("Check answer");
+  await expectText("Correct");
+  const xpAfterCorrection = await page.evaluate(
+    (id) =>
+      JSON.parse(localStorage.getItem(`forge-learning-state-v1:${id}`)).xp,
+    activeProfileId,
+  );
+  await clickText("Retry");
+  await clickText(
+    "A function that remembers variables from where it was created",
+  );
+  await clickText("Check answer");
+  const xpAfterRepeat = await page.evaluate(
+    (id) =>
+      JSON.parse(localStorage.getItem(`forge-learning-state-v1:${id}`)).xp,
+    activeProfileId,
+  );
+  if (xpAfterRepeat !== xpAfterCorrection)
+    throw new Error("Repeated challenge success inflated XP");
   const attemptsBeforeReload = await page.evaluate(
     (id) =>
       JSON.parse(localStorage.getItem(`forge-learning-state-v1:${id}`))
         .practiceAttempts.length,
     activeProfileId,
   );
-  if (attemptsBeforeReload !== 2)
+  if (attemptsBeforeReload !== 4)
     throw new Error("Practice attempt was not persisted");
+  await clickText("Home");
+  await expectText("EVIDENCE REWARDS");
+  await expectText("First Solve");
+  await expectText("Debugger");
+  const gamificationAudit = await page.evaluate(() => ({
+    badges: document.querySelectorAll(".evidence-badge").length,
+    unlocked: document.querySelectorAll(".evidence-badge.unlocked").length,
+    milestone: document.querySelector(".next-milestone")?.textContent,
+  }));
+  if (
+    gamificationAudit.badges !== 6 ||
+    gamificationAudit.unlocked !== 2 ||
+    !gamificationAudit.milestone?.includes("Complete five project steps")
+  )
+    throw new Error(
+      `Evidence gamification failed: ${JSON.stringify(gamificationAudit)}`,
+    );
   await page.reload({ waitUntil: "networkidle0" });
   await clickText("Practice");
   await expectText("1 saved answers");
@@ -735,7 +775,7 @@ try {
         .practiceAttempts.length,
     activeProfileId,
   );
-  if (restoredAttempts !== 2)
+  if (restoredAttempts !== 4)
     throw new Error("Profile progress was not restored after logout/login");
   const restoredMasteryArtifacts = await page.evaluate(
     (id) =>
@@ -885,7 +925,7 @@ try {
 
   if (errors.length) throw new Error(`Browser errors: ${errors.join(" | ")}`);
   console.log(
-    "Smoke test passed: Markdown Notes 2.0 with tags, links, favorites, flashcards, and review actions; global multi-source search, eight command actions, evidence notifications, meaningful progress analytics, ten-skill evidence matrix, opt-in portfolio preview, four advanced engineering labs, saved lab evidence, evidence-based mastery, weak-signal spaced reviews, focused learning shell, unique npm chapters, saved interactive examples, named icon controls, project action icons, course-topic controls, framework paths, learning resources, topic practice, persistence, quizzes, certificates, plain-English checks, 90 primary responsive checks, and six focused lesson viewport checks.",
+    "Smoke test passed: evidence-derived XP, levels, badges, milestones, and repeat protection; Markdown Notes 2.0 with tags, links, favorites, flashcards, and review actions; global multi-source search, eight command actions, evidence notifications, meaningful progress analytics, ten-skill evidence matrix, opt-in portfolio preview, four advanced engineering labs, saved lab evidence, evidence-based mastery, weak-signal spaced reviews, focused learning shell, unique npm chapters, saved interactive examples, named icon controls, project action icons, course-topic controls, framework paths, learning resources, topic practice, persistence, quizzes, certificates, plain-English checks, 90 primary responsive checks, and six focused lesson viewport checks.",
   );
 } finally {
   await browser.close();

@@ -826,6 +826,101 @@ h3 {
   top: 6px;
   background: #3d3362;
 }
+.gamification-panel {
+  display: grid;
+  gap: var(--space-4, 16px);
+  padding: var(--space-6, 24px);
+}
+.gamification-summary {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: var(--space-6, 24px);
+}
+.gamification-summary h2 {
+  margin: var(--space-1, 4px) 0;
+  font-size: 18px;
+}
+.gamification-summary p,
+.level-progress span,
+.evidence-badge span {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+.level-progress {
+  display: grid;
+  min-width: min(300px, 40%);
+  gap: var(--space-1, 4px);
+}
+.level-progress strong {
+  color: var(--teal);
+  font: 700 18px "Manrope";
+}
+.level-progress .bar {
+  width: 100%;
+}
+.badge-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2, 8px);
+}
+.evidence-badge {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: var(--space-3, 12px);
+  padding: var(--space-3, 12px);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm, 8px);
+  background: var(--panel-2);
+}
+.evidence-badge svg {
+  flex: 0 0 auto;
+  width: 20px;
+  color: var(--faint);
+}
+.evidence-badge.unlocked {
+  border-color: color-mix(in srgb, var(--teal) 45%, var(--line));
+}
+.evidence-badge.unlocked svg {
+  color: var(--teal);
+}
+.evidence-badge > div,
+.next-milestone span {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+.evidence-badge b,
+.next-milestone b {
+  font-size: 11px;
+}
+.evidence-badge.locked b,
+.evidence-badge.locked span {
+  color: var(--faint);
+}
+.next-milestone {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3, 12px);
+  padding-top: var(--space-3, 12px);
+  border-top: 1px solid var(--line);
+}
+.next-milestone svg {
+  flex: 0 0 auto;
+  color: var(--blue);
+}
+.next-milestone span {
+  flex: 1;
+  color: var(--muted);
+  font-size: 11px;
+}
+.next-milestone strong {
+  color: var(--teal);
+  font-size: 11px;
+  white-space: nowrap;
+}
 .content-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.65fr) minmax(300px, 0.75fr);
@@ -2567,6 +2662,16 @@ h3 {
   .page-title h1 {
     font-size: 24px;
   }
+  .gamification-panel {
+    padding: var(--space-4, 16px);
+  }
+  .badge-grid {
+    grid-template-columns: 1fr;
+  }
+  .next-milestone {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
   .mission-card {
     padding: 23px;
     min-height: 360px;
@@ -2590,6 +2695,16 @@ h3 {
     max-width: 250px;
   }
   .stat-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .gamification-summary {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .level-progress {
+    min-width: 0;
+  }
+  .badge-grid {
     grid-template-columns: 1fr 1fr;
   }
   .stat-card {

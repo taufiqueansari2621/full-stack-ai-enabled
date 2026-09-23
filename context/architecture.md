@@ -96,6 +96,12 @@ Interactive example records are unique per learner, lesson, and case. Saving a
 first normal, unusual, or failure case records the learner's prediction and
 reflection, but does not mark the topic complete or claim mastery.
 
+Gamification is a derived projection over raw learner evidence. The stored
+legacy XP field remains readable for migration compatibility, but current XP,
+levels, badge unlocks, and milestones are calculated by the pure gamification
+domain from unique evidence keys. Navigation and repeated submissions never
+increase the projection.
+
 Components must not read or write browser storage directly. Storage access belongs behind a typed repository adapter, except the existing theme preference until the adapter unit is complete.
 
 ## Future Storage Model

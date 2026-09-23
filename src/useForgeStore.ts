@@ -4,6 +4,7 @@ import {
   masteryEvidence,
   masteryState,
 } from "./domain/mastery";
+import { buildGamification } from "./domain/gamification";
 
 const LEGACY_STORAGE_KEY = "forge-learning-state-v1";
 const storageKey = (learnerId: string) =>
@@ -734,6 +735,7 @@ export function useForgeStore(learnerId: string) {
       }
       return count;
     })();
+    const gamification = buildGamification(state);
     return {
       correct,
       uniqueCorrect,
@@ -744,6 +746,7 @@ export function useForgeStore(learnerId: string) {
       masteryEvidence: evidence,
       weeklyPercent,
       streak,
+      gamification,
     };
   }, [state]);
 

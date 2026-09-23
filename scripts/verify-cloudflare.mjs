@@ -90,6 +90,23 @@ try {
     localStorage.setItem("forge-active-profile-v1", profile.id);
   });
 
+  await open("/", "EVIDENCE REWARDS");
+  const gamification = await page.evaluate(() => ({
+    badges: document.querySelectorAll(".evidence-badge").length,
+    unlocked: document.querySelectorAll(".evidence-badge.unlocked").length,
+    level: document.querySelector(".gamification-summary h2")?.textContent,
+    milestone: document.querySelector(".next-milestone")?.textContent,
+  }));
+  if (
+    gamification.badges !== 6 ||
+    gamification.unlocked !== 0 ||
+    !gamification.level?.includes("Level 1") ||
+    !gamification.milestone?.includes("Solve a practice challenge")
+  )
+    throw new Error(
+      `Production evidence gamification failed: ${JSON.stringify(gamification)}`,
+    );
+
   await open("/roadmap", "Start at zero. Grow into an");
   await page.click('button[aria-label="Open Orientation & Developer Setup"]');
   await page.evaluate(() => {
@@ -211,7 +228,7 @@ try {
   if (unexpectedBrowserErrors.length)
     throw new Error(`Browser errors: ${unexpectedBrowserErrors.join(" | ")}`);
   console.log(
-    `Cloudflare verification passed for ${baseUrl}: installable PWA metadata, registered offline shell, cached offline navigation, SPA routes, deep npm lesson, interactive examples, project icons and named controls, focused learning, course-rail controls, console health, and 390px overflow.`,
+    `Cloudflare verification passed for ${baseUrl}: evidence-derived gamification, installable PWA metadata, registered offline shell, cached offline navigation, SPA routes, deep npm lesson, interactive examples, project icons and named controls, focused learning, course-rail controls, console health, and 390px overflow.`,
   );
 } finally {
   await browser.close();

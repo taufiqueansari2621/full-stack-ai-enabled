@@ -300,8 +300,8 @@ function Sidebar({
           <div>
             <b>{profile.fullName}</b>
             <span>
-              Level {Math.max(1, Math.floor(store.state.xp / 400) + 1)} ·{" "}
-              {profile.level}
+              Level {store.metrics.gamification.level.number} ·{" "}
+              {store.metrics.gamification.level.name} · {profile.level}
             </span>
           </div>
           <Settings size={17} />
@@ -613,6 +613,72 @@ function Dashboard({
             color="#fbbf24"
           />
         </article>
+      </section>
+
+      <section
+        className="gamification-panel panel"
+        aria-labelledby="progress-rewards-title"
+      >
+        <div className="gamification-summary">
+          <div>
+            <span className="eyebrow">EVIDENCE REWARDS</span>
+            <h2 id="progress-rewards-title">
+              Level {store.metrics.gamification.level.number} ·{" "}
+              {store.metrics.gamification.level.name}
+            </h2>
+            <p>
+              {store.metrics.gamification.xp.toLocaleString()} XP from unique
+              solves, reviews, projects, explanations, labs, and interviews.
+            </p>
+          </div>
+          <div className="level-progress">
+            <strong>{store.metrics.gamification.level.progress}%</strong>
+            <span>
+              {store.metrics.gamification.level.ceiling
+                ? `${store.metrics.gamification.level.remaining} XP to the next level`
+                : "Highest level reached"}
+            </span>
+            <div
+              className="bar"
+              aria-label={`${store.metrics.gamification.level.progress}% to next level`}
+            >
+              <i
+                style={{
+                  width: `${store.metrics.gamification.level.progress}%`,
+                }}
+              />
+            </div>
+          </div>
+        </div>
+        <div className="badge-grid">
+          {store.metrics.gamification.badges.map((badge) => (
+            <article
+              className={`evidence-badge ${badge.unlocked ? "unlocked" : "locked"}`}
+              key={badge.id}
+            >
+              {badge.unlocked ? (
+                <Award aria-hidden="true" />
+              ) : (
+                <LockKeyhole aria-hidden="true" />
+              )}
+              <div>
+                <b>{badge.title}</b>
+                <span>{badge.description}</span>
+              </div>
+            </article>
+          ))}
+        </div>
+        <div className="next-milestone">
+          <Target aria-hidden="true" />
+          <span>
+            <b>Next milestone</b>
+            {store.metrics.gamification.nextMilestone}
+          </span>
+          <strong>
+            {store.metrics.gamification.unlockedBadges}/
+            {store.metrics.gamification.badges.length} badges
+          </strong>
+        </div>
       </section>
 
       <section className="content-grid">
@@ -2087,7 +2153,8 @@ function SettingsOverlay({
           <div>
             <b>{profile.fullName}</b>
             <span>
-              @{profile.username} · {store.state.xp.toLocaleString()} XP
+              @{profile.username} ·{" "}
+              {store.metrics.gamification.xp.toLocaleString()} XP
             </span>
           </div>
         </div>
