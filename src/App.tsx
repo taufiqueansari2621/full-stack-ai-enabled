@@ -2796,7 +2796,13 @@ function LearningWorkspace({
   else if (active === "quizzes")
     view = <QuizzesPage store={store} notify={notify} />;
   else if (active === "knowledge")
-    view = <KnowledgePage store={store} notify={notify} />;
+    view = (
+      <KnowledgePage
+        store={store}
+        notify={notify}
+        cloudEnabled={cloudEnabled}
+      />
+    );
   else if (active === "progress")
     view = <ProgressPage store={store} navigate={setActive} />;
   else if (active === "certificates")

@@ -179,10 +179,12 @@ Update this file after every meaningful verified implementation change.
 - Added accessible names to active icon-only menu, close, send, review, project, search, and settings controls; decorative icons are now hidden from assistive technology where touched.
 - Made project filters horizontally swipeable on narrow screens and raised their text and touch sizing without introducing page-level overflow.
 - Extended the full browser suite to reject any visible button without a text or ARIA name and to verify four distinct project symbols plus labeled 40px-or-larger card actions.
+- Rebuilt My Notes as Notes 2.0 with safe Markdown and fenced-code rendering, editable comma-separated tags, topic/project links, search, favorite filtering, flashcard conversion, review-queue actions, and authenticated note-aware Forge AI requests.
+- Added distinct learner-scoped review records for concept and flashcard conversions, preserved local-profile isolation, and verified Notes 2.0 through lint, a production build, and the complete browser regression suite with 90 responsive workspace checks and six focused lesson viewport checks.
 
 ## In Progress
 
-- None. The next unit is ready to begin.
+- None. The next Forge 2.0 production unit is ready to begin.
 
 ## Next Up
 
@@ -219,8 +221,8 @@ Update this file after every meaningful verified implementation change.
 
 ## Session Notes
 
-- Latest implementation state: distraction-free Complete Lessons, hideable course-topic-only navigation, prediction-first interactive examples, deeper practice, five skill levels, React/Angular/Both paths, 684 topics, 74 trusted resources, curriculum-wide three-level topic practice, and plain-English learner copy.
-- Headless Chrome confirmed the Angular-only path, lesson resources, Resource Academy, Medium practice artifact, logout/login restoration, clean reset, and every existing learner workflow.
-- Lint, production build, all 78 responsive workspace checks, and six focused catalog-lesson viewport checks pass; feature-level lazy loading keeps the initial production chunk below Vite's advisory threshold.
-- Production is live at `https://forge-ai-engineering.taufiqueansari895.workers.dev` on Cloudflare version `fcb76b0a-f948-4b6d-952f-6276857b8b3f`; live Chrome audits confirm accounts, onboarding, personalized roadmaps, global search and commands, evidence notifications, analytics and skill states, spaced reviews, DSA/system-design/SQL/RAG labs, opt-in public portfolios, server-verified certificates, isolated code tests, project templates, cloud workspace snapshots/progress persistence, contextual Forge AI, deep lessons, interactive examples, focused learning, console health, and 390px overflow safety.
+- Latest implementation state: Notes 2.0 with Markdown/code rendering, tags, links, favorites, flashcards, review actions, and note-aware Forge AI; plus distraction-free Complete Lessons, hideable course-topic navigation, prediction-first interactive examples, deeper practice, five skill levels, React/Angular/Both paths, 684 topics, 74 trusted resources, curriculum-wide three-level topic practice, and plain-English learner copy.
+- Headless Chrome confirmed Notes 2.0 persistence and review conversions, the Angular-only path, lesson resources, Resource Academy, Medium practice artifacts, logout/login restoration, clean reset, and every existing learner workflow.
+- Lint, production build, all 90 responsive workspace checks, and six focused catalog-lesson viewport checks pass; feature-level lazy loading keeps the initial production chunk below Vite's advisory threshold.
+- Production is live at `https://forge-ai-engineering.taufiqueansari895.workers.dev` on Cloudflare version `74251f84-54fa-4be7-bb86-55ae2771fdc7`; live Chrome audits confirm accounts, onboarding, personalized roadmaps, global search and commands, evidence notifications, analytics and skill states, spaced reviews, DSA/system-design/SQL/RAG labs, Notes 2.0 note-aware AI context, opt-in public portfolios, server-verified certificates, isolated code tests, project templates, cloud workspace snapshots/progress persistence, contextual Forge AI, deep lessons, interactive examples, focused learning, console health, and 390px overflow safety.
 - Preserve the current visual identity while improving architecture and real behavior.

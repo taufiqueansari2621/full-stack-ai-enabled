@@ -8,6 +8,7 @@ export type TutorRequest = {
     error?: string;
     activeFile?: { path: string; content: string };
     learnerLevel?: string;
+    note?: string;
   };
 };
 

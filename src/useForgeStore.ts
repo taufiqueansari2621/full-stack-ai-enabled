@@ -23,6 +23,11 @@ export type KnowledgeEntry = {
   body: string;
   topic: string;
   createdAt: string;
+  updatedAt?: string;
+  tags?: string[];
+  topicLink?: string;
+  projectLink?: string;
+  favorite?: boolean;
 };
 
 export type InterviewResult = {
@@ -372,6 +377,38 @@ export function useForgeStore(learnerId: string) {
     [],
   );
 
+  const updateKnowledge = useCallback(
+    (id: string, changes: Partial<Omit<KnowledgeEntry, "id" | "createdAt">>) =>
+      setState((current) =>
+        touchActivity({
+          ...current,
+          knowledge: current.knowledge.map((entry) =>
+            entry.id === id
+              ? { ...entry, ...changes, updatedAt: new Date().toISOString() }
+              : entry,
+          ),
+        }),
+      ),
+    [touchActivity],
+  );
+
+  const addKnowledgeToReview = useCallback(
+    (id: string, kind: "flashcard" | "concept" = "concept") =>
+      setState((current) => {
+        const entry = current.knowledge.find((item) => item.id === id);
+        if (!entry) return current;
+        return touchActivity({
+          ...current,
+          reviewSchedule: queueReview(current.reviewSchedule, {
+            topic: entry.title,
+            kind,
+            sourceId: `knowledge:${kind}:${entry.id}`,
+          }),
+        });
+      }),
+    [touchActivity],
+  );
+
   const toggleProjectTask = useCallback(
     (projectId: string, taskId: string) =>
       setState((current) => {
@@ -719,6 +756,8 @@ export function useForgeStore(learnerId: string) {
     saveAttempt,
     addKnowledge,
     deleteKnowledge,
+    updateKnowledge,
+    addKnowledgeToReview,
     toggleProjectTask,
     saveInterview,
     saveQuiz,

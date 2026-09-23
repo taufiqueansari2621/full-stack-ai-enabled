@@ -13,7 +13,10 @@ import {
   Code2,
   Database,
   FileText,
+  Heart,
   Lightbulb,
+  Link2,
+  MessageSquareText,
   NotebookPen,
   Plus,
   RotateCcw,
@@ -30,6 +33,7 @@ import { projectCards, reviewItems, type NavId } from "./data";
 import type { ForgeStore } from "./useForgeStore";
 import { curriculumPhases } from "./curriculumCatalog";
 import { buildSkillMatrix } from "./domain/skills";
+import { forgeApi } from "./services/forgeApi";
 
 const TopicPracticeLab = lazy(() => import("./TopicPracticeLab"));
 const InterviewAcademy = lazy(() => import("./InterviewAcademy"));
@@ -509,32 +513,105 @@ export function PracticePage({ store, notify }: PageProps) {
   );
 }
 
-export function KnowledgePage({ store, notify }: PageProps) {
-  const [kind, setKind] = useState<"all" | "note" | "mistake">("all"),
+function inlineMarkdown(value: string) {
+  return value
+    .split(/(\*\*[^*]+\*\*|`[^`]+`)/g)
+    .map((part, index) =>
+      part.startsWith("**") && part.endsWith("**") ? (
+        <strong key={index}>{part.slice(2, -2)}</strong>
+      ) : part.startsWith("`") && part.endsWith("`") ? (
+        <code key={index}>{part.slice(1, -1)}</code>
+      ) : (
+        part
+      ),
+    );
+}
+
+function NoteMarkdown({ body }: { body: string }) {
+  return (
+    <div className="note-markdown">
+      {body.split("```").map((section, sectionIndex) =>
+        sectionIndex % 2 ? (
+          <pre key={sectionIndex}>
+            <code>{section.replace(/^\w+\n/, "")}</code>
+          </pre>
+        ) : (
+          section
+            .split("\n")
+            .filter(Boolean)
+            .map((line, lineIndex) =>
+              line.startsWith("### ") ? (
+                <h4 key={lineIndex}>{inlineMarkdown(line.slice(4))}</h4>
+              ) : line.startsWith("## ") ? (
+                <h3 key={lineIndex}>{inlineMarkdown(line.slice(3))}</h3>
+              ) : line.startsWith("# ") ? (
+                <h2 key={lineIndex}>{inlineMarkdown(line.slice(2))}</h2>
+              ) : /^[-*] /.test(line) ? (
+                <p className="note-list-item" key={lineIndex}>
+                  • {inlineMarkdown(line.slice(2))}
+                </p>
+              ) : (
+                <p key={lineIndex}>{inlineMarkdown(line)}</p>
+              ),
+            )
+        ),
+      )}
+    </div>
+  );
+}
+
+export function KnowledgePage({
+  store,
+  notify,
+  cloudEnabled = false,
+}: PageProps & { cloudEnabled?: boolean }) {
+  const [kind, setKind] = useState<"all" | "note" | "mistake" | "favorite">(
+      "all",
+    ),
     [form, setForm] = useState<"note" | "mistake" | null>(null),
+    [editId, setEditId] = useState<string | null>(null),
     [query, setQuery] = useState(""),
     [title, setTitle] = useState(""),
     [topic, setTopic] = useState("JavaScript"),
-    [body, setBody] = useState("");
+    [body, setBody] = useState(""),
+    [tags, setTags] = useState(""),
+    [topicLink, setTopicLink] = useState(""),
+    [projectLink, setProjectLink] = useState(""),
+    [aiAnswer, setAiAnswer] = useState<Record<string, string>>({});
   const entries = store.state.knowledge.filter(
     (e) =>
-      (kind === "all" || e.kind === kind) &&
-      `${e.title} ${e.body} ${e.topic}`
+      (kind === "all" ||
+        e.kind === kind ||
+        (kind === "favorite" && e.favorite)) &&
+      `${e.title} ${e.body} ${e.topic} ${(e.tags ?? []).join(" ")}`
         .toLowerCase()
         .includes(query.toLowerCase()),
   );
   const save = () => {
     if (!form || !title.trim() || !body.trim()) return;
-    store.addKnowledge({
+    const entry = {
       kind: form,
       title: title.trim(),
       body: body.trim(),
       topic,
-    });
+      tags: tags
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean)
+        .slice(0, 10),
+      topicLink: topicLink.trim() || undefined,
+      projectLink: projectLink.trim() || undefined,
+    };
+    if (editId) store.updateKnowledge(editId, entry);
+    else store.addKnowledge(entry);
     setForm(null);
     setTitle("");
     setBody("");
-    notify("Saved locally");
+    setTags("");
+    setTopicLink("");
+    setProjectLink("");
+    setEditId(null);
+    notify(editId ? "Note updated" : "Note saved");
   };
   return (
     <div className="page">
@@ -568,13 +645,17 @@ export function KnowledgePage({ store, notify }: PageProps) {
           />
         </div>
         <div className="filter-row compact">
-          {(["all", "note", "mistake"] as const).map((x) => (
+          {(["all", "note", "mistake", "favorite"] as const).map((x) => (
             <button
               key={x}
               className={kind === x ? "active" : ""}
               onClick={() => setKind(x)}
             >
-              {x === "all" ? "Everything" : `${x}s`}
+              {x === "all"
+                ? "Everything"
+                : x === "favorite"
+                  ? "Favorites"
+                  : `${x}s`}
             </button>
           ))}
         </div>
@@ -600,7 +681,99 @@ export function KnowledgePage({ store, notify }: PageProps) {
               </div>
               <span className="topic-label">{e.topic}</span>
               <h2>{e.title}</h2>
-              <p>{e.body}</p>
+              <NoteMarkdown body={e.body} />
+              {(e.tags ?? []).length > 0 && (
+                <div className="note-tags">
+                  {e.tags?.map((tag) => (
+                    <span key={tag}>#{tag}</span>
+                  ))}
+                </div>
+              )}
+              {(e.topicLink || e.projectLink) && (
+                <div className="note-links">
+                  <Link2 />{" "}
+                  {[e.topicLink, e.projectLink].filter(Boolean).join(" · ")}
+                </div>
+              )}
+              <div className="note-actions">
+                <button
+                  aria-label={`${e.favorite ? "Remove" : "Add"} ${e.title} ${e.favorite ? "from" : "to"} favorites`}
+                  onClick={() =>
+                    store.updateKnowledge(e.id, { favorite: !e.favorite })
+                  }
+                >
+                  <Heart fill={e.favorite ? "currentColor" : "none"} />{" "}
+                  {e.favorite ? "Favorited" : "Favorite"}
+                </button>
+                <button
+                  onClick={() => {
+                    setEditId(e.id);
+                    setForm(e.kind);
+                    setTitle(e.title);
+                    setTopic(e.topic);
+                    setBody(e.body);
+                    setTags((e.tags ?? []).join(", "));
+                    setTopicLink(e.topicLink ?? "");
+                    setProjectLink(e.projectLink ?? "");
+                  }}
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => {
+                    store.addKnowledgeToReview(e.id, "flashcard");
+                    notify("Converted to a review flashcard");
+                  }}
+                >
+                  Flashcard
+                </button>
+                <button
+                  onClick={() => {
+                    store.addKnowledgeToReview(e.id, "concept");
+                    notify("Added to review queue");
+                  }}
+                >
+                  Add to Review
+                </button>
+                <button
+                  disabled={!cloudEnabled}
+                  onClick={() =>
+                    void forgeApi
+                      .askAi({
+                        mode: "explain",
+                        message: `Help me improve and understand this note: ${e.title}`,
+                        level: 2,
+                        context: {
+                          note: `${e.title} (${e.topic})\n${e.body}`.slice(
+                            0,
+                            4000,
+                          ),
+                        },
+                      })
+                      .then((answer) =>
+                        setAiAnswer((current) => ({
+                          ...current,
+                          [e.id]: answer.response,
+                        })),
+                      )
+                      .catch((reason) =>
+                        notify(
+                          reason instanceof Error
+                            ? reason.message
+                            : "Forge AI is unavailable",
+                        ),
+                      )
+                  }
+                >
+                  <MessageSquareText /> Ask AI
+                </button>
+              </div>
+              {aiAnswer[e.id] && (
+                <div className="note-ai-answer">
+                  <Sparkles />
+                  <p>{aiAnswer[e.id]}</p>
+                </div>
+              )}
               <small>{new Date(e.createdAt).toLocaleDateString()}</small>
             </article>
           ))}
@@ -633,7 +806,11 @@ export function KnowledgePage({ store, notify }: PageProps) {
               {form === "note" ? "SAVE A NOTE" : "LEARN FROM A MISTAKE"}
             </span>
             <h2>
-              {form === "note" ? "Create a note" : "Log a useful mistake"}
+              {editId
+                ? "Edit saved knowledge"
+                : form === "note"
+                  ? "Create a note"
+                  : "Log a useful mistake"}
             </h2>
             <label>
               Title
@@ -665,6 +842,30 @@ export function KnowledgePage({ store, notify }: PageProps) {
                 rows={6}
                 value={body}
                 onChange={(e) => setBody(e.target.value)}
+              />
+            </label>
+            <label>
+              Tags
+              <input
+                value={tags}
+                onChange={(e) => setTags(e.target.value)}
+                placeholder="async, debugging, interview"
+              />
+            </label>
+            <label>
+              Topic link
+              <input
+                value={topicLink}
+                onChange={(e) => setTopicLink(e.target.value)}
+                placeholder="Lesson or topic name"
+              />
+            </label>
+            <label>
+              Project link
+              <input
+                value={projectLink}
+                onChange={(e) => setProjectLink(e.target.value)}
+                placeholder="Project name or ID"
               />
             </label>
             <div className="modal-actions">

@@ -105,6 +105,7 @@ export const aiRoutes: Route[] = [
         challenge: optionalText(source.challenge, 1_000),
         error: optionalText(source.error, 2_000),
         learnerLevel: optionalText(source.learnerLevel, 80),
+        note: optionalText(source.note, 4_000),
         activeFile,
       };
       const included = Object.entries(context)

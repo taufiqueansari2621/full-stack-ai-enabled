@@ -20,6 +20,8 @@ function contextText(context: TutorRequest["context"]) {
   if (context.lesson) sections.push(`Current lesson: ${context.lesson}`);
   if (context.challenge) sections.push(`Challenge: ${context.challenge}`);
   if (context.error) sections.push(`Observed error: ${context.error}`);
+  if (context.note)
+    sections.push(`Learner note (explicitly shared): ${context.note}`);
   if (context.activeFile)
     sections.push(
       `Active file (${context.activeFile.path}):\n${context.activeFile.content}`,

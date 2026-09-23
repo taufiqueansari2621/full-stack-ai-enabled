@@ -495,10 +495,40 @@ try {
   await inputs[0].type("Smoke test note");
   await page.type(
     ".modal textarea",
-    "This verifies that local knowledge entries persist after a browser refresh.",
+    "## Token check\nThis verifies **Markdown** and inline `token` values.\n```js\nconst token = verify();\n```",
   );
+  await inputs[1].type("authentication, debugging");
+  await inputs[2].type("Authentication lesson");
+  await inputs[3].type("P20 Secure API Platform");
   await clickText("Save");
   await expectText("Smoke test note");
+  await expectText("const token = verify();");
+  await page.click(
+    'button[aria-label="Add Smoke test note to favorites"]',
+  );
+  await clickText("Flashcard");
+  await clickText("Add to Review");
+  await clickText("Favorites");
+  await expectText("Smoke test note");
+  const noteUpgrade = await page.evaluate((id) => {
+    const state = JSON.parse(
+      localStorage.getItem(`forge-learning-state-v1:${id}`),
+    );
+    return {
+      note: state.knowledge[0],
+      reviews: state.reviewSchedule.filter((item) =>
+        item.sourceId.startsWith("knowledge:"),
+      ),
+    };
+  }, activeProfileId);
+  if (
+    !noteUpgrade.note.favorite ||
+    noteUpgrade.note.tags.length !== 2 ||
+    noteUpgrade.reviews.length !== 2
+  )
+    throw new Error(
+      `Notes 2.0 persistence failed: ${JSON.stringify(noteUpgrade)}`,
+    );
 
   await clickText("Projects");
   await expectText("Start P05");
@@ -683,9 +713,9 @@ try {
   await expectText("SQL has no recent evidence");
   await page.click('button[aria-label="Close notifications"]');
 
-  await page.keyboard.down("Meta");
+  await page.keyboard.down("Control");
   await page.keyboard.press("KeyK");
-  await page.keyboard.up("Meta");
+  await page.keyboard.up("Control");
   await expectText("COMMANDS");
   await page.type(".global-search input", "event loop");
   await expectText("Event loop");
@@ -854,7 +884,7 @@ try {
 
   if (errors.length) throw new Error(`Browser errors: ${errors.join(" | ")}`);
   console.log(
-    "Smoke test passed: global multi-source search, eight command actions, evidence notifications, meaningful progress analytics, ten-skill evidence matrix, opt-in portfolio preview, four advanced engineering labs, saved lab evidence, evidence-based mastery, weak-signal spaced reviews, focused learning shell, unique npm chapters, saved interactive examples, named icon controls, project action icons, course-topic controls, framework paths, learning resources, topic practice, persistence, quizzes, certificates, plain-English checks, 90 primary responsive checks, and six focused lesson viewport checks.",
+    "Smoke test passed: Markdown Notes 2.0 with tags, links, favorites, flashcards, and review actions; global multi-source search, eight command actions, evidence notifications, meaningful progress analytics, ten-skill evidence matrix, opt-in portfolio preview, four advanced engineering labs, saved lab evidence, evidence-based mastery, weak-signal spaced reviews, focused learning shell, unique npm chapters, saved interactive examples, named icon controls, project action icons, course-topic controls, framework paths, learning resources, topic practice, persistence, quizzes, certificates, plain-English checks, 90 primary responsive checks, and six focused lesson viewport checks.",
   );
 } finally {
   await browser.close();

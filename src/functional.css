@@ -452,6 +452,87 @@ h3,
   line-height: 1.6;
   flex: 1;
 }
+.note-markdown {
+  display: grid;
+  gap: 7px;
+}
+.note-markdown p,
+.note-markdown h2,
+.note-markdown h3,
+.note-markdown h4 {
+  margin: 0;
+}
+.note-markdown pre {
+  max-width: 100%;
+  padding: 10px;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #07101c;
+  color: #dbeafe;
+  font-size: 11px;
+}
+.note-markdown code {
+  font-family: ui-monospace, SFMono-Regular, monospace;
+}
+.note-list-item {
+  padding-left: 8px;
+}
+.note-tags,
+.note-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.note-tags span {
+  padding: 4px 7px;
+  border-radius: 999px;
+  color: var(--teal);
+  background: color-mix(in srgb, var(--teal) 9%, var(--panel-2));
+  font-size: 9px;
+}
+.note-links {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--blue);
+  font-size: 9px;
+}
+.note-links svg,
+.note-actions svg,
+.note-ai-answer > svg {
+  width: 14px;
+}
+.note-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 34px;
+  padding: 0 8px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  color: var(--muted);
+  background: var(--panel-2);
+  font-size: 9px;
+}
+.note-actions button:hover,
+.note-actions button:focus-visible {
+  color: var(--teal);
+  border-color: var(--teal);
+}
+.note-ai-answer {
+  display: flex;
+  gap: 8px;
+  padding: 10px;
+  border-left: 3px solid var(--violet);
+  background: color-mix(in srgb, var(--violet) 7%, var(--panel-2));
+}
+.note-ai-answer p {
+  white-space: pre-wrap;
+}
+.knowledge-card .note-markdown > p {
+  display: block;
+}
 .knowledge-card small {
   font-size: 9px;
   color: var(--faint);

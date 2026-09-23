@@ -206,6 +206,29 @@ try {
       (document.querySelector(".ai-response p")?.textContent?.length ?? 0) > 20,
     { timeout: 30_000 },
   );
+  const noteAiResult = await page.evaluate(async () => {
+    const response = await fetch("/api/ai", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        mode: "explain",
+        message: "Explain the key idea in this saved note.",
+        level: 2,
+        context: {
+          note: "A reducer combines each value with an accumulated result.",
+        },
+      }),
+    });
+    return { status: response.status, body: await response.json() };
+  });
+  if (
+    noteAiResult.status !== 200 ||
+    !noteAiResult.body.contextIncluded?.includes("note")
+  ) {
+    throw new Error(
+      `Note AI context failed: ${noteAiResult.status} ${JSON.stringify(noteAiResult.body)}`,
+    );
+  }
   await clickText("Portfolio");
   await page.waitForSelector(".portfolio-editor textarea", { timeout: 10_000 });
   await page.type(
@@ -363,7 +386,7 @@ try {
     throw new Error(`Portfolio unpublish failed: ${JSON.stringify(unpublish)}`);
   if (errors.length) throw new Error(`Browser errors: ${errors.join(" | ")}`);
   console.log(
-    "Account smoke passed: registration, onboarding, diagnostic roadmap, isolated code tests, workspace snapshots, Forge AI, opt-in public portfolio, unpublish privacy, server-verified certificate, recovery, progress sync, and authorization.",
+    "Account smoke passed: registration, onboarding, diagnostic roadmap, isolated code tests, workspace snapshots, Forge AI, note AI context, opt-in public portfolio, unpublish privacy, server-verified certificate, recovery, progress sync, and authorization.",
   );
 } finally {
   await browser.close();
