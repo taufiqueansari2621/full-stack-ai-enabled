@@ -1359,6 +1359,22 @@ h3,
 }
 .search-results {
   padding: 0 10px 12px;
+  max-height: min(620px, 70vh);
+  overflow: auto;
+}
+.search-results .search-kind {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 82px;
+  gap: 5px;
+  margin-right: 10px;
+  color: var(--teal);
+  font-size: 8px;
+  text-transform: uppercase;
+}
+.search-kind svg {
+  width: 14px;
 }
 .search-results > button {
   width: 100%;
@@ -1396,6 +1412,66 @@ h3,
   padding: 15px;
   background: var(--panel-2);
   border-radius: 9px;
+}
+.notification-center {
+  width: min(520px, 100%);
+  padding: 20px;
+}
+.notification-center > header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+}
+.notification-center h2 {
+  margin: 5px 0 15px;
+}
+.notification-center > header button {
+  border: 0;
+  color: var(--muted);
+  background: transparent;
+}
+.notification-center > header svg {
+  width: 18px;
+}
+.notification-center > div {
+  display: grid;
+  gap: 8px;
+}
+.notification-center > div > button {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-height: 64px;
+  padding: 11px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  color: var(--text);
+  background: var(--panel-2);
+  text-align: left;
+}
+.notification-center > div > button > svg {
+  flex: 0 0 auto;
+  width: 18px;
+  color: var(--teal);
+}
+.notification-center > div > button > span {
+  display: grid;
+  gap: 4px;
+}
+.notification-center small,
+.notification-empty span {
+  color: var(--muted);
+  line-height: 1.5;
+}
+.notification-empty {
+  display: grid;
+  justify-items: center;
+  gap: 7px;
+  padding: 30px;
+  text-align: center;
+}
+.notification-empty svg {
+  color: var(--green);
 }
 .settings-profile > div:last-child {
   display: flex;

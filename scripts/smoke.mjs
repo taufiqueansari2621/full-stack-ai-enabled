@@ -677,10 +677,19 @@ try {
   await expectText("saved lab case study");
   await expectText("Build RAG & AI Systems evidence");
 
+  await page.click('button[aria-label^="Open notifications"]');
+  await expectText("Notifications");
+  await expectText("Continue your active project");
+  await expectText("SQL has no recent evidence");
+  await page.click('button[aria-label="Close notifications"]');
+
   await page.keyboard.down("Meta");
   await page.keyboard.press("KeyK");
   await page.keyboard.up("Meta");
-  await expectText("GO TO A PAGE");
+  await expectText("COMMANDS");
+  await page.type(".global-search input", "event loop");
+  await expectText("Event loop");
+  await expectText("Interview");
   await page.keyboard.press("Escape");
 
   await page.click('button[aria-label="Open learner settings"]');
@@ -845,7 +854,7 @@ try {
 
   if (errors.length) throw new Error(`Browser errors: ${errors.join(" | ")}`);
   console.log(
-    "Smoke test passed: meaningful progress analytics, ten-skill evidence matrix, opt-in portfolio preview, four advanced engineering labs, saved lab evidence, evidence-based mastery, weak-signal spaced reviews, focused learning shell, unique npm chapters, saved interactive examples, named icon controls, project action icons, course-topic controls, framework paths, learning resources, topic practice, persistence, quizzes, certificates, plain-English checks, 90 primary responsive checks, and six focused lesson viewport checks.",
+    "Smoke test passed: global multi-source search, eight command actions, evidence notifications, meaningful progress analytics, ten-skill evidence matrix, opt-in portfolio preview, four advanced engineering labs, saved lab evidence, evidence-based mastery, weak-signal spaced reviews, focused learning shell, unique npm chapters, saved interactive examples, named icon controls, project action icons, course-topic controls, framework paths, learning resources, topic practice, persistence, quizzes, certificates, plain-English checks, 90 primary responsive checks, and six focused lesson viewport checks.",
   );
 } finally {
   await browser.close();

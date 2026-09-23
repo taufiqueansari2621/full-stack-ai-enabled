@@ -82,6 +82,7 @@ import {
   type CurriculumPhase,
 } from "./curriculumCatalog";
 import { catalogLessonId } from "./topicIds";
+import { buildNotifications } from "./domain/notifications";
 import {
   CertificateVerification,
   CertificatesPage,
@@ -97,6 +98,8 @@ const Portfolio = lazy(() =>
 const PublicProfile = lazy(() =>
   import("./Portfolio").then((module) => ({ default: module.PublicProfile })),
 );
+const SearchOverlay = lazy(() => import("./SearchOverlay"));
+const NotificationCenter = lazy(() => import("./NotificationCenter"));
 const CatalogTopicLesson = lazy(() =>
   import("./CatalogTopicLesson").then((module) => ({
     default: module.CatalogTopicLesson,
@@ -257,7 +260,10 @@ function Sidebar({
             >
               <item.icon size={18} />
               <span>{item.label}</span>
-              {item.id === "reviews" && <em>4</em>}
+              {item.id === "reviews" &&
+                store.metrics.masteryEvidence.overdueReviews > 0 && (
+                  <em>{store.metrics.masteryEvidence.overdueReviews}</em>
+                )}
             </button>
           ))}
           <span className="nav-heading">Help</span>
@@ -312,6 +318,8 @@ function Topbar({
   openMenu,
   openSearch,
   openSettings,
+  openNotifications,
+  notificationCount,
 }: {
   title: string;
   dark: boolean;
@@ -319,6 +327,8 @@ function Topbar({
   openMenu: () => void;
   openSearch: () => void;
   openSettings: () => void;
+  openNotifications: () => void;
+  notificationCount: number;
 }) {
   return (
     <header className="topbar">
@@ -346,11 +356,11 @@ function Topbar({
         </button>
         <button
           className="notification"
-          onClick={openSettings}
-          aria-label="Open notifications and settings"
+          onClick={openNotifications}
+          aria-label={`Open notifications${notificationCount ? `, ${notificationCount} available` : ""}`}
         >
           <Bell size={18} />
-          <i />
+          {notificationCount > 0 && <i />}
         </button>
         <button
           className="avatar small avatar-button"
@@ -2034,118 +2044,6 @@ export function PlaceholderPage({
   );
 }
 
-function SearchOverlay({
-  close,
-  navigate,
-}: {
-  close: () => void;
-  navigate: (id: NavId) => void;
-}) {
-  const [query, setQuery] = useState("");
-  const results = [
-    {
-      title: "JavaScript event loop lesson",
-      meta: "Learn · 20 min",
-      page: "learn" as NavId,
-    },
-    {
-      title: "Practice questions and coding tasks",
-      meta: "Practice · 4 challenges",
-      page: "practice" as NavId,
-    },
-    {
-      title: "Official guides and learning resources",
-      meta: "Resources · hand-picked",
-      page: "resources" as NavId,
-    },
-    {
-      title: "Foundation course test",
-      meta: "Quiz · 10 questions",
-      page: "quizzes" as NavId,
-    },
-    {
-      title: "Intelligent Search Dashboard",
-      meta: "Project P05",
-      page: "projects" as NavId,
-    },
-    {
-      title: "Topics to review today",
-      meta: "Review · due today",
-      page: "reviews" as NavId,
-    },
-    {
-      title: "Technical interview practice",
-      meta: "Interview Prep · guided",
-      page: "interview" as NavId,
-    },
-    {
-      title: "My notes and mistakes",
-      meta: "My Notes",
-      page: "knowledge" as NavId,
-    },
-    {
-      title: "Certificates of Completion",
-      meta: "Certificates earned from completed work",
-      page: "certificates" as NavId,
-    },
-  ].filter(
-    (item) =>
-      item.title.toLowerCase().includes(query.toLowerCase()) ||
-      item.meta.toLowerCase().includes(query.toLowerCase()),
-  );
-  return (
-    <div className="modal-backdrop search-backdrop" onMouseDown={close}>
-      <div
-        className="search-modal panel"
-        role="dialog"
-        aria-modal="true"
-        aria-label="Search Forge"
-        onMouseDown={(e) => e.stopPropagation()}
-      >
-        <div className="global-search">
-          <Search />
-          <input
-            autoFocus
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search lessons, projects, practice..."
-          />
-          <button onClick={close} aria-label="Close search">
-            <X aria-hidden="true" />
-          </button>
-        </div>
-        <span className="eyebrow">
-          {query ? `${results.length} RESULTS` : "GO TO A PAGE"}
-        </span>
-        <div className="search-results">
-          {results.map((item) => (
-            <button
-              key={item.title}
-              onClick={() => {
-                navigate(item.page);
-                close();
-              }}
-            >
-              <div>
-                <b>{item.title}</b>
-                <span>{item.meta}</span>
-              </div>
-              <ArrowRight />
-            </button>
-          ))}
-          {!results.length && (
-            <div className="no-results">
-              <Search />
-              <b>Nothing found</b>
-              <span>Try “JavaScript”, “project”, or “interview”.</span>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function SettingsOverlay({
   close,
   store,
@@ -2723,6 +2621,8 @@ function LearningWorkspace({
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [shellNow] = useState(() => Date.now());
   const [catalogLearningFocus, setCatalogLearningFocus] = useState(false);
   const [focusNavOpen, setFocusNavOpen] = useState(false);
   const [fullScreen, setFullScreen] = useState(
@@ -2768,6 +2668,7 @@ function LearningWorkspace({
       if (event.key === "Escape") {
         setSearchOpen(false);
         setSettingsOpen(false);
+        setNotificationsOpen(false);
       }
     };
     window.addEventListener("keydown", handler);
@@ -2788,6 +2689,7 @@ function LearningWorkspace({
     () => navItems.find((x) => x.id === active)?.label || "AI Help",
     [active],
   );
+  const notificationCount = buildNotifications(store, shellNow).length;
   let view;
   if (active === "home")
     view = <Dashboard navigate={setActive} store={store} profile={profile} />;
@@ -3011,6 +2913,8 @@ function LearningWorkspace({
             openMenu={() => setMobileOpen(true)}
             openSearch={() => setSearchOpen(true)}
             openSettings={() => setSettingsOpen(true)}
+            openNotifications={() => setNotificationsOpen(true)}
+            notificationCount={notificationCount}
           />
         )}
         {view}
@@ -3025,10 +2929,22 @@ function LearningWorkspace({
         )}
       </div>
       {searchOpen && (
-        <SearchOverlay
-          close={() => setSearchOpen(false)}
-          navigate={setActive}
-        />
+        <Suspense fallback={null}>
+          <SearchOverlay
+            close={() => setSearchOpen(false)}
+            navigate={setActive}
+            store={store}
+          />
+        </Suspense>
+      )}{" "}
+      {notificationsOpen && (
+        <Suspense fallback={null}>
+          <NotificationCenter
+            store={store}
+            close={() => setNotificationsOpen(false)}
+            navigate={setActive}
+          />
+        </Suspense>
       )}{" "}
       {settingsOpen && (
         <SettingsOverlay

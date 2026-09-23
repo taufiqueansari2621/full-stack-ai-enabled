@@ -72,6 +72,9 @@ Update this file after every meaningful verified implementation change.
 - Added a seven-day evidence activity chart and a clickable ten-skill matrix for JavaScript, TypeScript, React, Node.js, PostgreSQL/SQL, DSA, System Design, Python, Machine Learning, and RAG/AI Systems.
 - Every skill state is derived from its exact lessons, practice, projects, labs, interviews, mastery artifacts, and due reviews; selecting a skill reveals those records and routes to a relevant next action without claiming mastery from self-report or decorative precision.
 - Deployed evidence analytics and the skill matrix as Cloudflare Worker version `cbc0b1fa-c2f0-406d-b857-959f6d44d521`; the strengthened feature suite and live SPA/console/mobile audit both pass.
+- Replaced the static search dialog with a lazy multi-source index over authored lessons, all catalog topics, projects, interview topics, the trusted resource catalog, learner notes and code snippets, and saved lab evidence.
+- Added eight Cmd/Ctrl+K commands for continuing learning, opening the workspace, starting review, asking Forge AI, creating a project, opening notes, practising weak skills, and starting an interview without pulling the heavy search datasets into the initial bundle.
+- Replaced the fake notification badge with evidence-derived notifications for due reviews, active project milestones, stale SQL evidence, and an old saved lesson position; the notification center explains each next step and remains empty when nothing needs attention.
 - Deployed the account and cloud-sync release as Cloudflare Worker version `cf899c43-ce1d-4144-a8cf-dcfa6de08945`; the complete account lifecycle and existing responsive learner experience pass against production D1 and Workers.
 
 - Created and published the 52-week curriculum and 34-project ladder.
