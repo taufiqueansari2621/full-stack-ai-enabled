@@ -658,6 +658,25 @@ try {
   await expectText("Attempt history");
   await expectText(interviewTopic);
 
+  await clickText("My Progress");
+  await expectText("State backed by evidence");
+  const analyticsAudit = await page.evaluate(() => ({
+    cards: document.querySelectorAll(".analytics-card").length,
+    skills: document.querySelectorAll(".skill-matrix > button").length,
+    days: document.querySelectorAll(".activity-bars > div").length,
+  }));
+  if (
+    analyticsAudit.cards !== 8 ||
+    analyticsAudit.skills !== 10 ||
+    analyticsAudit.days !== 7
+  )
+    throw new Error(
+      `Progress analytics are incomplete: ${JSON.stringify(analyticsAudit)}`,
+    );
+  await clickText("RAG & AI Systems");
+  await expectText("saved lab case study");
+  await expectText("Build RAG & AI Systems evidence");
+
   await page.keyboard.down("Meta");
   await page.keyboard.press("KeyK");
   await page.keyboard.up("Meta");
@@ -669,8 +688,7 @@ try {
   await expectText("Learn web development and AI, one clear step at a time.");
   await clickText("Login");
   await clickText("Smoke Learner");
-  await expectText("Interview academy");
-  await expectText("10,260 questions");
+  await expectText("State backed by evidence");
   const restoredAttempts = await page.evaluate(
     (id) =>
       JSON.parse(localStorage.getItem(`forge-learning-state-v1:${id}`))
@@ -827,7 +845,7 @@ try {
 
   if (errors.length) throw new Error(`Browser errors: ${errors.join(" | ")}`);
   console.log(
-    "Smoke test passed: opt-in portfolio preview, four advanced engineering labs, saved lab evidence, evidence-based mastery, weak-signal spaced reviews, focused learning shell, unique npm chapters, saved interactive examples, named icon controls, project action icons, course-topic controls, framework paths, learning resources, topic practice, persistence, quizzes, certificates, plain-English checks, 90 primary responsive checks, and six focused lesson viewport checks.",
+    "Smoke test passed: meaningful progress analytics, ten-skill evidence matrix, opt-in portfolio preview, four advanced engineering labs, saved lab evidence, evidence-based mastery, weak-signal spaced reviews, focused learning shell, unique npm chapters, saved interactive examples, named icon controls, project action icons, course-topic controls, framework paths, learning resources, topic practice, persistence, quizzes, certificates, plain-English checks, 90 primary responsive checks, and six focused lesson viewport checks.",
   );
 } finally {
   await browser.close();

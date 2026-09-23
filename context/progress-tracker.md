@@ -68,6 +68,9 @@ Update this file after every meaningful verified implementation change.
 - Moved authenticated Foundation certificates behind a D1 credential service. The Worker verifies synchronized lesson, assessment, correct-practice, project-milestone, and mastery-artifact evidence before generating an immutable server credential ID.
 - Added authenticated credential listing, idempotent issuance, public `/certificate/:id` verification with the exact evidence summary, and UI requirements that match the server gate while preserving offline certificates as explicitly local records.
 - Deployed and verified server-backed credentials as Cloudflare Worker version `4fcdb78b-b66b-480c-9535-5d40e8d8d6d1`; the production lifecycle proves progress sync, evidence verification, issuance, and anonymous credential lookup.
+- Replaced arbitrary Progress-page multipliers with eight meaningful measures: recorded study time, completed topics, strong topics, practice attempts and accuracy, unique solved problems, project milestones, review retention, and interview attempts with rubric average.
+- Added a seven-day evidence activity chart and a clickable ten-skill matrix for JavaScript, TypeScript, React, Node.js, PostgreSQL/SQL, DSA, System Design, Python, Machine Learning, and RAG/AI Systems.
+- Every skill state is derived from its exact lessons, practice, projects, labs, interviews, mastery artifacts, and due reviews; selecting a skill reveals those records and routes to a relevant next action without claiming mastery from self-report or decorative precision.
 - Deployed the account and cloud-sync release as Cloudflare Worker version `cf899c43-ce1d-4144-a8cf-dcfa6de08945`; the complete account lifecycle and existing responsive learner experience pass against production D1 and Workers.
 
 - Created and published the 52-week curriculum and 34-project ladder.

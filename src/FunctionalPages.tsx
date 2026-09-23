@@ -29,6 +29,7 @@ import {
 import { projectCards, reviewItems, type NavId } from "./data";
 import type { ForgeStore } from "./useForgeStore";
 import { curriculumPhases } from "./curriculumCatalog";
+import { buildSkillMatrix } from "./domain/skills";
 
 const TopicPracticeLab = lazy(() => import("./TopicPracticeLab"));
 const InterviewAcademy = lazy(() => import("./InterviewAcademy"));
@@ -695,43 +696,67 @@ export function ProgressPage({
   store: ForgeStore;
   navigate: (id: NavId) => void;
 }) {
+  const [now] = useState(() => Date.now());
+  const [selectedSkill, setSelectedSkill] = useState("javascript");
   const accuracy = store.state.practiceAttempts.length
     ? Math.round(
         (store.metrics.correct / store.state.practiceAttempts.length) * 100,
       )
     : 0;
-  const metrics = [
+  const matrix = buildSkillMatrix(store.state, now);
+  const selected =
+    matrix.find((item) => item.id === selectedSkill) ?? matrix[0];
+  const strong = matrix.filter((item) => item.state === "Strong").length;
+  const solved = new Set(
+    store.state.practiceAttempts
+      .filter((item) => item.correct)
+      .map((item) => item.challengeId),
+  ).size;
+  const retained = store.state.reviewSchedule.filter(
+    (item) => item.streak > 0,
+  ).length;
+  const retention = store.state.reviewSchedule.length
+    ? Math.round((retained / store.state.reviewSchedule.length) * 100)
+    : 0;
+  const analytics = [
     [
-      "Understanding",
-      Math.min(100, store.state.completedLessons.length * 18),
-      `${store.state.completedLessons.length} lessons`,
-      "learn",
+      "Study time",
+      `${Math.floor(store.state.learnedMinutes / 60)}h ${store.state.learnedMinutes % 60}m`,
+      "Recorded learning sessions",
     ],
     [
-      "Practice",
-      accuracy,
-      `${store.state.practiceAttempts.length} attempts`,
-      "practice",
+      "Topics completed",
+      String(store.state.completedLessons.length),
+      "Completion, not mastery",
+    ],
+    ["Topics strong", String(strong), "Multiple evidence types"],
+    [
+      "Practice attempts",
+      String(store.state.practiceAttempts.length),
+      `${accuracy}% answer accuracy`,
+    ],
+    ["Problems solved", String(solved), "Unique correct challenges"],
+    [
+      "Project milestones",
+      String(store.metrics.completedTasks),
+      "Saved build evidence",
     ],
     [
-      "Projects",
-      Math.min(100, store.metrics.completedTasks * 4),
-      `${store.metrics.completedTasks} project steps`,
-      "projects",
+      "Review retention",
+      `${retention}%`,
+      `${retained}/${store.state.reviewSchedule.length} recalled`,
     ],
     [
-      "Review",
-      Math.min(100, store.state.completedReviews.length * 22),
-      `${store.state.completedReviews.length} reviews`,
-      "reviews",
+      "Interview attempts",
+      String(store.state.interviewResults.length),
+      `${store.metrics.interviewAverage}% average rubric score`,
     ],
-    [
-      "Interview",
-      store.metrics.interviewAverage,
-      `${store.state.interviewResults.length} answers`,
-      "interview",
-    ],
-  ] as const;
+  ];
+  const recentDays = Array.from({ length: 7 }, (_, index) => {
+    const date = new Date(now);
+    date.setDate(date.getDate() - (6 - index));
+    return date;
+  });
   return (
     <div className="page">
       <section className="page-title">
@@ -754,61 +779,96 @@ export function ProgressPage({
           <Target />
         </div>
       </section>
-      <div className="metric-grid">
-        {metrics.map((m) => (
-          <article className="metric-card panel" key={m[0]}>
-            <div className="metric-top">
-              <span>{m[0]}</span>
-              <b>{m[1]}%</b>
-            </div>
-            <div className="large-bar">
-              <i style={{ width: `${m[1]}%` }} />
-            </div>
-            <small>{m[2]}</small>
+      <div className="analytics-grid">
+        {analytics.map(([label, value, detail]) => (
+          <article className="panel analytics-card" key={label}>
+            <span>{label}</span>
+            <b>{value}</b>
+            <small>{detail}</small>
           </article>
         ))}
       </div>
-      <div className="progress-content">
-        <article className="panel evidence-card">
-          <div className="section-head">
-            <div>
-              <span className="eyebrow">YOUR SAVED WORK</span>
-              <h2>Learning progress</h2>
-            </div>
-          </div>
-          <div className="evidence-list">
-            {metrics.map((m) => (
-              <div key={m[0]}>
-                <div className="evidence-icon">
-                  <CheckCircle2 />
-                </div>
+      <section className="weekly-activity panel">
+        <div>
+          <span className="eyebrow">LAST SEVEN DAYS</span>
+          <h2>Weekly activity</h2>
+          <p>
+            Activity marks days with saved learning evidence. Empty days are
+            information, not a penalty.
+          </p>
+        </div>
+        <div className="activity-bars">
+          {recentDays.map((date) => {
+            const key = date.toISOString().slice(0, 10);
+            const active = store.state.activityDates.includes(key);
+            return (
+              <div key={key}>
+                <i
+                  style={{ height: active ? "100%" : "12%" }}
+                  className={active ? "active" : ""}
+                />
                 <span>
-                  <b>{m[0]}</b>
-                  <small>{m[2]}</small>
+                  {date.toLocaleDateString(undefined, { weekday: "short" })}
                 </span>
-                <strong>{m[1]}%</strong>
               </div>
-            ))}
+            );
+          })}
+        </div>
+      </section>
+      <section className="skill-matrix-layout">
+        <article className="panel skill-matrix">
+          <div>
+            <span className="eyebrow">SKILL MATRIX</span>
+            <h2>State backed by evidence</h2>
           </div>
+          {matrix.map((skill) => (
+            <button
+              key={skill.id}
+              className={selected.id === skill.id ? "active" : ""}
+              onClick={() => setSelectedSkill(skill.id)}
+            >
+              <span>
+                <b>{skill.name}</b>
+                <small>{skill.evidence[0] ?? "No evidence saved yet"}</small>
+              </span>
+              <strong
+                className={`skill-state ${skill.state.toLowerCase().replace(" ", "-")}`}
+              >
+                {skill.state}
+              </strong>
+            </button>
+          ))}
         </article>
-        <article className="panel next-actions">
-          <span className="eyebrow">WHAT TO DO NEXT</span>
-          <h2>Build your lowest scores</h2>
-          {[...metrics]
-            .sort((a, b) => a[1] - b[1])
-            .slice(0, 3)
-            .map((m, i) => (
-              <button key={m[0]} onClick={() => navigate(m[3])}>
-                <span>{i + 1}</span>
-                <div>
-                  <b>Improve {m[0].toLowerCase()}</b>
-                  <small>{m[2]}</small>
-                </div>
-                <ArrowRight />
-              </button>
-            ))}
-        </article>
-      </div>
+        <aside className="panel skill-evidence-detail">
+          <span className="eyebrow">WHY THIS STATE</span>
+          <h2>{selected.name}</h2>
+          <strong
+            className={`skill-state ${selected.state.toLowerCase().replace(" ", "-")}`}
+          >
+            {selected.state}
+          </strong>
+          {selected.evidence.length ? (
+            <ul>
+              {selected.evidence.map((item) => (
+                <li key={item}>
+                  <CheckCircle2 /> {item}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>
+              Forge has no saved evidence for this skill yet. Self-reported
+              experience does not mark it mastered.
+            </p>
+          )}
+          <button
+            className="primary-button"
+            onClick={() => navigate(selected.action)}
+          >
+            Build {selected.name} evidence <ArrowRight />
+          </button>
+        </aside>
+      </section>
     </div>
   );
 }
