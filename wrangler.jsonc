@@ -7,6 +7,7 @@
     "binding": "ASSETS",
     "directory": "./dist",
     "not_found_handling": "single-page-application",
+    "run_worker_first": true,
   },
   "ai": {
     "binding": "AI",
@@ -23,5 +24,21 @@
   "vars": {
     "ENVIRONMENT": "production",
     "REGISTRATION_MODE": "open",
+  },
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1,
+    "redact_query_string": true,
+    "logs": {
+      "enabled": true,
+      "head_sampling_rate": 1,
+      "invocation_logs": true,
+      "persist": true,
+    },
+    "traces": {
+      "enabled": true,
+      "head_sampling_rate": 0.1,
+      "persist": true,
+    },
   },
 }

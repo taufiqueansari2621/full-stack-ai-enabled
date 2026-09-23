@@ -2,6 +2,7 @@ import type { AuthUser, Env } from "./types";
 
 export type RequestContext = {
   request: Request;
+  requestId: string;
   env: Env;
   url: URL;
   user: AuthUser | null;

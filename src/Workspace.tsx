@@ -124,48 +124,11 @@ function loadLocal(learnerId: string) {
   return { files: starterFiles, activePath: "src/index.js" };
 }
 
-const runnerSource = `
-for (const capability of ["fetch", "WebSocket", "EventSource", "importScripts", "XMLHttpRequest"]) {
-  try { Object.defineProperty(self, capability, { value: undefined, writable: false, configurable: false }); }
-  catch { /* The isolated runner still has a hard termination deadline. */ }
-}
-self.onmessage = (event) => {
-  const started = performance.now();
-  const logs = [];
-  const format = (value) => {
-    if (typeof value === "string") return value;
-    try { return JSON.stringify(value); } catch { return String(value); }
-  };
-  console.log = (...values) => {
-    if (logs.length < 80) logs.push(values.map(format).join(" ").slice(0, 2000));
-  };
-  try {
-    const getSum = new Function(event.data.code + "\\n; return typeof sum === 'function' ? sum : null;");
-    const sum = getSum();
-    const tests = [
-      ["adds positive numbers", () => sum && sum([2, 3, 4]) === 9],
-      ["supports negative numbers", () => sum && sum([-2, 5, -1]) === 2],
-      ["handles an empty array", () => sum && sum([]) === 0],
-    ];
-    const results = tests.map(([name, test]) => {
-      try { return { name, passed: Boolean(test()) }; }
-      catch (error) { return { name, passed: false, detail: String(error) }; }
-    });
-    self.postMessage({ logs, results, error: null, executionMs: performance.now() - started });
-  } catch (error) {
-    self.postMessage({ logs, results: [], error: String(error), executionMs: performance.now() - started });
-  }
-};`;
-
 async function runJavaScript(code: string): Promise<RunResult> {
-  const url = URL.createObjectURL(
-    new Blob([runnerSource], { type: "text/javascript" }),
-  );
-  const worker = new Worker(url);
+  const worker = new Worker("/runner-worker.js");
   return new Promise((resolve) => {
     const timeout = window.setTimeout(() => {
       worker.terminate();
-      URL.revokeObjectURL(url);
       resolve({
         logs: [],
         error: "Execution stopped after 1.5 seconds.",
@@ -184,7 +147,6 @@ async function runJavaScript(code: string): Promise<RunResult> {
     ) => {
       window.clearTimeout(timeout);
       worker.terminate();
-      URL.revokeObjectURL(url);
       resolve({
         logs: event.data.logs,
         error: event.data.error,
@@ -196,7 +158,6 @@ async function runJavaScript(code: string): Promise<RunResult> {
     worker.onerror = (event) => {
       window.clearTimeout(timeout);
       worker.terminate();
-      URL.revokeObjectURL(url);
       resolve({
         logs: [],
         error: event.message,

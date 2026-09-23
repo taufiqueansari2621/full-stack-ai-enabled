@@ -11,6 +11,7 @@ const browser = await puppeteer.launch({
 });
 const page = await browser.newPage();
 page.setDefaultTimeout(12_000);
+page.setDefaultNavigationTimeout(30_000);
 const browserErrors = [];
 
 page.on("console", (message) => {
@@ -75,6 +76,46 @@ try {
   )
     throw new Error(`Production PWA setup failed: ${JSON.stringify(pwa)}`);
   console.log("PWA manifest and service worker registration passed.");
+  const operations = await page.evaluate(async () => {
+    const [healthResponse, rootResponse, runnerResponse] = await Promise.all([
+      fetch("/api/health"),
+      fetch(`/?security-audit=${Date.now()}`, { cache: "no-store" }),
+      fetch(`/runner-worker.js?security-audit=${Date.now()}`, {
+        cache: "no-store",
+      }),
+    ]);
+    return {
+      healthStatus: healthResponse.status,
+      health: await healthResponse.json(),
+      requestId: healthResponse.headers.get("x-request-id"),
+      serverTiming: healthResponse.headers.get("server-timing"),
+      contentSecurityPolicy: rootResponse.headers.get(
+        "content-security-policy",
+      ),
+      strictTransportSecurity: rootResponse.headers.get(
+        "strict-transport-security",
+      ),
+      runnerContentSecurityPolicy: runnerResponse.headers.get(
+        "content-security-policy",
+      ),
+    };
+  });
+  if (
+    operations.healthStatus !== 200 ||
+    operations.health.status !== "ok" ||
+    operations.health.database !== "connected" ||
+    typeof operations.health.databaseLatencyMs !== "number" ||
+    !operations.requestId ||
+    !operations.serverTiming?.startsWith("forge;dur=") ||
+    !operations.contentSecurityPolicy?.includes("frame-ancestors 'none'") ||
+    operations.contentSecurityPolicy?.includes("unsafe-eval") ||
+    !operations.runnerContentSecurityPolicy?.includes("unsafe-eval") ||
+    !operations.runnerContentSecurityPolicy?.includes("connect-src 'none'") ||
+    !operations.strictTransportSecurity?.includes("max-age=31536000")
+  )
+    throw new Error(
+      `Production operations hardening failed: ${JSON.stringify(operations)}`,
+    );
   await page.evaluate(() => {
     const profile = {
       id: "production_audit",
@@ -228,7 +269,7 @@ try {
   if (unexpectedBrowserErrors.length)
     throw new Error(`Browser errors: ${unexpectedBrowserErrors.join(" | ")}`);
   console.log(
-    `Cloudflare verification passed for ${baseUrl}: evidence-derived gamification, installable PWA metadata, registered offline shell, cached offline navigation, SPA routes, deep npm lesson, interactive examples, project icons and named controls, focused learning, course-rail controls, console health, and 390px overflow.`,
+    `Cloudflare verification passed for ${baseUrl}: correlated health/database timing and security headers, evidence-derived gamification, installable PWA metadata, registered offline shell, cached offline navigation, SPA routes, deep npm lesson, interactive examples, project icons and named controls, focused learning, course-rail controls, console health, and 390px overflow.`,
   );
 } finally {
   await browser.close();

@@ -178,6 +178,18 @@ const expectFocusedLearningShell = async (context) => {
 };
 
 try {
+  const recoveryPage = await browser.newPage();
+  await recoveryPage.goto(
+    "http://127.0.0.1:5173/?forge-error-boundary-test=1",
+    { waitUntil: "networkidle0" },
+  );
+  await recoveryPage.waitForFunction(
+    () =>
+      document.body.textContent?.includes(
+        "This screen could not finish loading.",
+      ) && document.body.textContent?.includes("Reload Forge"),
+  );
+  await recoveryPage.close();
   // Use an origin separate from normal localhost development so destructive
   // reset checks can never clear a learner's real local development profile.
   await page.goto("http://127.0.0.1:5173", { waitUntil: "networkidle0" });
@@ -925,7 +937,7 @@ try {
 
   if (errors.length) throw new Error(`Browser errors: ${errors.join(" | ")}`);
   console.log(
-    "Smoke test passed: evidence-derived XP, levels, badges, milestones, and repeat protection; Markdown Notes 2.0 with tags, links, favorites, flashcards, and review actions; global multi-source search, eight command actions, evidence notifications, meaningful progress analytics, ten-skill evidence matrix, opt-in portfolio preview, four advanced engineering labs, saved lab evidence, evidence-based mastery, weak-signal spaced reviews, focused learning shell, unique npm chapters, saved interactive examples, named icon controls, project action icons, course-topic controls, framework paths, learning resources, topic practice, persistence, quizzes, certificates, plain-English checks, 90 primary responsive checks, and six focused lesson viewport checks.",
+    "Smoke test passed: global render-error recovery; evidence-derived XP, levels, badges, milestones, and repeat protection; Markdown Notes 2.0 with tags, links, favorites, flashcards, and review actions; global multi-source search, eight command actions, evidence notifications, meaningful progress analytics, ten-skill evidence matrix, opt-in portfolio preview, four advanced engineering labs, saved lab evidence, evidence-based mastery, weak-signal spaced reviews, focused learning shell, unique npm chapters, saved interactive examples, named icon controls, project action icons, course-topic controls, framework paths, learning resources, topic practice, persistence, quizzes, certificates, plain-English checks, 90 primary responsive checks, and six focused lesson viewport checks.",
   );
 } finally {
   await browser.close();
