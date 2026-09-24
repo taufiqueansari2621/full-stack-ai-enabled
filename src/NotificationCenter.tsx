@@ -2,6 +2,7 @@ import { CheckCircle2, X } from "lucide-react";
 import { useState } from "react";
 import type { NavId } from "./data";
 import { buildNotifications } from "./domain/notifications";
+import { useDialogFocus } from "./hooks/useDialogFocus";
 import type { ForgeStore } from "./useForgeStore";
 
 export default function NotificationCenter({
@@ -15,9 +16,11 @@ export default function NotificationCenter({
 }) {
   const [now] = useState(() => Date.now());
   const items = buildNotifications(store, now);
+  const dialogRef = useDialogFocus<HTMLElement>(true, close);
   return (
     <div className="modal-backdrop" onMouseDown={close}>
       <section
+        ref={dialogRef}
         className="notification-center panel"
         role="dialog"
         aria-modal="true"

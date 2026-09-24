@@ -7,7 +7,7 @@ Git history.
 ## Executive Status
 
 - **Production URL:** <https://forge-ai-engineering.taufiqueansari895.workers.dev>
-- **Verified Worker version:** `1f707c45-0ff9-4c84-ac38-78b145ca3e8e`
+- **Verified Worker version:** `5cf5db66-5674-4a30-95b1-19e5a3dcb620`
 - **Current branch:** `main`, ahead of `origin/main`; push still requires exact
   approval for the GitHub destination.
 - **Verified:** 12 focused domain/security/migration/API-contract tests, lint, strict
@@ -73,7 +73,7 @@ capability is not implemented.
 |  46 | Design direction                  | **Complete** | Existing premium dark developer-tool identity, light theme, typography, semantic colors, panels, restrained motion, and plain-English hierarchy are preserved.                                                                                                                                                                                                                         |
 |  47 | Sidebar redesign                  | **Complete** | Responsive drawer, active states, current path, review count, weekly goal, profile, and focused-learning removal work. The full route set is semantically grouped into Learn, Practice, Build, Review, Career, and Help sections with independent short-viewport scrolling.                                                                                                            |
 |  48 | Performance                       | **Partial**  | Route/feature lazy loading, hashed assets, PWA cache, small Worker startup, and an initial bundle below the prior advisory threshold are verified. Large application-shell decomposition, font self-hosting, formal Web Vitals budgets, and targeted virtualization remain.                                                                                                            |
-|  49 | Accessibility                     | **Partial**  | Semantic controls, accessible names, visible focus, reduced motion, responsive touch sizing, named dialogs, text chart summaries, and unnamed-button regression checks exist. Modal focus traps/restoration and a formal WCAG 2.2 AA automated/manual audit remain.                                                                                                                    |
+|  49 | Accessibility                     | **Complete** | Semantic controls, accessible names, visible focus, reduced motion, sufficient contrast, responsive touch sizing, accessible editor controls, text chart summaries, and unnamed-button regression checks exist. Every dialog has a name plus verified initial focus, Tab trapping, Escape close, and opener restoration.                                                               |
 |  50 | Frontend refactor                 | **Partial**  | Major features moved into dedicated modules and domain functions, but `src/App.tsx` and legacy CSS remain oversized and the target feature-folder/component-primitives architecture is incomplete.                                                                                                                                                                                     |
 |  51 | Backend structure                 | **Complete** | Worker entry, routes, auth, security, AI provider, validation/http boundary, rate limiting, and typed environment are separated instead of living in one handler.                                                                                                                                                                                                                      |
 |  52 | Migration strategy                | **Partial**  | Phases for Worker API, D1, auth, cloud sync, workspace/history, browser execution, AI, dynamic review/mastery, portfolio/analytics, offline, security, and deployment are shipped incrementally. Video, remote execution, admin, and final audit phases remain.                                                                                                                        |
@@ -90,8 +90,8 @@ capability is not implemented.
 
 ## Completion Totals
 
-- **Complete:** 33 numbered areas
-- **Partial:** 26 numbered areas
+- **Complete:** 34 numbered areas
+- **Partial:** 25 numbered areas
 - **Pending:** 2 numbered areas
 - **Overall final objective:** partial; it must not be represented as 100% complete.
 
@@ -109,10 +109,9 @@ platform capabilities.
 2. Add email ownership verification, session/device management, Turnstile, and
    optional Google/GitHub OAuth after provider credentials and redirect domains
    are explicitly configured.
-3. Complete the modal keyboard/focus audit, automated accessibility scanning,
-   Web Vitals budgets, and an operator-executed D1 restore drill. The checked-in
-   production runbook now documents release, backup, restore, rollback, and
-   incident procedures.
+3. Add automated accessibility scanning, Web Vitals budgets, and an
+   operator-executed D1 restore drill. The checked-in production runbook now
+   documents release, backup, restore, rollback, and incident procedures.
 
 ### Core capability gaps
 

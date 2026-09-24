@@ -783,14 +783,43 @@ try {
   await expectText("SQL has no recent evidence");
   await page.click('button[aria-label="Close notifications"]');
 
+  await page.focus(".search-button");
   await page.keyboard.down("Control");
   await page.keyboard.press("KeyK");
   await page.keyboard.up("Control");
   await expectText("COMMANDS");
+  await page.waitForFunction(() =>
+    document.activeElement?.matches(".global-search input"),
+  );
+  await page.keyboard.down("Shift");
+  await page.keyboard.press("Tab");
+  await page.keyboard.up("Shift");
+  const searchWrappedBackward = await page.evaluate(() =>
+    document
+      .querySelector(".command-palette")
+      ?.contains(document.activeElement),
+  );
+  if (!searchWrappedBackward)
+    throw new Error("Search dialog allowed focus to escape backwards");
+  await page.keyboard.press("Tab");
+  const searchWrappedForward = await page.evaluate(() =>
+    document.activeElement?.matches(".global-search input"),
+  );
+  if (!searchWrappedForward)
+    throw new Error("Search dialog did not wrap focus to its first control");
   await page.type(".global-search input", "event loop");
   await expectText("Event loop");
   await expectText("Interview");
   await page.keyboard.press("Escape");
+  await page.waitForFunction(() => !document.querySelector(".command-palette"));
+  await page.click(".search-button");
+  await page.waitForFunction(() =>
+    document.activeElement?.matches(".global-search input"),
+  );
+  await page.keyboard.press("Escape");
+  await page.waitForFunction(() =>
+    document.activeElement?.classList.contains("search-button"),
+  );
 
   await page.click('button[aria-label="Open learner settings"]');
   await clickText("Log out");
@@ -954,7 +983,7 @@ try {
 
   if (errors.length) throw new Error(`Browser errors: ${errors.join(" | ")}`);
   console.log(
-    "Smoke test passed: global render-error recovery; grouped and scroll-safe sidebar navigation; evidence-derived XP, levels, badges, milestones, and repeat protection; Markdown Notes 2.0 with tags, links, favorites, flashcards, and review actions; global multi-source search, eight command actions, evidence notifications, meaningful progress analytics, ten-skill evidence matrix, opt-in portfolio preview, four advanced engineering labs, saved lab evidence, evidence-based mastery, weak-signal spaced reviews, focused learning shell, unique npm chapters, saved interactive examples, named icon controls, project action icons, course-topic controls, framework paths, learning resources, topic practice, persistence, quizzes, certificates, plain-English checks, 90 primary responsive checks, and six focused lesson viewport checks.",
+    "Smoke test passed: global render-error recovery; grouped and scroll-safe sidebar navigation; trapped and restored dialog focus; evidence-derived XP, levels, badges, milestones, and repeat protection; Markdown Notes 2.0 with tags, links, favorites, flashcards, and review actions; global multi-source search, eight command actions, evidence notifications, meaningful progress analytics, ten-skill evidence matrix, opt-in portfolio preview, four advanced engineering labs, saved lab evidence, evidence-based mastery, weak-signal spaced reviews, focused learning shell, unique npm chapters, saved interactive examples, named icon controls, project action icons, course-topic controls, framework paths, learning resources, topic practice, persistence, quizzes, certificates, plain-English checks, 90 primary responsive checks, and six focused lesson viewport checks.",
   );
 } finally {
   await browser.close();

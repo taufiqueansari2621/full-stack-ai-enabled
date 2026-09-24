@@ -83,6 +83,7 @@ import {
 } from "./curriculumCatalog";
 import { catalogLessonId } from "./topicIds";
 import { buildNotifications } from "./domain/notifications";
+import { useDialogFocus } from "./hooks/useDialogFocus";
 import {
   CertificateVerification,
   CertificatesPage,
@@ -2178,9 +2179,11 @@ function SettingsOverlay({
   startOver: () => void;
 }) {
   const [confirmReset, setConfirmReset] = useState(false);
+  const dialogRef = useDialogFocus<HTMLDivElement>(true, close);
   return (
     <div className="modal-backdrop" onMouseDown={close}>
       <div
+        ref={dialogRef}
         className="modal settings-modal panel"
         role="dialog"
         aria-modal="true"

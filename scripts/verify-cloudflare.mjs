@@ -171,6 +171,31 @@ try {
       `Production evidence gamification failed: ${JSON.stringify(gamification)}`,
     );
 
+  await page.click(".search-button");
+  await page.waitForFunction(() =>
+    document.activeElement?.matches(".global-search input"),
+  );
+  await page.keyboard.down("Shift");
+  await page.keyboard.press("Tab");
+  await page.keyboard.up("Shift");
+  const dialogFocusContained = await page.evaluate(() =>
+    document
+      .querySelector(".command-palette")
+      ?.contains(document.activeElement),
+  );
+  if (!dialogFocusContained)
+    throw new Error("Production search dialog allowed focus to escape");
+  await page.keyboard.press("Tab");
+  await page.waitForFunction(() =>
+    document.activeElement?.matches(".global-search input"),
+  );
+  await page.keyboard.press("Escape");
+  await page.waitForFunction(
+    () =>
+      !document.querySelector(".command-palette") &&
+      document.activeElement?.classList.contains("search-button"),
+  );
+
   await open("/roadmap", "Start at zero. Grow into an");
   await page.click('button[aria-label="Open Orientation & Developer Setup"]');
   await page.evaluate(() => {
@@ -292,7 +317,7 @@ try {
   if (unexpectedBrowserErrors.length)
     throw new Error(`Browser errors: ${unexpectedBrowserErrors.join(" | ")}`);
   console.log(
-    `Cloudflare verification passed for ${baseUrl}: versioned OpenAPI discovery, correlated health/database timing and security headers, grouped and scroll-safe sidebar navigation, evidence-derived gamification, installable PWA metadata, registered offline shell, cached offline navigation, SPA routes, deep npm lesson, interactive examples, project icons and named controls, focused learning, course-rail controls, console health, and 390px overflow.`,
+    `Cloudflare verification passed for ${baseUrl}: versioned OpenAPI discovery, correlated health/database timing and security headers, grouped and scroll-safe sidebar navigation, trapped and restored dialog focus, evidence-derived gamification, installable PWA metadata, registered offline shell, cached offline navigation, SPA routes, deep npm lesson, interactive examples, project icons and named controls, focused learning, course-rail controls, console health, and 390px overflow.`,
   );
 } finally {
   await browser.close();

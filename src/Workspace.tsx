@@ -17,6 +17,7 @@ import {
   X,
 } from "lucide-react";
 import { ForgeApiError, forgeApi } from "./services/forgeApi";
+import { useDialogFocus } from "./hooks/useDialogFocus";
 import "./workspace.css";
 
 type Files = Record<string, string>;
@@ -216,6 +217,9 @@ export function Workspace({
   const [projectName, setProjectName] = useState("");
   const [projectTemplate, setProjectTemplate] = useState("html");
   const [workspaceMessage, setWorkspaceMessage] = useState<string | null>(null);
+  const dialogRef = useDialogFocus<HTMLElement>(Boolean(dialog), () =>
+    setDialog(null),
+  );
   const activeContent = files[activePath] ?? "";
 
   useEffect(() => {
@@ -702,6 +706,7 @@ export function Workspace({
           onMouseDown={() => setDialog(null)}
         >
           <section
+            ref={dialogRef}
             className="workspace-dialog"
             role="dialog"
             aria-modal="true"
@@ -724,11 +729,11 @@ export function Workspace({
                 <label>
                   Project name
                   <input
+                    data-dialog-initial-focus
                     value={projectName}
                     maxLength={60}
                     onChange={(event) => setProjectName(event.target.value)}
                     placeholder="My production app"
-                    autoFocus
                   />
                 </label>
                 <label>

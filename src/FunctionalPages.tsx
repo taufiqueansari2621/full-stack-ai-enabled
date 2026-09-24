@@ -34,6 +34,7 @@ import type { ForgeStore } from "./useForgeStore";
 import { curriculumPhases } from "./curriculumCatalog";
 import { buildSkillMatrix } from "./domain/skills";
 import { forgeApi } from "./services/forgeApi";
+import { useDialogFocus } from "./hooks/useDialogFocus";
 
 const TopicPracticeLab = lazy(() => import("./TopicPracticeLab"));
 const InterviewAcademy = lazy(() => import("./InterviewAcademy"));
@@ -578,6 +579,9 @@ export function KnowledgePage({
     [topicLink, setTopicLink] = useState(""),
     [projectLink, setProjectLink] = useState(""),
     [aiAnswer, setAiAnswer] = useState<Record<string, string>>({});
+  const dialogRef = useDialogFocus<HTMLDivElement>(Boolean(form), () =>
+    setForm(null),
+  );
   const entries = store.state.knowledge.filter(
     (e) =>
       (kind === "all" ||
@@ -790,9 +794,11 @@ export function KnowledgePage({
       {form && (
         <div className="modal-backdrop" onMouseDown={() => setForm(null)}>
           <div
+            ref={dialogRef}
             className="modal panel"
             role="dialog"
             aria-modal="true"
+            aria-labelledby="knowledge-form-title"
             onMouseDown={(e) => e.stopPropagation()}
           >
             <button
@@ -805,7 +811,7 @@ export function KnowledgePage({
             <span className="eyebrow teal">
               {form === "note" ? "SAVE A NOTE" : "LEARN FROM A MISTAKE"}
             </span>
-            <h2>
+            <h2 id="knowledge-form-title">
               {editId
                 ? "Edit saved knowledge"
                 : form === "note"
@@ -815,7 +821,7 @@ export function KnowledgePage({
             <label>
               Title
               <input
-                autoFocus
+                data-dialog-initial-focus
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
               />

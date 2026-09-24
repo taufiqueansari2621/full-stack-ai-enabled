@@ -6,6 +6,7 @@ import { projectCards, type NavId } from "./data";
 import { interviewTopics } from "./interviewQuestionBank";
 import { learningResources } from "./learningResourceCatalog";
 import type { ForgeStore } from "./useForgeStore";
+import { useDialogFocus } from "./hooks/useDialogFocus";
 
 type SearchItem = {
   id: string;
@@ -26,6 +27,7 @@ export default function SearchOverlay({
   store: ForgeStore;
 }) {
   const [query, setQuery] = useState("");
+  const dialogRef = useDialogFocus<HTMLDivElement>(true, close);
   const commands: SearchItem[] = [
     {
       id: "continue",
@@ -174,6 +176,7 @@ export default function SearchOverlay({
   return (
     <div className="modal-backdrop search-backdrop" onMouseDown={close}>
       <div
+        ref={dialogRef}
         className="search-modal panel command-palette"
         role="dialog"
         aria-modal="true"
@@ -183,7 +186,7 @@ export default function SearchOverlay({
         <div className="global-search">
           <Search />
           <input
-            autoFocus
+            data-dialog-initial-focus
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search lessons, topics, projects, interviews, resources, notes…"
