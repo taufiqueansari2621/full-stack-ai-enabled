@@ -386,6 +386,36 @@ try {
     throw new Error(
       `Production system-design lab failed: ${JSON.stringify(systemDesignLab)}`,
     );
+  await page.evaluate(() => {
+    const target = [...document.querySelectorAll("button")].find((button) =>
+      button.textContent?.trim() === "SQL",
+    );
+    if (!(target instanceof HTMLButtonElement))
+      throw new Error("SQL tab was not available");
+    target.click();
+  });
+  const sqlLab = await page.evaluate(() => ({
+    topics: document.querySelectorAll(".lab-grid select option").length,
+    tables: document.querySelectorAll(".sql-schema code").length,
+    runButton: [...document.querySelectorAll("button")].some(
+      (button) => button.textContent?.trim() === "Run query",
+    ),
+  }));
+  if (sqlLab.topics !== 10 || sqlLab.tables !== 3 || !sqlLab.runButton)
+    throw new Error(`Production SQL lab failed: ${JSON.stringify(sqlLab)}`);
+  await page.evaluate(() => {
+    const target = [...document.querySelectorAll("button")].find(
+      (button) => button.textContent?.trim() === "Run query",
+    );
+    if (!(target instanceof HTMLButtonElement))
+      throw new Error("Run query button was not available");
+    target.click();
+  });
+  await page.waitForFunction(
+    () =>
+      document.body.textContent?.includes("Explanation") &&
+      document.body.textContent?.includes("Query plan"),
+  );
   await page.setViewport({ width: 390, height: 844 });
   await open("/projects", "Open project");
   await open("/learn", "COURSE TOPICS");
@@ -407,7 +437,7 @@ try {
   if (unexpectedBrowserErrors.length)
     throw new Error(`Browser errors: ${unexpectedBrowserErrors.join(" | ")}`);
   console.log(
-    `Cloudflare verification passed for ${baseUrl}: versioned OpenAPI discovery, correlated health/database timing and security headers, grouped and scroll-safe sidebar navigation, trapped and restored dialog focus, evidence-derived gamification, installable PWA metadata, registered offline shell, cached offline navigation, SPA routes, deep npm lesson, reviewed video learning, public-profile empty state, complete DSA visualization, seven-scenario system-design lab, interactive examples, project icons and named controls, focused learning, course-rail controls, console health, and 390px overflow.`,
+    `Cloudflare verification passed for ${baseUrl}: versioned OpenAPI discovery, correlated health/database timing and security headers, grouped and scroll-safe sidebar navigation, trapped and restored dialog focus, evidence-derived gamification, installable PWA metadata, registered offline shell, cached offline navigation, SPA routes, deep npm lesson, reviewed video learning, public-profile empty state, complete DSA visualization, seven-scenario system-design lab, ten-topic interactive SQL lab, interactive examples, project icons and named controls, focused learning, course-rail controls, console health, and 390px overflow.`,
   );
 } finally {
   await browser.close();

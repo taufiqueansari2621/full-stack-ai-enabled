@@ -706,8 +706,16 @@ try {
   await clickText("+ Cache");
   await expectText("Clear canvas");
   await clickText("SQL");
+  const sqlCoverage = await page.evaluate(() => ({
+    topics: document.querySelectorAll('.lab-grid select option').length,
+    tables: document.querySelectorAll('.sql-schema code').length,
+  }));
+  if (sqlCoverage.topics !== 10 || sqlCoverage.tables !== 3)
+    throw new Error(`SQL lab coverage failed: ${JSON.stringify(sqlCoverage)}`);
   await clickText("Run query");
   await expectText("Ada");
+  await expectText("Explanation");
+  await expectText("Query plan");
   await clickText("RAG");
   await expectText("Pipeline telemetry");
   await page.type(

@@ -20,15 +20,15 @@ import {
   systemDesignPrompts,
   systemDesignScenarios,
 } from "./domain/systemDesignScenarios";
+import {
+  runSqlLesson,
+  sqlLabLessons,
+  sqlSchema,
+  type SqlLabResult,
+} from "./domain/sqlLab";
 import "./advanced-labs.css";
 
 type Lab = LabArtifact["lab"];
-const rows = [
-  { id: 1, name: "Ada", score: 92 },
-  { id: 2, name: "Lin", score: 78 },
-  { id: 3, name: "Grace", score: 88 },
-];
-
 export default function AdvancedLabs({
   store,
   notify,
@@ -44,10 +44,11 @@ export default function AdvancedLabs({
   const [nodes, setNodes] = useState<string[]>(
     systemDesignScenarios[0].starterNodes,
   );
-  const [query, setQuery] = useState(
-    "SELECT name, score FROM learners WHERE score >= 85;",
-  );
-  const [sqlResult, setSqlResult] = useState<typeof rows | null>(null);
+  const [sqlLessonId, setSqlLessonId] = useState(sqlLabLessons[0].id);
+  const [query, setQuery] = useState(sqlLabLessons[0].query);
+  const [sqlResult, setSqlResult] = useState<
+    SqlLabResult | { error: string } | null
+  >(null);
   const [document, setDocument] = useState(
     "Forge teaches engineering through lessons, deliberate practice, projects, reviews, and evidence.",
   );
@@ -59,6 +60,8 @@ export default function AdvancedLabs({
   const activeScenario =
     systemDesignScenarios.find((item) => item.id === scenarioId) ??
     systemDesignScenarios[0];
+  const activeSqlLesson =
+    sqlLabLessons.find((item) => item.id === sqlLessonId) ?? sqlLabLessons[0];
   const chunks = useMemo(
     () =>
       document
@@ -272,48 +275,74 @@ export default function AdvancedLabs({
       {lab === "sql" && (
         <section className="lab-grid panel">
           <div>
-            <b>Schema: learners(id, name, score)</b>
+            <label>
+              SQL topic
+              <select
+                value={sqlLessonId}
+                onChange={(event) => {
+                  const next =
+                    sqlLabLessons.find(
+                      (item) => item.id === event.target.value,
+                    ) ?? sqlLabLessons[0];
+                  setSqlLessonId(next.id);
+                  setQuery(next.query);
+                  setSqlResult(null);
+                }}
+              >
+                {sqlLabLessons.map((lesson) => (
+                  <option value={lesson.id} key={lesson.id}>
+                    {lesson.title}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <div className="sql-schema">
+              <b>Database schema</b>
+              {sqlSchema.map((table) => <code key={table}>{table}</code>)}
+            </div>
             <textarea
+              aria-label={`${activeSqlLesson.title} query editor`}
               className="query-editor"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
             <button
-              onClick={() =>
-                setSqlResult(
-                  /select/i.test(query)
-                    ? rows.filter((row) => !/85/.test(query) || row.score >= 85)
-                    : [],
-                )
-              }
+              onClick={() => setSqlResult(runSqlLesson(activeSqlLesson, query))}
             >
               <Database /> Run query
             </button>
-            {sqlResult && (
+            {sqlResult && "error" in sqlResult && (
+              <p className="sql-error" role="alert">{sqlResult.error}</p>
+            )}
+            {sqlResult && !("error" in sqlResult) && (
+              <>
               <table>
                 <thead>
                   <tr>
-                    <th>name</th>
-                    <th>score</th>
+                    {sqlResult.columns.map((column) => <th key={column}>{column}</th>)}
                   </tr>
                 </thead>
                 <tbody>
-                  {sqlResult.map((row) => (
-                    <tr key={row.id}>
-                      <td>{row.name}</td>
-                      <td>{row.score}</td>
+                  {sqlResult.rows.map((row, rowIndex) => (
+                    <tr key={`${activeSqlLesson.id}-${rowIndex}`}>
+                      {row.map((value, columnIndex) => (
+                        <td key={`${value}-${columnIndex}`}>{value}</td>
+                      ))}
                     </tr>
                   ))}
                 </tbody>
               </table>
+              <div className="sql-explanation">
+                <b>Explanation</b><p>{sqlResult.explanation}</p>
+                <b>Query plan</b><code>{sqlResult.plan}</code>
+              </div>
+              </>
             )}
           </div>
           <aside>
-            <b>Challenge</b>
-            <p>
-              Return learners scoring at least 85. Then explain how an index on
-              score changes reads and write cost.
-            </p>
+            <b>{activeSqlLesson.title} challenge</b>
+            <p>{activeSqlLesson.challenge}</p>
+            <p>This is a bounded teaching dataset. It validates the selected concept and never sends arbitrary SQL to the production database.</p>
           </aside>
         </section>
       )}
