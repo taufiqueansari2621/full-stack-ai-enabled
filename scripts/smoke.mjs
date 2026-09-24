@@ -658,6 +658,15 @@ try {
   await clickText("Start P05");
   await expectText("PROJECT WORKSPACE");
   await expectNamedButtons("Project workspace");
+  await clickText("Project Brief");
+  const projectBriefSections = await page.$$(".project-brief-grid article");
+  if (projectBriefSections.length !== 16)
+    throw new Error(
+      `Expected 16 complete project brief sections, found ${projectBriefSections.length}`,
+    );
+  await expectText("Security Requirements");
+  await expectText("Retrospective");
+  await clickText("Tasks");
   await clickText("Define search contract");
   await expectText("1/11 saved locally");
   await clickText("All projects");

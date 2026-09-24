@@ -346,6 +346,29 @@ try {
     throw new Error(
       `Production project controls failed: ${JSON.stringify(projectUi)}`,
     );
+  await page.evaluate(() => {
+    const target = [...document.querySelectorAll("button")].find((button) =>
+      button.textContent?.includes("Start P05"),
+    );
+    if (!(target instanceof HTMLButtonElement))
+      throw new Error("Start P05 action was not available");
+    target.click();
+  });
+  await page.waitForFunction(() => document.body.textContent?.includes("PROJECT WORKSPACE"));
+  await page.evaluate(() => {
+    const target = [...document.querySelectorAll("button")].find(
+      (button) => button.textContent?.trim() === "Project Brief",
+    );
+    if (!(target instanceof HTMLButtonElement))
+      throw new Error("Project Brief tab was not available");
+    target.click();
+  });
+  const projectBriefCount = await page.$$eval(
+    ".project-brief-grid article",
+    (items) => items.length,
+  );
+  if (projectBriefCount !== 16)
+    throw new Error(`Production project brief has ${projectBriefCount} sections`);
   await open("/labs", "Advanced engineering");
   const dsaLab = await page.evaluate(() => ({
     algorithms: document.querySelectorAll(".lab-grid select option").length,

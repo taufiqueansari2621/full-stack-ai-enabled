@@ -35,6 +35,7 @@ import { curriculumPhases } from "./curriculumCatalog";
 import { buildSkillMatrix } from "./domain/skills";
 import { forgeApi } from "./services/forgeApi";
 import { useDialogFocus } from "./hooks/useDialogFocus";
+import { buildProjectBrief } from "./domain/projectWorkspace";
 
 const TopicPracticeLab = lazy(() => import("./TopicPracticeLab"));
 const InterviewAcademy = lazy(() => import("./InterviewAcademy"));
@@ -294,6 +295,24 @@ const projectGuidance: Record<
     ],
     evidence:
       "Three concise architecture decision records linked from the README.",
+  },
+  Documentation: {
+    goal: "Make the project understandable to users, contributors, and operators.",
+    actions: [
+      "Document setup and the core user flow",
+      "Link architecture, API, testing, and operating guidance",
+      "Keep examples verified against the current release",
+    ],
+    evidence: "A reviewed README with working setup, usage, and operations links.",
+  },
+  Retrospective: {
+    goal: "Turn delivery evidence into a better next engineering decision.",
+    actions: [
+      "Compare the result with acceptance criteria",
+      "Record surprises, failures, and trade-offs",
+      "Choose one evidence-backed follow-up improvement",
+    ],
+    evidence: "A concise retrospective linked to tests, metrics, and decisions.",
   },
 };
 
@@ -1550,7 +1569,7 @@ export function ProjectWorkspace({
   notify: (text: string) => void;
   openCodeWorkspace: (project: { id: string; title: string }) => void;
 }) {
-  const [tab, setTab] = useState("Steps"),
+  const [tab, setTab] = useState("Tasks"),
     tasks = projectTasks[projectId] ?? projectTasks.p05,
     done = store.state.projectTasks[projectId] ?? [],
     title = projectCards.find((p) => p.id === projectId)?.title ?? "Project";
@@ -1594,11 +1613,13 @@ export function ProjectWorkspace({
         <main className="workspace-main">
           <aside className="workspace-nav panel">
             {[
-              "Overview",
-              "Steps",
+              "Project Brief",
+              "Tasks",
               "Architecture",
               "Testing",
               "Deployment",
+              "Documentation",
+              "Retrospective",
               "Decision log",
             ].map((x) => (
               <button
@@ -1614,7 +1635,7 @@ export function ProjectWorkspace({
           <section className="milestone-panel panel">
             <span className="eyebrow">{tab.toUpperCase()}</span>
             <h2>{tab}</h2>
-            {tab === "Steps" ? (
+            {tab === "Tasks" ? (
               <div className="milestone-list">
                 {tasks.map((task, i) => {
                   const id = `${projectId}-${i + 1}`,
@@ -1643,6 +1664,15 @@ export function ProjectWorkspace({
                     </button>
                   );
                 })}
+              </div>
+            ) : tab === "Project Brief" ? (
+              <div className="project-brief-grid">
+                {buildProjectBrief(title).map((item) => (
+                  <article key={item.section}>
+                    <b>{item.section}</b>
+                    <p>{item.prompt}</p>
+                  </article>
+                ))}
               </div>
             ) : (
               <div className="workspace-tab">

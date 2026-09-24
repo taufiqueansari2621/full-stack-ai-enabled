@@ -2842,3 +2842,22 @@ h3 {
     display: none;
   }
 }
+.project-brief-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.project-brief-grid article {
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel-2);
+}
+.project-brief-grid p {
+  margin: 6px 0 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+@media (max-width: 640px) {
+  .project-brief-grid { grid-template-columns: 1fr; }
+}
