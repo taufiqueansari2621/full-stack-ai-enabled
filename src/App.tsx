@@ -2888,6 +2888,7 @@ function LearningWorkspace({
           learnerId={profile.id}
           cloudEnabled={cloudEnabled}
           projectContext={workspaceProject}
+          openRelatedLesson={() => setActive("learn")}
         />
       </Suspense>
     );

@@ -175,10 +175,12 @@ export function Workspace({
   learnerId,
   cloudEnabled,
   projectContext,
+  openRelatedLesson,
 }: {
   learnerId: string;
   cloudEnabled: boolean;
   projectContext: ProjectContext;
+  openRelatedLesson: () => void;
 }) {
   const initial = useMemo(() => {
     if (!projectContext) return loadLocal(learnerId);
@@ -209,6 +211,7 @@ export function Workspace({
   const [aiLoading, setAiLoading] = useState(false);
   const [aiResponse, setAiResponse] = useState<string | null>(null);
   const [aiError, setAiError] = useState<string | null>(null);
+  const aiRequest = useRef<AbortController | null>(null);
   const [dialog, setDialog] = useState<"new" | "versions" | null>(null);
   const [snapshots, setSnapshots] = useState<
     { id: string; label: string; activePath: string; createdAt: string }[]
@@ -221,6 +224,8 @@ export function Workspace({
     setDialog(null),
   );
   const activeContent = files[activePath] ?? "";
+
+  useEffect(() => () => aiRequest.current?.abort(), []);
 
   useEffect(() => {
     if (!cloudEnabled) {
@@ -359,31 +364,43 @@ export function Workspace({
     setResult(null);
     setWorkspaceMessage(`Created ${title}.`);
   };
-  const askForgeAi = async () => {
-    if (!cloudEnabled || aiQuestion.trim().length < 2) return;
+  const askForgeAi = async (mode = aiMode, message = aiQuestion.trim()) => {
+    if (!cloudEnabled || message.length < 2) return;
+    aiRequest.current?.abort();
+    const controller = new AbortController();
+    aiRequest.current = controller;
     setAiLoading(true);
     setAiError(null);
     try {
-      const answer = await forgeApi.askAi({
-        mode: aiMode,
-        message: aiQuestion.trim(),
-        level: aiLevel,
-        context: {
-          challenge:
-            "Implement sum(numbers) so positive, negative, and empty arrays pass.",
-          ...(result?.error ? { error: result.error } : {}),
-          ...(includeActiveFile
-            ? { activeFile: { path: activePath, content: activeContent } }
-            : {}),
+      const answer = await forgeApi.askAi(
+        {
+          mode,
+          message,
+          level: aiLevel,
+          context: {
+            challenge:
+              "Implement sum(numbers) so positive, negative, and empty arrays pass.",
+            ...(result?.error ? { error: result.error } : {}),
+            ...(includeActiveFile
+              ? { activeFile: { path: activePath, content: activeContent } }
+              : {}),
+          },
         },
-      });
+        controller.signal,
+      );
+      if (aiRequest.current !== controller) return;
       setAiResponse(answer.response);
     } catch (reason) {
+      if (reason instanceof DOMException && reason.name === "AbortError")
+        return;
       setAiError(
         reason instanceof Error ? reason.message : "Forge AI is unavailable.",
       );
     } finally {
-      setAiLoading(false);
+      if (aiRequest.current === controller) {
+        aiRequest.current = null;
+        setAiLoading(false);
+      }
     }
   };
 
@@ -595,6 +612,14 @@ export function Workspace({
                 ? "Ask Forge AI"
                 : "Sign in to use Forge AI"}
           </button>
+          {aiLoading && (
+            <button
+              className="stop-ai-button"
+              onClick={() => aiRequest.current?.abort()}
+            >
+              Stop response
+            </button>
+          )}
           {aiError && (
             <p className="ai-error" role="alert">
               {aiError}
@@ -604,14 +629,68 @@ export function Workspace({
             <div className="ai-response" aria-live="polite">
               <b>Forge AI</b>
               <p>{aiResponse}</p>
-              <div>
-                <button onClick={() => setAiMode("explain-simply")}>
+              <div className="ai-response-actions">
+                <button
+                  onClick={() =>
+                    void askForgeAi(
+                      "explain-simply",
+                      `Explain this more simply: ${aiQuestion.trim()}`,
+                    )
+                  }
+                >
                   Explain simpler
                 </button>
-                <button onClick={() => setAiMode("explain-deeply")}>
+                <button
+                  onClick={() =>
+                    void askForgeAi(
+                      "explain-deeply",
+                      `Go deeper on this question: ${aiQuestion.trim()}`,
+                    )
+                  }
+                >
                   Go deeper
                 </button>
-                <button onClick={() => setAiMode("quiz-me")}>Quiz me</button>
+                <button
+                  onClick={() =>
+                    void askForgeAi(
+                      "explain",
+                      `Give me one concrete example for: ${aiQuestion.trim()}`,
+                    )
+                  }
+                >
+                  Give example
+                </button>
+                <button
+                  onClick={() =>
+                    void askForgeAi(
+                      "quiz-me",
+                      `Quiz me on: ${aiQuestion.trim()}`,
+                    )
+                  }
+                >
+                  Quiz me
+                </button>
+                <button
+                  onClick={() =>
+                    void askForgeAi(
+                      "generate-practice",
+                      `Create deliberate practice for: ${aiQuestion.trim()}`,
+                    )
+                  }
+                >
+                  Practice this
+                </button>
+                <button onClick={openRelatedLesson}>Open related lesson</button>
+                <button
+                  onClick={() =>
+                    void navigator.clipboard
+                      .writeText(aiResponse)
+                      .then(() => setWorkspaceMessage("AI response copied."))
+                  }
+                >
+                  Copy response
+                </button>
+                <button onClick={() => void askForgeAi()}>Regenerate</button>
               </div>
             </div>
           )}

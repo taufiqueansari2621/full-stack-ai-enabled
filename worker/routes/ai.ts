@@ -160,8 +160,10 @@ export const aiRoutes: Route[] = [
         actions: [
           "explain-simply",
           "explain-deeply",
+          "give-example",
           "quiz-me",
           "generate-practice",
+          "open-related-lesson",
         ],
       });
     },

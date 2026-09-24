@@ -206,6 +206,23 @@ try {
       (document.querySelector(".ai-response p")?.textContent?.length ?? 0) > 20,
     { timeout: 30_000 },
   );
+  const aiActions = await page.evaluate(() =>
+    [...document.querySelectorAll(".ai-response-actions button")].map(
+      (button) => button.textContent?.trim(),
+    ),
+  );
+  for (const action of [
+    "Explain simpler",
+    "Go deeper",
+    "Give example",
+    "Quiz me",
+    "Practice this",
+    "Open related lesson",
+    "Copy response",
+    "Regenerate",
+  ])
+    if (!aiActions.includes(action))
+      throw new Error(`Forge AI response action is missing: ${action}`);
   const noteAiResult = await page.evaluate(async () => {
     const response = await fetch("/api/ai", {
       method: "POST",
@@ -386,7 +403,7 @@ try {
     throw new Error(`Portfolio unpublish failed: ${JSON.stringify(unpublish)}`);
   if (errors.length) throw new Error(`Browser errors: ${errors.join(" | ")}`);
   console.log(
-    "Account smoke passed: registration, onboarding, diagnostic roadmap, isolated code tests, workspace snapshots, Forge AI, note AI context, opt-in public portfolio, unpublish privacy, server-verified certificate, recovery, progress sync, and authorization.",
+    "Account smoke passed: registration, onboarding, diagnostic roadmap, isolated code tests, workspace snapshots, Forge AI with eight response actions, note AI context, opt-in public portfolio, unpublish privacy, server-verified certificate, recovery, progress sync, and authorization.",
   );
 } finally {
   await browser.close();

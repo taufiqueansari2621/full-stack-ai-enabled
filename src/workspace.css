@@ -373,6 +373,11 @@
   color: var(--violet);
   font-weight: 800;
 }
+.workspace-assistant .stop-ai-button {
+  justify-content: center;
+  border-color: var(--rose);
+  color: var(--rose);
+}
 .ai-error {
   color: var(--rose) !important;
 }
@@ -392,12 +397,12 @@
   overflow: auto;
   white-space: pre-wrap;
 }
-.ai-response > div {
+.ai-response-actions {
   display: flex;
   gap: 5px;
   flex-wrap: wrap;
 }
-.ai-response button {
+.ai-response-actions button {
   width: auto;
   margin: 0;
   padding: 0 7px;

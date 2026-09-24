@@ -147,12 +147,15 @@ export const forgeApi = {
         body: JSON.stringify({ files, activePath, revision }),
       },
     ),
-  askAi: (input: {
-    mode: string;
-    message: string;
-    level: number;
-    context: Record<string, unknown>;
-  }) =>
+  askAi: (
+    input: {
+      mode: string;
+      message: string;
+      level: number;
+      context: Record<string, unknown>;
+    },
+    signal?: AbortSignal,
+  ) =>
     request<{
       conversationId: string;
       response: string;
@@ -160,7 +163,11 @@ export const forgeApi = {
       model: string;
       contextIncluded: string[];
       actions: string[];
-    }>("/api/ai", { method: "POST", body: JSON.stringify(input) }),
+    }>("/api/ai", {
+      method: "POST",
+      body: JSON.stringify(input),
+      signal,
+    }),
   workspaceSnapshots: () =>
     request<{
       snapshots: {
