@@ -15,23 +15,14 @@ import {
   dsaAlgorithms,
   type DsaAlgorithmId,
 } from "./domain/dsaAlgorithms";
+import {
+  systemDesignComponents,
+  systemDesignPrompts,
+  systemDesignScenarios,
+} from "./domain/systemDesignScenarios";
 import "./advanced-labs.css";
 
 type Lab = LabArtifact["lab"];
-const components = [
-  "Client",
-  "CDN",
-  "Load Balancer",
-  "API",
-  "Service",
-  "Database",
-  "Cache",
-  "Queue",
-  "Object Storage",
-  "Search",
-  "Vector Database",
-  "AI Service",
-];
 const rows = [
   { id: 1, name: "Ada", score: 92 },
   { id: 2, name: "Lin", score: 78 },
@@ -49,7 +40,10 @@ export default function AdvancedLabs({
   const [algorithm, setAlgorithm] = useState<DsaAlgorithmId>("arrays");
   const [step, setStep] = useState(0);
   const [playing, setPlaying] = useState(false);
-  const [nodes, setNodes] = useState<string[]>(["Client", "API", "Database"]);
+  const [scenarioId, setScenarioId] = useState(systemDesignScenarios[0].id);
+  const [nodes, setNodes] = useState<string[]>(
+    systemDesignScenarios[0].starterNodes,
+  );
   const [query, setQuery] = useState(
     "SELECT name, score FROM learners WHERE score >= 85;",
   );
@@ -62,6 +56,9 @@ export default function AdvancedLabs({
   const saved = store.state.labArtifacts.find((item) => item.lab === lab);
   const activeAlgorithm = dsaAlgorithms[algorithm];
   const activeStep = activeAlgorithm.steps[step];
+  const activeScenario =
+    systemDesignScenarios.find((item) => item.id === scenarioId) ??
+    systemDesignScenarios[0];
   const chunks = useMemo(
     () =>
       document
@@ -211,8 +208,29 @@ export default function AdvancedLabs({
       {lab === "system-design" && (
         <section className="lab-grid panel">
           <div>
+            <label>
+              System to design
+              <select
+                value={scenarioId}
+                onChange={(event) => {
+                  const next =
+                    systemDesignScenarios.find(
+                      (item) => item.id === event.target.value,
+                    ) ?? systemDesignScenarios[0];
+                  setScenarioId(next.id);
+                  setNodes(next.starterNodes);
+                }}
+              >
+                {systemDesignScenarios.map((scenario) => (
+                  <option value={scenario.id} key={scenario.id}>
+                    {scenario.title}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <p className="system-design-brief">{activeScenario.brief}</p>
             <div className="component-palette">
-              {components.map((item) => (
+              {systemDesignComponents.map((item) => (
                 <button
                   key={item}
                   onClick={() => setNodes((current) => [...current, item])}
@@ -224,7 +242,16 @@ export default function AdvancedLabs({
             <div className="design-flow">
               {nodes.map((node, index) => (
                 <span key={`${node}-${index}`}>
-                  {node}
+                  <button
+                    aria-label={`Remove ${node} at position ${index + 1}`}
+                    onClick={() =>
+                      setNodes((current) =>
+                        current.filter((_, nodeIndex) => nodeIndex !== index),
+                      )
+                    }
+                  >
+                    {node}
+                  </button>
                   {index < nodes.length - 1 && <ArrowRight />}
                 </span>
               ))}
@@ -237,8 +264,7 @@ export default function AdvancedLabs({
             <Network />
             <b>Explain the design</b>
             <p>
-              Cover scaling, availability, consistency, security, failure
-              handling, cost, and trade-offs in your evidence below.
+              Cover {systemDesignPrompts.join(", ")} in your evidence below.
             </p>
           </aside>
         </section>

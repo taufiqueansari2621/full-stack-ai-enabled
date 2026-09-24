@@ -93,6 +93,17 @@
   border-radius: 8px;
   background: var(--panel-2);
 }
+.design-flow span > button {
+  min-height: 30px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.system-design-brief {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
 .query-editor {
   min-height: 130px;
   font-family: monospace;

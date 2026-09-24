@@ -687,6 +687,22 @@ try {
   await expectText("Pause");
   await clickText("Pause");
   await clickText("System Design");
+  const systemDesignCoverage = await page.evaluate(() => ({
+    scenarios: document.querySelectorAll('.lab-grid select option').length,
+    components: document.querySelectorAll('.component-palette button').length,
+    prompts: document.querySelector('.lab-grid aside')?.textContent,
+    connectedNodes: document.querySelectorAll('.design-flow span').length,
+  }));
+  if (
+    systemDesignCoverage.scenarios !== 7 ||
+    systemDesignCoverage.components !== 12 ||
+    systemDesignCoverage.connectedNodes < 5 ||
+    !systemDesignCoverage.prompts?.includes("failure handling") ||
+    !systemDesignCoverage.prompts?.includes("trade-offs")
+  )
+    throw new Error(
+      `System-design lab coverage failed: ${JSON.stringify(systemDesignCoverage)}`,
+    );
   await clickText("+ Cache");
   await expectText("Clear canvas");
   await clickText("SQL");
@@ -1031,7 +1047,7 @@ try {
 
   if (errors.length) throw new Error(`Browser errors: ${errors.join(" | ")}`);
   console.log(
-    "Smoke test passed: global render-error recovery; grouped and scroll-safe sidebar navigation; trapped and restored dialog focus; evidence-derived XP, levels, badges, milestones, and repeat protection; Markdown Notes 2.0 with tags, links, favorites, flashcards, and review actions; global multi-source search, eight command actions, evidence notifications, meaningful progress analytics, ten-skill evidence matrix, opt-in portfolio preview, four advanced engineering labs, complete 13-trace DSA visualization, saved lab evidence, evidence-based mastery, weak-signal spaced reviews, focused learning shell, reviewed embedded video learning, unique npm chapters, saved interactive examples, named icon controls, project action icons, course-topic controls, framework paths, learning resources, topic practice, persistence, quizzes, certificates, plain-English checks, 90 primary responsive checks, and six focused lesson viewport checks.",
+    "Smoke test passed: global render-error recovery; grouped and scroll-safe sidebar navigation; trapped and restored dialog focus; evidence-derived XP, levels, badges, milestones, and repeat protection; Markdown Notes 2.0 with tags, links, favorites, flashcards, and review actions; global multi-source search, eight command actions, evidence notifications, meaningful progress analytics, ten-skill evidence matrix, opt-in portfolio preview, four advanced engineering labs, complete 13-trace DSA visualization, seven-scenario system-design lab, saved lab evidence, evidence-based mastery, weak-signal spaced reviews, focused learning shell, reviewed embedded video learning, unique npm chapters, saved interactive examples, named icon controls, project action icons, course-topic controls, framework paths, learning resources, topic practice, persistence, quizzes, certificates, plain-English checks, 90 primary responsive checks, and six focused lesson viewport checks.",
   );
 } finally {
   await browser.close();

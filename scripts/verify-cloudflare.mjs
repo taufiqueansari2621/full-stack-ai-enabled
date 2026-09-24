@@ -362,6 +362,30 @@ try {
     !dsaLab.runtime?.includes("Call stack")
   )
     throw new Error(`Production DSA lab failed: ${JSON.stringify(dsaLab)}`);
+  await page.evaluate(() => {
+    const target = [...document.querySelectorAll("button")].find((button) =>
+      button.textContent?.includes("System Design"),
+    );
+    if (!(target instanceof HTMLButtonElement))
+      throw new Error("System Design tab was not available");
+    target.click();
+  });
+  const systemDesignLab = await page.evaluate(() => ({
+    scenarios: document.querySelectorAll(".lab-grid select option").length,
+    components: document.querySelectorAll(".component-palette button").length,
+    connectedNodes: document.querySelectorAll(".design-flow span").length,
+    prompts: document.querySelector(".lab-grid aside")?.textContent,
+  }));
+  if (
+    systemDesignLab.scenarios !== 7 ||
+    systemDesignLab.components !== 12 ||
+    systemDesignLab.connectedNodes < 5 ||
+    !systemDesignLab.prompts?.includes("failure handling") ||
+    !systemDesignLab.prompts?.includes("trade-offs")
+  )
+    throw new Error(
+      `Production system-design lab failed: ${JSON.stringify(systemDesignLab)}`,
+    );
   await page.setViewport({ width: 390, height: 844 });
   await open("/projects", "Open project");
   await open("/learn", "COURSE TOPICS");
@@ -383,7 +407,7 @@ try {
   if (unexpectedBrowserErrors.length)
     throw new Error(`Browser errors: ${unexpectedBrowserErrors.join(" | ")}`);
   console.log(
-    `Cloudflare verification passed for ${baseUrl}: versioned OpenAPI discovery, correlated health/database timing and security headers, grouped and scroll-safe sidebar navigation, trapped and restored dialog focus, evidence-derived gamification, installable PWA metadata, registered offline shell, cached offline navigation, SPA routes, deep npm lesson, reviewed video learning, public-profile empty state, complete DSA visualization, interactive examples, project icons and named controls, focused learning, course-rail controls, console health, and 390px overflow.`,
+    `Cloudflare verification passed for ${baseUrl}: versioned OpenAPI discovery, correlated health/database timing and security headers, grouped and scroll-safe sidebar navigation, trapped and restored dialog focus, evidence-derived gamification, installable PWA metadata, registered offline shell, cached offline navigation, SPA routes, deep npm lesson, reviewed video learning, public-profile empty state, complete DSA visualization, seven-scenario system-design lab, interactive examples, project icons and named controls, focused learning, course-rail controls, console health, and 390px overflow.`,
   );
 } finally {
   await browser.close();
