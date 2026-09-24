@@ -24,6 +24,11 @@ and track progress without an account.
 
 Development is guided by the project-specific [Six-File Product Context](context/README.md), including product scope, architecture, UI language, code standards, workflow rules, current progress, and the ordered [build plan](context/specs/00-build-plan.md).
 
+The production Worker publishes its stable v1 contract at
+[`/api/v1/openapi.json`](https://forge-ai-engineering.taufiqueansari895.workers.dev/api/v1/openapi.json).
+Release, D1 backup, restore-drill, rollback, and incident procedures are in the
+[production runbook](docs/operations/production-runbook.md).
+
 ## Target outcome
 
 By the end of the roadmap, you should be able to:

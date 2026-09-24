@@ -7,6 +7,8 @@ import { workspaceRoutes } from "./routes/workspace";
 import { aiRoutes } from "./routes/ai";
 import { portfolioRoutes } from "./routes/portfolio";
 import { certificateRoutes } from "./routes/certificates";
+import { openApiRoutes } from "./openapi";
+import { API_VERSION, normalizeApiPath } from "./apiVersion";
 import type { Env } from "./types";
 
 const routes: Route[] = [
@@ -25,6 +27,7 @@ const routes: Route[] = [
       });
     },
   },
+  ...openApiRoutes,
   ...authRoutes,
   ...progressRoutes,
   ...profileRoutes,
@@ -33,6 +36,14 @@ const routes: Route[] = [
   ...portfolioRoutes,
   ...certificateRoutes,
 ];
+
+function findRoute(method: string, pathname: string) {
+  const normalized = normalizeApiPath(pathname);
+  return routes.find(
+    (candidate) =>
+      candidate.method === method && candidate.pattern === normalized,
+  );
+}
 
 const SECURITY_HEADERS = {
   "content-security-policy":
@@ -68,10 +79,7 @@ function operationalLog(
 
 async function handleApi(request: Request, env: Env, requestId: string) {
   const url = new URL(request.url);
-  const route = routes.find(
-    (candidate) =>
-      candidate.method === request.method && candidate.pattern === url.pathname,
-  );
+  const route = findRoute(request.method, url.pathname);
   if (!route) return apiError(404, "NOT_FOUND", "API route not found.");
   try {
     const user = await authenticate(request, env);
@@ -124,11 +132,8 @@ export default {
     const durationMs = Date.now() - startedAt;
     if (apiRequest) {
       const route =
-        routes.find(
-          (candidate) =>
-            candidate.method === request.method &&
-            candidate.pattern === url.pathname,
-        )?.pattern ?? "unmatched_api_route";
+        findRoute(request.method, url.pathname)?.pattern ??
+        "unmatched_api_route";
       operationalLog(durationMs >= 1_000 ? "warn" : "info", "api_request", {
         requestId,
         method: request.method,
@@ -164,6 +169,13 @@ export default {
         RUNNER_CONTENT_SECURITY_POLICY,
       );
     secured.headers.set("x-request-id", requestId);
+    if (apiRequest) {
+      secured.headers.set("x-forge-api-version", API_VERSION);
+      secured.headers.set(
+        "link",
+        '</api/v1/openapi.json>; rel="service-desc"; type="application/vnd.oai.openapi+json"',
+      );
+    }
     secured.headers.set("server-timing", `forge;dur=${durationMs}`);
     return secured;
   },

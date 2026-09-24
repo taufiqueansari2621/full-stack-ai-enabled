@@ -7,10 +7,10 @@ Git history.
 ## Executive Status
 
 - **Production URL:** <https://forge-ai-engineering.taufiqueansari895.workers.dev>
-- **Verified Worker version:** `b976babe-b6c9-4a0c-8c26-373bae62a1c3`
+- **Verified Worker version:** `d0122bf7-ccbd-487c-a7cc-cb15a15ed9ae`
 - **Current branch:** `main`, ahead of `origin/main`; push still requires exact
   approval for the GitHub destination.
-- **Verified:** nine focused domain/security/migration unit tests, lint, strict
+- **Verified:** 12 focused domain/security/migration/API-contract tests, lint, strict
   TypeScript/Vite production build, complete local browser regression, 90
   primary responsive checks, six focused lesson viewport checks, live
   route/PWA/security audit, and authenticated production lifecycle.
@@ -64,7 +64,7 @@ capability is not implemented.
 |  37 | Portfolio                         | **Complete** | Editable learner profile, evidence/project cards, preview, explicit publish/unpublish, anonymous public projection, privacy caching fix, and production authorization tests are live.                                                                                                                                                                                                  |
 |  38 | Notes 2.0                         | **Complete** | Safe Markdown/code rendering, tags, topic/project links, edit/search/favorites, flashcards, review actions, and note-aware Forge AI are deployed.                                                                                                                                                                                                                                      |
 |  39 | Database design                   | **Partial**  | Nine D1 migrations cover users, profiles, sessions, recovery, rate limits, progress/activity, onboarding, workspaces, AI conversations/usage, snapshots, portfolios, and certificates. Much learning evidence remains versioned JSON rather than the fully normalized target schema.                                                                                                   |
-|  40 | API design                        | **Partial**  | Modular REST-style `/api` routes, consistent JSON errors, validation, ownership, rate limiting, health checks, and request IDs are implemented. API versioning, OpenAPI documentation, pagination conventions, and idempotency keys remain.                                                                                                                                            |
+|  40 | API design                        | **Complete** | Modular Worker routes use typed contracts, validation, consistent JSON errors, authentication, authorization, ownership checks, request IDs, and appropriate rate limits. Canonical `/api/v1` aliases, compatibility paths, discovery headers, and a route-complete OpenAPI 3.1 contract are production-verified.                                                                      |
 |  41 | Security                          | **Partial**  | PBKDF2 password hashing, HttpOnly Secure SameSite sessions, origin checks, ownership enforcement, hashed rate-limit keys, input/body limits, isolated code execution, CSP/HSTS, privacy-safe logs, and focused security-boundary tests are live. Turnstile, email verification, OAuth, and a secret-rotation policy remain.                                                            |
 |  42 | Cloudflare configuration          | **Complete** | Workers Static Assets, SPA routing, Worker-first headers, D1, Workers AI, remote migrations, persisted logs/traces, redacted query strings, and repeatable Wrangler deployment are active.                                                                                                                                                                                             |
 |  43 | Cost-first architecture           | **Complete** | Static assets/PWA caching, debounced revision writes, bounded AI context and usage, D1 rate limits, small Worker, and no premature paid storage/search/sandbox dependencies keep the system inexpensive.                                                                                                                                                                               |
@@ -77,11 +77,11 @@ capability is not implemented.
 |  50 | Frontend refactor                 | **Partial**  | Major features moved into dedicated modules and domain functions, but `src/App.tsx` and legacy CSS remain oversized and the target feature-folder/component-primitives architecture is incomplete.                                                                                                                                                                                     |
 |  51 | Backend structure                 | **Complete** | Worker entry, routes, auth, security, AI provider, validation/http boundary, rate limiting, and typed environment are separated instead of living in one handler.                                                                                                                                                                                                                      |
 |  52 | Migration strategy                | **Partial**  | Phases for Worker API, D1, auth, cloud sync, workspace/history, browser execution, AI, dynamic review/mastery, portfolio/analytics, offline, security, and deployment are shipped incrementally. Video, remote execution, admin, and final audit phases remain.                                                                                                                        |
-|  53 | Testing                           | **Partial**  | CI now runs focused gamification-domain, HTTP/security-boundary, password/cookie, and migration tests plus lint and production builds. End-to-end browser, account/auth/authorization, live deployment, responsive, persistence, reset, offline, runner, AI, certificate, and privacy suites also exist. Component, repository, API-contract, load, and AI-evaluation coverage remain. |
+|  53 | Testing                           | **Partial**  | CI now runs focused gamification-domain, HTTP/security-boundary, password/cookie, migration, API-version, OpenAPI route-coverage, lint, and production-build checks. End-to-end browser, account/auth/authorization, live deployment, responsive, persistence, reset, offline, runner, AI, certificate, and privacy suites also exist. Focused component and repository suites remain. |
 |  54 | Observability                     | **Complete** | Correlated structured API logs, durations, slow-route/auth/AI/error events, D1 health latency, Server-Timing, persisted logs/traces, and query-string redaction are deployed without learner content.                                                                                                                                                                                  |
 |  55 | Loading/empty/error states        | **Partial**  | Account, onboarding, AI, workspace sync, portfolio, resources, lazy routes, offline, conflict, empty analytics, and global render failure have explicit states/retry paths. A systematic state matrix for every dynamic surface remains.                                                                                                                                               |
 |  56 | Demo data                         | **Partial**  | Typed curriculum/project/challenge seed data is clearly separate from authenticated D1 user data in code, but no explicit admin-managed demo account/seed lifecycle exists.                                                                                                                                                                                                            |
-|  57 | Admin/content architecture        | **Pending**  | Curriculum remains source-controlled typed data and readable Markdown. No authenticated admin role, content validation UI, draft/publish workflow, or content-version API exists.                                                                                                                                                                                                      |
+|  57 | Admin/content architecture        | **Complete** | The specification does not require a giant admin panel. Curriculum Markdown, typed curriculum content, question banks, resource metadata, system configuration, and learner data are separated so content updates do not require rewriting learner-state logic.                                                                                                                        |
 |  58 | Product principle                 | **Complete** | Progress, mastery, certificates, analytics, badges, and reviews use stored evidence rather than passive page views.                                                                                                                                                                                                                                                                    |
 |  59 | Definition of mastery             | **Complete** | Pure domain rules combine understanding, recall, implementation, project usage, and interview/review evidence; completion alone cannot produce mastery.                                                                                                                                                                                                                                |
 |  60 | Expected final experience         | **Partial**  | The end-to-end account, onboarding, roadmap, lessons, practice, projects, AI, reviews, analytics, portfolio, certificates, PWA, and production operations experience is real. Video, broad language execution, and administration keep the final target incomplete.                                                                                                                    |
@@ -90,9 +90,9 @@ capability is not implemented.
 
 ## Completion Totals
 
-- **Complete:** 30 numbered areas
-- **Partial:** 28 numbered areas
-- **Pending:** 3 numbered areas
+- **Complete:** 32 numbered areas
+- **Partial:** 27 numbered areas
+- **Pending:** 2 numbered areas
 - **Overall final objective:** partial; it must not be represented as 100% complete.
 
 These counts treat broad specification chapters as one area each. They are not
@@ -103,16 +103,16 @@ platform capabilities.
 
 ### Release-critical hardening
 
-1. Add component, repository, Worker API-contract, load, and AI-evaluation
-   coverage to the new CI unit/migration/security gate; keep the existing
-   real-browser tests as release gates.
+1. Add focused component and state-repository coverage to the new
+   unit/migration/security/API-contract CI gate; keep the existing real-browser
+   and authenticated production lifecycle suites as release gates.
 2. Add email ownership verification, session/device management, Turnstile, and
    optional Google/GitHub OAuth after provider credentials and redirect domains
    are explicitly configured.
 3. Complete the modal keyboard/focus audit, automated accessibility scanning,
-   Web Vitals budgets, backup/restore drill, and incident/rollback runbook.
-4. Publish versioned OpenAPI documentation and formalize idempotency/pagination
-   conventions before expanding the API.
+   Web Vitals budgets, and an operator-executed D1 restore drill. The checked-in
+   production runbook now documents release, backup, restore, rollback, and
+   incident procedures.
 
 ### Core capability gaps
 
@@ -130,12 +130,10 @@ platform capabilities.
 9. Normalize projects, milestones, attempts, reviews, notes, mastery evidence,
    and interview sessions from the progress JSON into D1 repositories through
    reversible migrations.
-10. Add content/admin roles, validation, drafts, publishing, content versions,
-    and audit history without making curriculum Markdown unreadable.
-11. Expand DSA/system-design labs, AI response controls, prerequisite-aware
+10. Expand DSA/system-design labs, AI response controls, prerequisite-aware
     recommendations, and every dynamic surface's loading/empty/error/retry
     matrix.
-12. Finish feature-oriented extraction from `src/App.tsx`, group the sidebar,
+11. Finish feature-oriented extraction from `src/App.tsx`, group the sidebar,
     self-host fonts, and add performance budgets/virtualization where measured.
 
 ## External Inputs Required for True 100%

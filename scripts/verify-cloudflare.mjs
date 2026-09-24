@@ -77,16 +77,22 @@ try {
     throw new Error(`Production PWA setup failed: ${JSON.stringify(pwa)}`);
   console.log("PWA manifest and service worker registration passed.");
   const operations = await page.evaluate(async () => {
-    const [healthResponse, rootResponse, runnerResponse] = await Promise.all([
-      fetch("/api/health"),
-      fetch(`/?security-audit=${Date.now()}`, { cache: "no-store" }),
-      fetch(`/runner-worker.js?security-audit=${Date.now()}`, {
-        cache: "no-store",
-      }),
-    ]);
+    const [healthResponse, contractResponse, rootResponse, runnerResponse] =
+      await Promise.all([
+        fetch("/api/health"),
+        fetch("/api/v1/openapi.json"),
+        fetch(`/?security-audit=${Date.now()}`, { cache: "no-store" }),
+        fetch(`/runner-worker.js?security-audit=${Date.now()}`, {
+          cache: "no-store",
+        }),
+      ]);
     return {
       healthStatus: healthResponse.status,
       health: await healthResponse.json(),
+      apiVersion: healthResponse.headers.get("x-forge-api-version"),
+      apiContractLink: healthResponse.headers.get("link"),
+      contractStatus: contractResponse.status,
+      contract: await contractResponse.json(),
       requestId: healthResponse.headers.get("x-request-id"),
       serverTiming: healthResponse.headers.get("server-timing"),
       contentSecurityPolicy: rootResponse.headers.get(
@@ -105,6 +111,11 @@ try {
     operations.health.status !== "ok" ||
     operations.health.database !== "connected" ||
     typeof operations.health.databaseLatencyMs !== "number" ||
+    operations.apiVersion !== "1" ||
+    !operations.apiContractLink?.includes("/api/v1/openapi.json") ||
+    operations.contractStatus !== 200 ||
+    operations.contract.openapi !== "3.1.0" ||
+    operations.contract.info?.version !== "1.0.0" ||
     !operations.requestId ||
     !operations.serverTiming?.startsWith("forge;dur=") ||
     !operations.contentSecurityPolicy?.includes("frame-ancestors 'none'") ||
@@ -269,7 +280,7 @@ try {
   if (unexpectedBrowserErrors.length)
     throw new Error(`Browser errors: ${unexpectedBrowserErrors.join(" | ")}`);
   console.log(
-    `Cloudflare verification passed for ${baseUrl}: correlated health/database timing and security headers, evidence-derived gamification, installable PWA metadata, registered offline shell, cached offline navigation, SPA routes, deep npm lesson, interactive examples, project icons and named controls, focused learning, course-rail controls, console health, and 390px overflow.`,
+    `Cloudflare verification passed for ${baseUrl}: versioned OpenAPI discovery, correlated health/database timing and security headers, evidence-derived gamification, installable PWA metadata, registered offline shell, cached offline navigation, SPA routes, deep npm lesson, interactive examples, project icons and named controls, focused learning, course-rail controls, console health, and 390px overflow.`,
   );
 } finally {
   await browser.close();
