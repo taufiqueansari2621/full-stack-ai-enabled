@@ -202,6 +202,23 @@ try {
   await fields[1].type("smoke_learner");
   await clickText("Create profile & start");
   await expectText("Welcome back, Smoke");
+  const navigationGroups = await page.evaluate(() => ({
+    headings: [...document.querySelectorAll(".sidebar .nav-heading")].map(
+      (heading) => heading.textContent?.trim(),
+    ),
+    label: document.querySelector(".sidebar nav")?.getAttribute("aria-label"),
+    overflowY: getComputedStyle(document.querySelector(".sidebar nav"))
+      .overflowY,
+  }));
+  if (
+    navigationGroups.headings.join("|") !==
+      "Learn|Practice|Build|Review|Career|Help" ||
+    navigationGroups.label !== "Main navigation" ||
+    navigationGroups.overflowY !== "auto"
+  )
+    throw new Error(
+      `Sidebar navigation groups failed: ${JSON.stringify(navigationGroups)}`,
+    );
   const activeProfileId = await page.evaluate(() =>
     localStorage.getItem("forge-active-profile-v1"),
   );
@@ -937,7 +954,7 @@ try {
 
   if (errors.length) throw new Error(`Browser errors: ${errors.join(" | ")}`);
   console.log(
-    "Smoke test passed: global render-error recovery; evidence-derived XP, levels, badges, milestones, and repeat protection; Markdown Notes 2.0 with tags, links, favorites, flashcards, and review actions; global multi-source search, eight command actions, evidence notifications, meaningful progress analytics, ten-skill evidence matrix, opt-in portfolio preview, four advanced engineering labs, saved lab evidence, evidence-based mastery, weak-signal spaced reviews, focused learning shell, unique npm chapters, saved interactive examples, named icon controls, project action icons, course-topic controls, framework paths, learning resources, topic practice, persistence, quizzes, certificates, plain-English checks, 90 primary responsive checks, and six focused lesson viewport checks.",
+    "Smoke test passed: global render-error recovery; grouped and scroll-safe sidebar navigation; evidence-derived XP, levels, badges, milestones, and repeat protection; Markdown Notes 2.0 with tags, links, favorites, flashcards, and review actions; global multi-source search, eight command actions, evidence notifications, meaningful progress analytics, ten-skill evidence matrix, opt-in portfolio preview, four advanced engineering labs, saved lab evidence, evidence-based mastery, weak-signal spaced reviews, focused learning shell, unique npm chapters, saved interactive examples, named icon controls, project action icons, course-topic controls, framework paths, learning resources, topic practice, persistence, quizzes, certificates, plain-English checks, 90 primary responsive checks, and six focused lesson viewport checks.",
   );
 } finally {
   await browser.close();

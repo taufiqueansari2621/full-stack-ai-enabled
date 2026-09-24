@@ -148,12 +148,24 @@ try {
     unlocked: document.querySelectorAll(".evidence-badge.unlocked").length,
     level: document.querySelector(".gamification-summary h2")?.textContent,
     milestone: document.querySelector(".next-milestone")?.textContent,
+    navigationHeadings: [
+      ...document.querySelectorAll(".sidebar .nav-heading"),
+    ].map((heading) => heading.textContent?.trim()),
+    navigationLabel: document
+      .querySelector(".sidebar nav")
+      ?.getAttribute("aria-label"),
+    navigationOverflow: getComputedStyle(document.querySelector(".sidebar nav"))
+      .overflowY,
   }));
   if (
     gamification.badges !== 6 ||
     gamification.unlocked !== 0 ||
     !gamification.level?.includes("Level 1") ||
-    !gamification.milestone?.includes("Solve a practice challenge")
+    !gamification.milestone?.includes("Solve a practice challenge") ||
+    gamification.navigationHeadings.join("|") !==
+      "Learn|Practice|Build|Review|Career|Help" ||
+    gamification.navigationLabel !== "Main navigation" ||
+    gamification.navigationOverflow !== "auto"
   )
     throw new Error(
       `Production evidence gamification failed: ${JSON.stringify(gamification)}`,
@@ -280,7 +292,7 @@ try {
   if (unexpectedBrowserErrors.length)
     throw new Error(`Browser errors: ${unexpectedBrowserErrors.join(" | ")}`);
   console.log(
-    `Cloudflare verification passed for ${baseUrl}: versioned OpenAPI discovery, correlated health/database timing and security headers, evidence-derived gamification, installable PWA metadata, registered offline shell, cached offline navigation, SPA routes, deep npm lesson, interactive examples, project icons and named controls, focused learning, course-rail controls, console health, and 390px overflow.`,
+    `Cloudflare verification passed for ${baseUrl}: versioned OpenAPI discovery, correlated health/database timing and security headers, grouped and scroll-safe sidebar navigation, evidence-derived gamification, installable PWA metadata, registered offline shell, cached offline navigation, SPA routes, deep npm lesson, interactive examples, project icons and named controls, focused learning, course-rail controls, console health, and 390px overflow.`,
   );
 } finally {
   await browser.close();

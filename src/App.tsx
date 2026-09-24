@@ -106,23 +106,52 @@ const CatalogTopicLesson = lazy(() =>
   })),
 );
 
-const navItems: { id: NavId; label: string; icon: typeof Home }[] = [
-  { id: "home", label: "Home", icon: Home },
-  { id: "learn", label: "Lessons", icon: BookOpen },
-  { id: "roadmap", label: "Learning Path", icon: Network },
-  { id: "resources", label: "Resources", icon: LibraryBig },
-  { id: "practice", label: "Practice", icon: Code2 },
-  { id: "quizzes", label: "Quizzes", icon: CircleHelp },
-  { id: "projects", label: "Projects", icon: FolderKanban },
-  { id: "workspace", label: "Workspace", icon: Code2 },
-  { id: "labs", label: "Advanced Labs", icon: FlaskConical },
-  { id: "portfolio", label: "Portfolio", icon: IdCard },
-  { id: "interview", label: "Interview Prep", icon: BriefcaseBusiness },
-  { id: "knowledge", label: "My Notes", icon: BrainCircuit },
-  { id: "reviews", label: "Review", icon: TimerReset },
-  { id: "progress", label: "My Progress", icon: BarChart3 },
-  { id: "certificates", label: "Certificates", icon: Award },
+type NavigationItem = { id: NavId; label: string; icon: typeof Home };
+
+const navGroups: { label: string; items: NavigationItem[] }[] = [
+  {
+    label: "Learn",
+    items: [
+      { id: "home", label: "Home", icon: Home },
+      { id: "learn", label: "Lessons", icon: BookOpen },
+      { id: "roadmap", label: "Learning Path", icon: Network },
+      { id: "resources", label: "Resources", icon: LibraryBig },
+    ],
+  },
+  {
+    label: "Practice",
+    items: [
+      { id: "practice", label: "Practice", icon: Code2 },
+      { id: "quizzes", label: "Quizzes", icon: CircleHelp },
+      { id: "labs", label: "Advanced Labs", icon: FlaskConical },
+    ],
+  },
+  {
+    label: "Build",
+    items: [
+      { id: "projects", label: "Projects", icon: FolderKanban },
+      { id: "workspace", label: "Workspace", icon: Code2 },
+    ],
+  },
+  {
+    label: "Review",
+    items: [
+      { id: "knowledge", label: "My Notes", icon: BrainCircuit },
+      { id: "reviews", label: "Review", icon: TimerReset },
+      { id: "progress", label: "My Progress", icon: BarChart3 },
+    ],
+  },
+  {
+    label: "Career",
+    items: [
+      { id: "interview", label: "Interview Prep", icon: BriefcaseBusiness },
+      { id: "portfolio", label: "Portfolio", icon: IdCard },
+      { id: "certificates", label: "Certificates", icon: Award },
+    ],
+  },
 ];
+
+const navItems = navGroups.flatMap((group) => group.items);
 
 function ProgressRing({
   value,
@@ -247,37 +276,56 @@ function Sidebar({
           </b>
           <small>{store.state.completedLessons.length} lessons completed</small>
         </div>
-        <nav>
-          <span className="nav-heading">Workspace</span>
-          {navItems.map((item) => (
+        <nav aria-label="Main navigation">
+          {navGroups.map((group) => {
+            const headingId = `nav-${group.label.toLowerCase()}`;
+            return (
+              <section
+                className="nav-group"
+                aria-labelledby={headingId}
+                key={group.label}
+              >
+                <h2 className="nav-heading" id={headingId}>
+                  {group.label}
+                </h2>
+                {group.items.map((item) => (
+                  <button
+                    key={item.id}
+                    className={active === item.id ? "active" : ""}
+                    onClick={() => {
+                      onNavigate(item.id);
+                      close();
+                    }}
+                  >
+                    <item.icon size={18} aria-hidden="true" />
+                    <span>{item.label}</span>
+                    {item.id === "reviews" &&
+                      store.metrics.masteryEvidence.overdueReviews > 0 && (
+                        <em>{store.metrics.masteryEvidence.overdueReviews}</em>
+                      )}
+                  </button>
+                ))}
+              </section>
+            );
+          })}
+          <section className="nav-group" aria-labelledby="nav-help">
+            <h2 className="nav-heading" id="nav-help">
+              Help
+            </h2>
             <button
-              key={item.id}
-              className={active === item.id ? "active" : ""}
+              className={
+                active === "mentor" ? "active mentor-nav" : "mentor-nav"
+              }
               onClick={() => {
-                onNavigate(item.id);
+                onNavigate("mentor");
                 close();
               }}
             >
-              <item.icon size={18} />
-              <span>{item.label}</span>
-              {item.id === "reviews" &&
-                store.metrics.masteryEvidence.overdueReviews > 0 && (
-                  <em>{store.metrics.masteryEvidence.overdueReviews}</em>
-                )}
+              <Sparkles size={18} aria-hidden="true" />
+              <span>AI Help</span>
+              <i />
             </button>
-          ))}
-          <span className="nav-heading">Help</span>
-          <button
-            className={active === "mentor" ? "active mentor-nav" : "mentor-nav"}
-            onClick={() => {
-              onNavigate("mentor");
-              close();
-            }}
-          >
-            <Sparkles size={18} />
-            <span>AI Help</span>
-            <i />
-          </button>
+          </section>
         </nav>
         <div className="weekly-goal">
           <div>

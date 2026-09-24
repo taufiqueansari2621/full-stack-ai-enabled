@@ -167,9 +167,25 @@ textarea:focus-visible {
 nav {
   display: flex;
   flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #294459 transparent;
+  padding-right: 3px;
+}
+.nav-group {
+  display: flex;
+  flex-direction: column;
   gap: 3px;
 }
+.nav-group + .nav-group {
+  margin-top: 4px;
+}
 .nav-heading {
+  font-family: inherit;
+  font-weight: 700;
   font-size: 9px;
   color: #536e80;
   letter-spacing: 1.3px;
@@ -227,7 +243,7 @@ nav button em {
   box-shadow: 0 0 8px var(--teal);
 }
 .weekly-goal {
-  margin-top: auto;
+  margin-top: 12px;
   padding: 13px;
   border-radius: 10px;
   background: #0c1b29;

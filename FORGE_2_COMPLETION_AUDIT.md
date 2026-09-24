@@ -7,7 +7,7 @@ Git history.
 ## Executive Status
 
 - **Production URL:** <https://forge-ai-engineering.taufiqueansari895.workers.dev>
-- **Verified Worker version:** `d0122bf7-ccbd-487c-a7cc-cb15a15ed9ae`
+- **Verified Worker version:** `1f707c45-0ff9-4c84-ac38-78b145ca3e8e`
 - **Current branch:** `main`, ahead of `origin/main`; push still requires exact
   approval for the GitHub destination.
 - **Verified:** 12 focused domain/security/migration/API-contract tests, lint, strict
@@ -71,7 +71,7 @@ capability is not implemented.
 |  44 | Offline experience                | **Complete** | Installable PWA, versioned shell cache, visited-asset caching, offline navigation, global offline state, local edit preservation, reconnect retry, and explicit cloud conflict choices are production-tested.                                                                                                                                                                          |
 |  45 | Responsive design                 | **Complete** | The suite covers 15 primary workspaces at 1440, 1280, 1024, 768, 390, and 320 px plus six focused lesson checks with horizontal-overflow rejection.                                                                                                                                                                                                                                    |
 |  46 | Design direction                  | **Complete** | Existing premium dark developer-tool identity, light theme, typography, semantic colors, panels, restrained motion, and plain-English hierarchy are preserved.                                                                                                                                                                                                                         |
-|  47 | Sidebar redesign                  | **Partial**  | Responsive drawer, active states, current path, review count, weekly goal, profile, and focused-learning removal work. The long list is not yet regrouped into Learn/Practice/Build/Review/Career sections.                                                                                                                                                                            |
+|  47 | Sidebar redesign                  | **Complete** | Responsive drawer, active states, current path, review count, weekly goal, profile, and focused-learning removal work. The full route set is semantically grouped into Learn, Practice, Build, Review, Career, and Help sections with independent short-viewport scrolling.                                                                                                            |
 |  48 | Performance                       | **Partial**  | Route/feature lazy loading, hashed assets, PWA cache, small Worker startup, and an initial bundle below the prior advisory threshold are verified. Large application-shell decomposition, font self-hosting, formal Web Vitals budgets, and targeted virtualization remain.                                                                                                            |
 |  49 | Accessibility                     | **Partial**  | Semantic controls, accessible names, visible focus, reduced motion, responsive touch sizing, named dialogs, text chart summaries, and unnamed-button regression checks exist. Modal focus traps/restoration and a formal WCAG 2.2 AA automated/manual audit remain.                                                                                                                    |
 |  50 | Frontend refactor                 | **Partial**  | Major features moved into dedicated modules and domain functions, but `src/App.tsx` and legacy CSS remain oversized and the target feature-folder/component-primitives architecture is incomplete.                                                                                                                                                                                     |
@@ -90,8 +90,8 @@ capability is not implemented.
 
 ## Completion Totals
 
-- **Complete:** 32 numbered areas
-- **Partial:** 27 numbered areas
+- **Complete:** 33 numbered areas
+- **Partial:** 26 numbered areas
 - **Pending:** 2 numbered areas
 - **Overall final objective:** partial; it must not be represented as 100% complete.
 
@@ -133,8 +133,8 @@ platform capabilities.
 10. Expand DSA/system-design labs, AI response controls, prerequisite-aware
     recommendations, and every dynamic surface's loading/empty/error/retry
     matrix.
-11. Finish feature-oriented extraction from `src/App.tsx`, group the sidebar,
-    self-host fonts, and add performance budgets/virtualization where measured.
+11. Finish feature-oriented extraction from `src/App.tsx`, self-host fonts, and
+    add performance budgets/virtualization where measured.
 
 ## External Inputs Required for True 100%
 
