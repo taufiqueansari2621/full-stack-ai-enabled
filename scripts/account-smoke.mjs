@@ -110,6 +110,23 @@ try {
   );
   await clickText("Workspace");
   await page.waitForSelector('textarea[aria-label="Editing src/index.js"]');
+  await clickText("New project");
+  const projectCreator = await page.evaluate(() => ({
+    starters: [
+      ...document.querySelectorAll(".workspace-dialog-form select option"),
+    ].map((option) => option.value),
+    textareas: document.querySelectorAll(".workspace-dialog-form textarea")
+      .length,
+  }));
+  if (
+    projectCreator.starters.join("|") !==
+      "blank|html|react|angular|node|full-stack|python|ai-rag" ||
+    projectCreator.textareas !== 2
+  )
+    throw new Error(
+      `Project creator is incomplete: ${JSON.stringify(projectCreator)}`,
+    );
+  await page.click('button[aria-label="Close dialog"]');
   const solution =
     "function sum(numbers) { return numbers.reduce((total, value) => total + value, 0); }\nconsole.log(sum([2, 3, 4]));";
   await page.$eval(
@@ -403,7 +420,7 @@ try {
     throw new Error(`Portfolio unpublish failed: ${JSON.stringify(unpublish)}`);
   if (errors.length) throw new Error(`Browser errors: ${errors.join(" | ")}`);
   console.log(
-    "Account smoke passed: registration, onboarding, diagnostic roadmap, isolated code tests, workspace snapshots, Forge AI with eight response actions, note AI context, opt-in public portfolio, unpublish privacy, server-verified certificate, recovery, progress sync, and authorization.",
+    "Account smoke passed: registration, onboarding, diagnostic roadmap, all project starters, isolated code tests, workspace snapshots, Forge AI with eight response actions, note AI context, opt-in public portfolio, unpublish privacy, server-verified certificate, recovery, progress sync, and authorization.",
   );
 } finally {
   await browser.close();

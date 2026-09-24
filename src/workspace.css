@@ -98,13 +98,19 @@
   font-weight: 700;
 }
 .workspace-dialog input,
-.workspace-dialog select {
+.workspace-dialog select,
+.workspace-dialog textarea {
   min-height: 42px;
   padding: 0 11px;
   border: 1px solid var(--line);
   border-radius: 8px;
   color: var(--text);
   background: var(--panel-2);
+}
+.workspace-dialog textarea {
+  min-height: 72px;
+  padding-block: 10px;
+  resize: vertical;
 }
 .workspace-dialog .run-button,
 .workspace-versions button {

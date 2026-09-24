@@ -17,18 +17,15 @@ import {
   X,
 } from "lucide-react";
 import { ForgeApiError, forgeApi } from "./services/forgeApi";
+import {
+  detectRunnerLanguage,
+  runnerFor,
+  type CodeRunResult,
+} from "./services/codeRunner";
 import { useDialogFocus } from "./hooks/useDialogFocus";
 import "./workspace.css";
 
 type Files = Record<string, string>;
-type RunResult = {
-  logs: string[];
-  error: string | null;
-  passed: number;
-  failed: number;
-  executionMs: number;
-};
-
 const starterFiles: Files = {
   "src/index.js": `// Return the sum of every number in the array.
 function sum(numbers) {
@@ -56,20 +53,32 @@ const localKey = (learnerId: string) => `forge-workspace-v1:${learnerId}`;
 
 type ProjectContext = { id: string; title: string } | null;
 
-function projectFiles(project: { title: string; template: string }): Files {
+function projectFiles(project: {
+  title: string;
+  template: string;
+  description?: string;
+  goals?: string;
+}): Files {
   const metadata = JSON.stringify(
     {
       name: project.title,
       template: project.template,
+      description: project.description ?? "",
+      goals: project.goals ?? "",
       createdAt: new Date().toISOString(),
     },
     null,
     2,
   );
   const shared = {
-    "README.md": `# ${project.title}\n\nBuilt in Forge. Edit, run, preview, and save snapshots from this workspace.`,
+    "README.md": `# ${project.title}\n\n${project.description || "Built in Forge. Edit, run, preview, and save snapshots from this workspace."}\n\n## Goals\n\n${project.goals || "Define the next measurable project outcome."}`,
     ".forge/project.json": metadata,
   };
+  if (project.template === "blank")
+    return {
+      ...shared,
+      "src/index.js": "// Start with the smallest working behavior.\n",
+    };
   if (project.template === "python")
     return {
       ...shared,
@@ -86,6 +95,58 @@ function projectFiles(project: { title: string; template: string }): Files {
             "forge-project",
           scripts: { start: "node src/index.js" },
         },
+        null,
+        2,
+      ),
+    };
+  if (project.template === "react")
+    return {
+      ...shared,
+      "index.html":
+        '<div id="root"></div><script type="module" src="/src/main.jsx"></script>',
+      "src/main.jsx": `import React from "react";\nimport { createRoot } from "react-dom/client";\nimport App from "./App.jsx";\n\ncreateRoot(document.getElementById("root")).render(<App />);\n`,
+      "src/App.jsx": `export default function App() {\n  return <main><h1>${project.title}</h1><p>Build one verified React feature at a time.</p></main>;\n}\n`,
+      "package.json": JSON.stringify(
+        {
+          scripts: { dev: "vite", build: "vite build" },
+          dependencies: {
+            "@vitejs/plugin-react": "latest",
+            vite: "latest",
+            react: "latest",
+            "react-dom": "latest",
+          },
+        },
+        null,
+        2,
+      ),
+    };
+  if (project.template === "angular")
+    return {
+      ...shared,
+      "src/main.ts": `import { bootstrapApplication } from "@angular/platform-browser";\nimport { AppComponent } from "./app/app.component";\n\nbootstrapApplication(AppComponent).catch(console.error);\n`,
+      "src/app/app.component.ts": `import { Component } from "@angular/core";\n\n@Component({\n  selector: "app-root",\n  standalone: true,\n  templateUrl: "./app.component.html",\n})\nexport class AppComponent {}\n`,
+      "src/app/app.component.html": `<main><h1>${project.title}</h1><p>Build one verified Angular feature at a time.</p></main>`,
+      "package.json": JSON.stringify(
+        {
+          scripts: { start: "ng serve", build: "ng build" },
+          dependencies: {
+            "@angular/core": "latest",
+            "@angular/platform-browser": "latest",
+            "@angular/cli": "latest",
+            typescript: "latest",
+          },
+        },
+        null,
+        2,
+      ),
+    };
+  if (project.template === "full-stack")
+    return {
+      ...shared,
+      "client/index.html": `<main><h1>${project.title}</h1><p id="status">Loading API…</p><script>fetch('/api/health').then(r => r.json()).then(v => status.textContent = v.status)</script></main>`,
+      "server/index.js": `import http from "node:http";\n\nhttp.createServer((request, response) => {\n  response.setHeader("content-type", "application/json");\n  response.end(JSON.stringify({ status: "ok", path: request.url }));\n}).listen(3000);\n`,
+      "package.json": JSON.stringify(
+        { scripts: { start: "node server/index.js" }, type: "module" },
         null,
         2,
       ),
@@ -125,52 +186,6 @@ function loadLocal(learnerId: string) {
   return { files: starterFiles, activePath: "src/index.js" };
 }
 
-async function runJavaScript(code: string): Promise<RunResult> {
-  const worker = new Worker("/runner-worker.js");
-  return new Promise((resolve) => {
-    const timeout = window.setTimeout(() => {
-      worker.terminate();
-      resolve({
-        logs: [],
-        error: "Execution stopped after 1.5 seconds.",
-        passed: 0,
-        failed: 3,
-        executionMs: 1500,
-      });
-    }, 1500);
-    worker.onmessage = (
-      event: MessageEvent<{
-        logs: string[];
-        results: { passed: boolean }[];
-        error: string | null;
-        executionMs: number;
-      }>,
-    ) => {
-      window.clearTimeout(timeout);
-      worker.terminate();
-      resolve({
-        logs: event.data.logs,
-        error: event.data.error,
-        passed: event.data.results.filter((test) => test.passed).length,
-        failed: event.data.results.filter((test) => !test.passed).length,
-        executionMs: Math.round(event.data.executionMs * 100) / 100,
-      });
-    };
-    worker.onerror = (event) => {
-      window.clearTimeout(timeout);
-      worker.terminate();
-      resolve({
-        logs: [],
-        error: event.message,
-        passed: 0,
-        failed: 3,
-        executionMs: 0,
-      });
-    };
-    worker.postMessage({ code });
-  });
-}
-
 export function Workspace({
   learnerId,
   cloudEnabled,
@@ -196,7 +211,7 @@ export function Workspace({
   const [panel, setPanel] = useState<
     "output" | "tests" | "problems" | "preview"
   >("output");
-  const [result, setResult] = useState<RunResult | null>(null);
+  const [result, setResult] = useState<CodeRunResult | null>(null);
   const [running, setRunning] = useState(false);
   const [hint, setHint] = useState(0);
   const [saveState, setSaveState] = useState<
@@ -219,6 +234,8 @@ export function Workspace({
   const [snapshotLabel, setSnapshotLabel] = useState("");
   const [projectName, setProjectName] = useState("");
   const [projectTemplate, setProjectTemplate] = useState("html");
+  const [projectDescription, setProjectDescription] = useState("");
+  const [projectGoals, setProjectGoals] = useState("");
   const [workspaceMessage, setWorkspaceMessage] = useState<string | null>(null);
   const dialogRef = useDialogFocus<HTMLElement>(Boolean(dialog), () =>
     setDialog(null),
@@ -283,7 +300,19 @@ export function Workspace({
   const run = async () => {
     setRunning(true);
     setPanel("output");
-    setResult(await runJavaScript(files["src/index.js"] ?? ""));
+    const language = detectRunnerLanguage(files, activePath);
+    const entryPath =
+      language === "javascript" && Object.hasOwn(files, "src/index.js")
+        ? "src/index.js"
+        : activePath;
+    setResult(
+      await runnerFor(language).run({
+        language,
+        entryPath,
+        files,
+        timeoutMs: 1_500,
+      }),
+    );
     setRunning(false);
   };
   const preview = `${files["web/index.html"] ?? ""}<style>${files["web/styles.css"] ?? ""}</style><script>${files["web/app.js"] ?? ""}</script>`;
@@ -351,7 +380,12 @@ export function Workspace({
   const createProject = () => {
     const title = projectName.trim();
     if (title.length < 2) return;
-    const nextFiles = projectFiles({ title, template: projectTemplate });
+    const nextFiles = projectFiles({
+      title,
+      template: projectTemplate,
+      description: projectDescription.trim(),
+      goals: projectGoals.trim(),
+    });
     const nextPath =
       Object.keys(nextFiles).find(
         (path) => !path.endsWith(".json") && path !== "README.md",
@@ -360,6 +394,8 @@ export function Workspace({
     setActivePath(nextPath);
     setOpenFiles([nextPath]);
     setProjectName("");
+    setProjectDescription("");
+    setProjectGoals("");
     setDialog(null);
     setResult(null);
     setWorkspaceMessage(`Created ${title}.`);
@@ -816,13 +852,37 @@ export function Workspace({
                   />
                 </label>
                 <label>
+                  Description
+                  <textarea
+                    value={projectDescription}
+                    maxLength={500}
+                    onChange={(event) =>
+                      setProjectDescription(event.target.value)
+                    }
+                    placeholder="What problem will this project solve?"
+                  />
+                </label>
+                <label>
+                  Goals
+                  <textarea
+                    value={projectGoals}
+                    maxLength={500}
+                    onChange={(event) => setProjectGoals(event.target.value)}
+                    placeholder="List the outcomes you want to prove."
+                  />
+                </label>
+                <label>
                   Starter
                   <select
                     value={projectTemplate}
                     onChange={(event) => setProjectTemplate(event.target.value)}
                   >
+                    <option value="blank">Blank</option>
                     <option value="html">HTML / CSS / JavaScript</option>
+                    <option value="react">React</option>
+                    <option value="angular">Angular</option>
                     <option value="node">Node.js</option>
+                    <option value="full-stack">Full Stack</option>
                     <option value="python">Python</option>
                     <option value="ai-rag">AI / RAG</option>
                   </select>
