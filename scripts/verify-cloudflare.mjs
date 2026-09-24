@@ -346,6 +346,22 @@ try {
     throw new Error(
       `Production project controls failed: ${JSON.stringify(projectUi)}`,
     );
+  await open("/labs", "Advanced engineering");
+  const dsaLab = await page.evaluate(() => ({
+    algorithms: document.querySelectorAll(".lab-grid select option").length,
+    controls: [...document.querySelectorAll(".lab-controls button")].map(
+      (button) => button.textContent?.trim(),
+    ),
+    runtime: document.querySelector(".lab-grid aside")?.textContent,
+  }));
+  if (
+    dsaLab.algorithms !== 13 ||
+    !dsaLab.controls.includes("Play") ||
+    !dsaLab.controls.includes("Previous") ||
+    !dsaLab.runtime?.includes("Variables") ||
+    !dsaLab.runtime?.includes("Call stack")
+  )
+    throw new Error(`Production DSA lab failed: ${JSON.stringify(dsaLab)}`);
   await page.setViewport({ width: 390, height: 844 });
   await open("/projects", "Open project");
   await open("/learn", "COURSE TOPICS");
@@ -367,7 +383,7 @@ try {
   if (unexpectedBrowserErrors.length)
     throw new Error(`Browser errors: ${unexpectedBrowserErrors.join(" | ")}`);
   console.log(
-    `Cloudflare verification passed for ${baseUrl}: versioned OpenAPI discovery, correlated health/database timing and security headers, grouped and scroll-safe sidebar navigation, trapped and restored dialog focus, evidence-derived gamification, installable PWA metadata, registered offline shell, cached offline navigation, SPA routes, deep npm lesson, reviewed video learning, public-profile empty state, interactive examples, project icons and named controls, focused learning, course-rail controls, console health, and 390px overflow.`,
+    `Cloudflare verification passed for ${baseUrl}: versioned OpenAPI discovery, correlated health/database timing and security headers, grouped and scroll-safe sidebar navigation, trapped and restored dialog focus, evidence-derived gamification, installable PWA metadata, registered offline shell, cached offline navigation, SPA routes, deep npm lesson, reviewed video learning, public-profile empty state, complete DSA visualization, interactive examples, project icons and named controls, focused learning, course-rail controls, console health, and 390px overflow.`,
   );
 } finally {
   await browser.close();

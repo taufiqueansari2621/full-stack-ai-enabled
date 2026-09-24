@@ -1,48 +1,23 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
   Database,
   Network,
+  Pause,
   Play,
   RotateCcw,
   Save,
   Sparkles,
 } from "lucide-react";
 import type { ForgeStore, LabArtifact } from "./useForgeStore";
+import {
+  dsaAlgorithms,
+  type DsaAlgorithmId,
+} from "./domain/dsaAlgorithms";
 import "./advanced-labs.css";
 
 type Lab = LabArtifact["lab"];
-const algorithms = {
-  arrays: [
-    "Start: [7, 2, 5, 1]",
-    "Compare 7 and 2",
-    "Swap → [2, 7, 5, 1]",
-    "Continue until sorted",
-    "Result: [1, 2, 5, 7]",
-  ],
-  "binary-search": [
-    "Range 0…7; target 23",
-    "Midpoint 3 → 14",
-    "23 is larger: range 4…7",
-    "Midpoint 5 → 23",
-    "Found at index 5",
-  ],
-  bfs: [
-    "Queue [A]",
-    "Visit A; enqueue B, C",
-    "Visit B; enqueue D",
-    "Visit C; enqueue E",
-    "Order A, B, C, D, E",
-  ],
-  recursion: [
-    "factorial(4)",
-    "4 × factorial(3)",
-    "3 × factorial(2)",
-    "Base factorial(1) = 1",
-    "Unwind → 24",
-  ],
-};
 const components = [
   "Client",
   "CDN",
@@ -71,8 +46,9 @@ export default function AdvancedLabs({
   notify: (text: string) => void;
 }) {
   const [lab, setLab] = useState<Lab>("dsa");
-  const [algorithm, setAlgorithm] = useState<keyof typeof algorithms>("arrays");
+  const [algorithm, setAlgorithm] = useState<DsaAlgorithmId>("arrays");
   const [step, setStep] = useState(0);
+  const [playing, setPlaying] = useState(false);
   const [nodes, setNodes] = useState<string[]>(["Client", "API", "Database"]);
   const [query, setQuery] = useState(
     "SELECT name, score FROM learners WHERE score >= 85;",
@@ -84,6 +60,8 @@ export default function AdvancedLabs({
   const [question, setQuestion] = useState("How does Forge teach engineering?");
   const [evidence, setEvidence] = useState("");
   const saved = store.state.labArtifacts.find((item) => item.lab === lab);
+  const activeAlgorithm = dsaAlgorithms[algorithm];
+  const activeStep = activeAlgorithm.steps[step];
   const chunks = useMemo(
     () =>
       document
@@ -98,6 +76,19 @@ export default function AdvancedLabs({
       .split(/\W+/)
       .some((word) => word.length > 3 && chunk.toLowerCase().includes(word)),
   );
+  useEffect(() => {
+    if (!playing) return;
+    const timer = window.setInterval(() => {
+      setStep((current) => {
+        if (current >= activeAlgorithm.steps.length - 1) {
+          setPlaying(false);
+          return current;
+        }
+        return current + 1;
+      });
+    }, 900);
+    return () => window.clearInterval(timer);
+  }, [activeAlgorithm.steps.length, playing]);
   const save = () => {
     if (evidence.trim().length < 40) return;
     store.saveLabArtifact({
@@ -148,29 +139,58 @@ export default function AdvancedLabs({
               <select
                 value={algorithm}
                 onChange={(e) => {
-                  setAlgorithm(e.target.value as keyof typeof algorithms);
+                  setAlgorithm(e.target.value as DsaAlgorithmId);
                   setStep(0);
+                  setPlaying(false);
                 }}
               >
-                <option value="arrays">Array sorting</option>
-                <option value="binary-search">Binary search</option>
-                <option value="bfs">Graph BFS</option>
-                <option value="recursion">Recursion</option>
+                {Object.entries(dsaAlgorithms).map(([id, item]) => (
+                  <option value={id} key={id}>
+                    {item.label}
+                  </option>
+                ))}
               </select>
             </label>
-            <div className="dsa-state">{algorithms[algorithm][step]}</div>
+            <div className="dsa-state" aria-live="polite">
+              <small>DATA STRUCTURE STATE</small>
+              <pre>{activeStep.state}</pre>
+            </div>
             <div className="lab-controls">
-              <button disabled={!step} onClick={() => setStep(step - 1)}>
+              <button
+                disabled={!step}
+                onClick={() => {
+                  setPlaying(false);
+                  setStep((current) => current - 1);
+                }}
+              >
                 <ArrowLeft /> Previous
               </button>
               <button
-                onClick={() =>
-                  setStep(Math.min(algorithms[algorithm].length - 1, step + 1))
-                }
+                disabled={step === activeAlgorithm.steps.length - 1}
+                onClick={() => {
+                  setPlaying(false);
+                  setStep((current) =>
+                    Math.min(activeAlgorithm.steps.length - 1, current + 1),
+                  );
+                }}
               >
-                <Play /> Next
+                <ArrowRight /> Next
               </button>
-              <button onClick={() => setStep(0)}>
+              <button
+                aria-pressed={playing}
+                onClick={() => {
+                  if (step === activeAlgorithm.steps.length - 1) setStep(0);
+                  setPlaying((current) => !current);
+                }}
+              >
+                {playing ? <Pause /> : <Play />} {playing ? "Pause" : "Play"}
+              </button>
+              <button
+                onClick={() => {
+                  setPlaying(false);
+                  setStep(0);
+                }}
+              >
                 <RotateCcw /> Reset
               </button>
             </div>
@@ -178,20 +198,13 @@ export default function AdvancedLabs({
           <aside>
             <b>Runtime model</b>
             <p>
-              Step {step + 1}/{algorithms[algorithm].length}
+              Step {step + 1}/{activeAlgorithm.steps.length}
             </p>
-            <p>Current operation: {algorithms[algorithm][step]}</p>
-            <p>
-              Time:{" "}
-              {algorithm === "binary-search"
-                ? "O(log n)"
-                : algorithm === "bfs"
-                  ? "O(V + E)"
-                  : "O(n)"}
-            </p>
-            <p>
-              Space: {algorithm === "recursion" ? "O(n) call stack" : "O(n)"}
-            </p>
+            <p><b>Current operation</b><br />{activeStep.operation}</p>
+            <p><b>Variables</b><br />{activeStep.variables}</p>
+            <p><b>Call stack</b><br />{activeStep.callStack}</p>
+            <p>Time: {activeAlgorithm.time}</p>
+            <p>Space: {activeAlgorithm.space}</p>
           </aside>
         </section>
       )}

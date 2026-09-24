@@ -61,6 +61,20 @@
   border-radius: 12px;
   font: 700 18px monospace;
 }
+.dsa-state small {
+  color: var(--teal);
+  font: 800 10px Manrope, sans-serif;
+  letter-spacing: 0.08em;
+}
+.dsa-state pre {
+  max-width: 100%;
+  margin: 0;
+  overflow: auto;
+  color: var(--text);
+  font: inherit;
+  white-space: pre-wrap;
+  text-align: center;
+}
 .lab-controls,
 .component-palette,
 .design-flow,
