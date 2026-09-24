@@ -212,6 +212,9 @@ Update this file after every meaningful verified implementation change.
 - Added a typed `CodeRunner` boundary with a constrained `BrowserRunner`, an explicit `RemoteSandboxRunner` for Python/Node/TypeScript, file-derived language selection, and focused tests proving unsupported languages never fall through to fake or primary-Worker execution.
 - Expanded New Project to capture description and goals and generate Blank, HTML/CSS/JavaScript, React, Angular, Node.js, Full Stack, Python, and AI/RAG starter workspaces.
 - Deployed the runner/project-creation unit as Cloudflare Worker version `defe54da-252d-4cae-b661-d0effa2f16df`; the public production gate and authenticated lifecycle verify the exact starter list, description/goals fields, isolated JavaScript tests, cloud persistence/history, AI, privacy, certificates, recovery, and authorization.
+- Added Vitest DOM coverage for the application recovery boundary and a focused Forge API repository suite that verifies authenticated JSON workspace persistence and structured unauthorized failures.
+- Expanded the mandatory `npm test` and CI quality gate to run all 14 Node unit/API/security/migration/runner tests plus four repository/component tests, ESLint, strict client/Worker builds, and production bundle budgets. The full gate passes locally.
+- Deployed and live-verified the testing-architecture release as Cloudflare Worker version `4df78778-8421-4417-9502-1cc74c1455d0`; production PWA/offline, OpenAPI, security headers, sidebar, dialog focus, gamification, deep lessons, interactive examples, project controls, focused learning, console health, and mobile-overflow gates pass.
 
 ## In Progress
 
@@ -223,7 +226,7 @@ Update this file after every meaningful verified implementation change.
 2. Add a constrained code runner and authored topic-linked test/assessment banks.
 3. Add freshness metadata, learner bookmarks, and review workflows to the Resource Academy.
 4. Decompose legacy prototype-only components out of `src/App.tsx`.
-5. Expand the new focused unit/migration/security test gate with component, state-repository, API-contract, load, and AI-evaluation coverage.
+5. Expand the focused test gate with state-repository, load, and AI-evaluation coverage.
 
 ## Open Questions
 
@@ -248,12 +251,12 @@ Update this file after every meaningful verified implementation change.
 - `src/styles.css` contains prototype-era raw color values and very small metadata type; migrate touched areas to documented tokens and accessible sizing.
 - Legacy prototype-only components remain in `src/App.tsx` while the new functional views are incrementally separated in `src/FunctionalPages.tsx`.
 - Some feature-specific learning records remain local-first; account progress, onboarding, workspaces, snapshots, and AI usage are cloud-backed with conflict-aware workspace/progress writes.
-- Browser, account, production, domain, security-boundary, and migration coverage exists; focused component, state-repository, API-contract, load, and AI-evaluation tests are still needed.
+- Browser, account, production, domain, security-boundary, migration, API-contract, repository, and component coverage exists; state-repository, load, and AI-evaluation breadth can still grow.
 
 ## Session Notes
 
 - Latest implementation state: evidence-derived XP, levels, badges, and milestones; an installable offline-capable PWA with reconnect/conflict recovery; Notes 2.0 with Markdown/code rendering, tags, links, favorites, flashcards, review actions, and note-aware Forge AI; plus distraction-free Complete Lessons, hideable course-topic navigation, prediction-first interactive examples, deeper practice, five skill levels, React/Angular/Both paths, 684 topics, 74 trusted resources, curriculum-wide three-level topic practice, and plain-English learner copy.
 - Headless Chrome confirmed Notes 2.0 persistence and review conversions, the Angular-only path, lesson resources, Resource Academy, Medium practice artifacts, logout/login restoration, clean reset, and every existing learner workflow.
 - Lint, production build, all 90 responsive workspace checks, and six focused catalog-lesson viewport checks pass; feature-level lazy loading keeps the initial production chunk below Vite's advisory threshold.
-- Production is live at `https://forge-ai-engineering.taufiqueansari895.workers.dev` on Cloudflare version `defe54da-252d-4cae-b661-d0effa2f16df`; live Chrome audits confirm versioned OpenAPI discovery, exact-spec grouped and scroll-safe sidebar navigation, trapped/restored dialog focus, correlated health/database timing, main-document and isolated-runner CSP boundaries, security headers, evidence-derived gamification, installable PWA metadata, service-worker registration, cached offline navigation, reconnect-safe authenticated progress sync, accounts, onboarding, personalized roadmaps, global search and commands, evidence notifications, analytics and skill states, spaced reviews, DSA/system-design/SQL/RAG labs, Notes 2.0 note-aware AI context, opt-in public portfolios, server-verified certificates, typed runner boundaries, isolated code tests, all project starters, cloud workspace snapshots/progress persistence, contextual Forge AI with complete response actions, deep lessons, interactive examples, focused learning, console health, and 390px overflow safety.
+- Production is live at `https://forge-ai-engineering.taufiqueansari895.workers.dev` on Cloudflare version `4df78778-8421-4417-9502-1cc74c1455d0`; live Chrome audits confirm versioned OpenAPI discovery, exact-spec grouped and scroll-safe sidebar navigation, trapped/restored dialog focus, correlated health/database timing, main-document and isolated-runner CSP boundaries, security headers, evidence-derived gamification, installable PWA metadata, service-worker registration, cached offline navigation, reconnect-safe authenticated progress sync, accounts, onboarding, personalized roadmaps, global search and commands, evidence notifications, analytics and skill states, spaced reviews, DSA/system-design/SQL/RAG labs, Notes 2.0 note-aware AI context, opt-in public portfolios, server-verified certificates, typed runner boundaries, isolated code tests, all project starters, cloud workspace snapshots/progress persistence, contextual Forge AI with complete response actions, deep lessons, interactive examples, focused learning, console health, and 390px overflow safety.
 - Preserve the current visual identity while improving architecture and real behavior.
