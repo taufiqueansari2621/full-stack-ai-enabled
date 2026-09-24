@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Award,
   CheckCircle2,
@@ -6,11 +6,18 @@ import {
   Eye,
   EyeOff,
   FolderKanban,
+  LoaderCircle,
+  RotateCcw,
   Save,
   ShieldCheck,
+  WifiOff,
 } from "lucide-react";
 import { projectCards } from "./data";
-import { forgeApi, type PublicPortfolio } from "./services/forgeApi";
+import {
+  ForgeApiError,
+  forgeApi,
+  type PublicPortfolio,
+} from "./services/forgeApi";
 import type { ForgeStore } from "./useForgeStore";
 import "./portfolio.css";
 
@@ -258,23 +265,86 @@ export function PortfolioPreview({
 
 export function PublicProfile({ username }: { username: string }) {
   const [portfolio, setPortfolio] = useState<PublicPortfolio | null>(null);
-  const [error, setError] = useState("");
+  const [status, setStatus] = useState<
+    "loading" | "ready" | "empty" | "offline" | "error"
+  >("loading");
+  const handleFailure = useCallback((reason: unknown) => {
+    setPortfolio(null);
+    if (reason instanceof ForgeApiError && reason.status === 404)
+      setStatus("empty");
+    else if (!navigator.onLine) setStatus("offline");
+    else setStatus("error");
+  }, []);
+  const retry = useCallback(async () => {
+    setStatus("loading");
+    try {
+      const result = await forgeApi.publicPortfolio(username);
+      setPortfolio(result.portfolio);
+      setStatus("ready");
+    } catch (reason) {
+      handleFailure(reason);
+    }
+  }, [handleFailure, username]);
   useEffect(() => {
+    let active = true;
     forgeApi
       .publicPortfolio(username)
-      .then((result) => setPortfolio(result.portfolio))
-      .catch(() => setError("This profile is private or does not exist."));
-  }, [username]);
+      .then((result) => {
+        if (!active) return;
+        setPortfolio(result.portfolio);
+        setStatus("ready");
+      })
+      .catch((reason: unknown) => {
+        if (active) handleFailure(reason);
+      });
+    return () => {
+      active = false;
+    };
+  }, [handleFailure, username]);
   return (
     <main className="public-profile-shell">
       <a className="public-brand" href="/">
         FORGE
       </a>
-      {portfolio ? (
+      {status === "ready" && portfolio ? (
         <PortfolioPreview portfolio={portfolio} />
       ) : (
-        <div className="panel public-profile-state">
-          {error || "Loading public profile…"}
+        <div
+          className="panel public-profile-state"
+          role={status === "error" ? "alert" : "status"}
+          aria-live="polite"
+        >
+          {status === "loading" ? (
+            <>
+              <LoaderCircle className="state-spinner" aria-hidden="true" />
+              <h1>Loading public profile…</h1>
+              <p>Checking the latest published portfolio.</p>
+            </>
+          ) : status === "empty" ? (
+            <>
+              <EyeOff aria-hidden="true" />
+              <h1>Portfolio not available</h1>
+              <p>This profile is private or does not exist.</p>
+            </>
+          ) : status === "offline" ? (
+            <>
+              <WifiOff aria-hidden="true" />
+              <h1>You are offline</h1>
+              <p>Reconnect to load this public portfolio.</p>
+              <button className="secondary-button" onClick={() => void retry()}>
+                <RotateCcw aria-hidden="true" /> Retry
+              </button>
+            </>
+          ) : (
+            <>
+              <ShieldCheck aria-hidden="true" />
+              <h1>Could not load this portfolio</h1>
+              <p>The service did not respond. Your device data was not changed.</p>
+              <button className="secondary-button" onClick={() => void retry()}>
+                <RotateCcw aria-hidden="true" /> Try again
+              </button>
+            </>
+          )}
         </div>
       )}
     </main>

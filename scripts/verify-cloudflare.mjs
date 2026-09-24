@@ -290,6 +290,23 @@ try {
     throw new Error("Production learning route did not enter focused mode");
 
   await open("/resources", "LEARNING RESOURCES");
+  const errorsBeforeMissingProfile = browserErrors.length;
+  await open(
+    "/u/forge_state_audit_missing",
+    "Portfolio not available",
+  );
+  const missingProfileErrors = browserErrors.slice(errorsBeforeMissingProfile);
+  if (
+    missingProfileErrors.some(
+      (message) =>
+        !message.includes("Failed to load resource") ||
+        !message.includes("404"),
+    )
+  )
+    throw new Error(
+      `Unexpected public-profile errors: ${missingProfileErrors.join(" | ")}`,
+    );
+  browserErrors.splice(errorsBeforeMissingProfile);
   await open("/projects", "Project workshop");
   const projectUi = await page.evaluate(() => ({
     startAction: document.querySelector(".page-title .primary-button")
@@ -350,7 +367,7 @@ try {
   if (unexpectedBrowserErrors.length)
     throw new Error(`Browser errors: ${unexpectedBrowserErrors.join(" | ")}`);
   console.log(
-    `Cloudflare verification passed for ${baseUrl}: versioned OpenAPI discovery, correlated health/database timing and security headers, grouped and scroll-safe sidebar navigation, trapped and restored dialog focus, evidence-derived gamification, installable PWA metadata, registered offline shell, cached offline navigation, SPA routes, deep npm lesson, reviewed video learning, interactive examples, project icons and named controls, focused learning, course-rail controls, console health, and 390px overflow.`,
+    `Cloudflare verification passed for ${baseUrl}: versioned OpenAPI discovery, correlated health/database timing and security headers, grouped and scroll-safe sidebar navigation, trapped and restored dialog focus, evidence-derived gamification, installable PWA metadata, registered offline shell, cached offline navigation, SPA routes, deep npm lesson, reviewed video learning, public-profile empty state, interactive examples, project icons and named controls, focused learning, course-rail controls, console health, and 390px overflow.`,
   );
 } finally {
   await browser.close();

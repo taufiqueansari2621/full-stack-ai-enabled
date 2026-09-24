@@ -108,8 +108,45 @@
   text-decoration: none;
 }
 .public-profile-state {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
   padding: 40px;
   text-align: center;
+}
+.public-profile-state > svg {
+  width: 28px;
+  height: 28px;
+  color: var(--teal);
+}
+.public-profile-state h1,
+.public-profile-state p {
+  margin: 0;
+}
+.public-profile-state p {
+  color: var(--muted);
+}
+.public-profile-state button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+.public-profile-state button svg {
+  width: 15px;
+}
+.state-spinner {
+  animation: forge-state-spin 0.9s linear infinite;
+}
+@keyframes forge-state-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .state-spinner {
+    animation: none;
+  }
 }
 @media (max-width: 850px) {
   .portfolio-layout {
