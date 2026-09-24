@@ -416,6 +416,37 @@ try {
       document.body.textContent?.includes("Explanation") &&
       document.body.textContent?.includes("Query plan"),
   );
+  await page.evaluate(() => {
+    const target = [...document.querySelectorAll("button")].find(
+      (button) => button.textContent?.trim() === "RAG",
+    );
+    if (!(target instanceof HTMLButtonElement))
+      throw new Error("RAG tab was not available");
+    target.click();
+  });
+  const aiLab = await page.evaluate(() => ({
+    labs: document.querySelectorAll(".lab-grid select option").length,
+    telemetry: document.querySelector(".lab-grid aside")?.textContent,
+  }));
+  if (
+    aiLab.labs !== 9 ||
+    !aiLab.telemetry?.includes("retrieval quality") ||
+    !aiLab.telemetry?.includes("model cost")
+  )
+    throw new Error(`Production AI lab failed: ${JSON.stringify(aiLab)}`);
+  await page.evaluate(() => {
+    const target = [...document.querySelectorAll("button")].find(
+      (button) => button.textContent?.trim() === "Run experiment",
+    );
+    if (!(target instanceof HTMLButtonElement))
+      throw new Error("Run experiment button was not available");
+    target.click();
+  });
+  await page.waitForFunction(
+    () =>
+      document.body.textContent?.includes("Experiment output") &&
+      document.body.textContent?.includes("evaluation score"),
+  );
   await page.setViewport({ width: 390, height: 844 });
   await open("/projects", "Open project");
   await open("/learn", "COURSE TOPICS");
@@ -437,7 +468,7 @@ try {
   if (unexpectedBrowserErrors.length)
     throw new Error(`Browser errors: ${unexpectedBrowserErrors.join(" | ")}`);
   console.log(
-    `Cloudflare verification passed for ${baseUrl}: versioned OpenAPI discovery, correlated health/database timing and security headers, grouped and scroll-safe sidebar navigation, trapped and restored dialog focus, evidence-derived gamification, installable PWA metadata, registered offline shell, cached offline navigation, SPA routes, deep npm lesson, reviewed video learning, public-profile empty state, complete DSA visualization, seven-scenario system-design lab, ten-topic interactive SQL lab, interactive examples, project icons and named controls, focused learning, course-rail controls, console health, and 390px overflow.`,
+    `Cloudflare verification passed for ${baseUrl}: versioned OpenAPI discovery, correlated health/database timing and security headers, grouped and scroll-safe sidebar navigation, trapped and restored dialog focus, evidence-derived gamification, installable PWA metadata, registered offline shell, cached offline navigation, SPA routes, deep npm lesson, reviewed video learning, public-profile empty state, complete DSA visualization, seven-scenario system-design lab, ten-topic interactive SQL lab, nine-mode AI engineering lab, interactive examples, project icons and named controls, focused learning, course-rail controls, console health, and 390px overflow.`,
   );
 } finally {
   await browser.close();

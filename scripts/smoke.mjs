@@ -718,6 +718,19 @@ try {
   await expectText("Query plan");
   await clickText("RAG");
   await expectText("Pipeline telemetry");
+  const aiLabCoverage = await page.evaluate(() => ({
+    labs: document.querySelectorAll('.lab-grid select option').length,
+    metrics: document.querySelector('.lab-grid aside')?.textContent,
+  }));
+  if (
+    aiLabCoverage.labs !== 9 ||
+    !aiLabCoverage.metrics?.includes("retrieval quality") ||
+    !aiLabCoverage.metrics?.includes("model cost")
+  )
+    throw new Error(`AI lab coverage failed: ${JSON.stringify(aiLabCoverage)}`);
+  await clickText("Run experiment");
+  await expectText("Experiment output");
+  await expectText("evaluation score");
   await page.type(
     ".lab-evidence textarea",
     "The retrieved context stayed grounded, and an empty retrieval must produce an insufficient-context response.",

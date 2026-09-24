@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -26,6 +26,11 @@ import {
   sqlSchema,
   type SqlLabResult,
 } from "./domain/sqlLab";
+import {
+  aiLabExercises,
+  runAiLab,
+  type AiLabResult,
+} from "./domain/aiLab";
 import "./advanced-labs.css";
 
 type Lab = LabArtifact["lab"];
@@ -49,10 +54,9 @@ export default function AdvancedLabs({
   const [sqlResult, setSqlResult] = useState<
     SqlLabResult | { error: string } | null
   >(null);
-  const [document, setDocument] = useState(
-    "Forge teaches engineering through lessons, deliberate practice, projects, reviews, and evidence.",
-  );
-  const [question, setQuestion] = useState("How does Forge teach engineering?");
+  const [aiExerciseId, setAiExerciseId] = useState(aiLabExercises[0].id);
+  const [aiInput, setAiInput] = useState(aiLabExercises[0].defaultInput);
+  const [aiResult, setAiResult] = useState<AiLabResult | { error: string } | null>(null);
   const [evidence, setEvidence] = useState("");
   const saved = store.state.labArtifacts.find((item) => item.lab === lab);
   const activeAlgorithm = dsaAlgorithms[algorithm];
@@ -62,20 +66,7 @@ export default function AdvancedLabs({
     systemDesignScenarios[0];
   const activeSqlLesson =
     sqlLabLessons.find((item) => item.id === sqlLessonId) ?? sqlLabLessons[0];
-  const chunks = useMemo(
-    () =>
-      document
-        .split(/[.!?]+/)
-        .map((x) => x.trim())
-        .filter(Boolean),
-    [document],
-  );
-  const retrieved = chunks.filter((chunk) =>
-    question
-      .toLowerCase()
-      .split(/\W+/)
-      .some((word) => word.length > 3 && chunk.toLowerCase().includes(word)),
-  );
+  const activeAiExercise = aiLabExercises.find((item) => item.id === aiExerciseId) ?? aiLabExercises[0];
   useEffect(() => {
     if (!playing) return;
     const timer = window.setInterval(() => {
@@ -350,45 +341,44 @@ export default function AdvancedLabs({
         <section className="lab-grid panel">
           <div>
             <label>
-              Knowledge document
-              <textarea
-                value={document}
-                onChange={(e) => setDocument(e.target.value)}
-              />
+              AI engineering lab
+              <select value={aiExerciseId} onChange={(event) => {
+                const next = aiLabExercises.find((item) => item.id === event.target.value) ?? aiLabExercises[0];
+                setAiExerciseId(next.id);
+                setAiInput(next.defaultInput);
+                setAiResult(null);
+              }}>
+                {aiLabExercises.map((exercise) => <option value={exercise.id} key={exercise.id}>{exercise.title}</option>)}
+              </select>
             </label>
             <label>
-              Question
-              <input
-                value={question}
-                onChange={(e) => setQuestion(e.target.value)}
+              {activeAiExercise.inputLabel}
+              <textarea
+                value={aiInput}
+                onChange={(e) => setAiInput(e.target.value)}
               />
             </label>
+            <button onClick={() => setAiResult(runAiLab(activeAiExercise, aiInput))}>
+              <Sparkles /> Run experiment
+            </button>
             <div className="rag-flow">
-              {[
-                "Question",
-                "Embedding",
-                "Vector search",
-                "Retrieved context",
-                "Prompt",
-                "Model",
-                "Evaluation",
-              ].map((x) => (
+              {activeAiExercise.steps.map((x) => (
                 <span key={x}>{x}</span>
               ))}
             </div>
+            {aiResult && "error" in aiResult && <p className="sql-error" role="alert">{aiResult.error}</p>}
+            {aiResult && !("error" in aiResult) && <div className="ai-output" aria-live="polite"><b>Experiment output</b><p>{aiResult.output}</p></div>}
           </div>
           <aside>
             <Sparkles />
+            <b>{activeAiExercise.title}</b>
+            <p>{activeAiExercise.challenge}</p>
             <b>Pipeline telemetry</b>
-            <p>
-              Chunks: {chunks.length} · retrieved: {retrieved.length}
-            </p>
-            <p>Context: {retrieved.join(" ") || "No relevant context"}</p>
-            <p>
-              Estimated tokens: {Math.ceil(retrieved.join(" ").length / 4)} ·
-              quality:{" "}
-              {retrieved.length ? "grounded candidate" : "insufficient context"}
-            </p>
+            {aiResult && !("error" in aiResult) ? <>
+              <p>Latency: {aiResult.latencyMs} ms · token usage: {aiResult.tokenUsage}</p>
+              <p>Retrieval quality: {aiResult.retrievalQuality}% · context size: {aiResult.contextSize} characters</p>
+              <p>Model cost: ${aiResult.modelCostUsd.toFixed(5)} · evaluation score: {aiResult.evaluationScore}%</p>
+            </> : <p>Run the experiment to measure latency, token usage, retrieval quality, context size, model cost, and evaluation score.</p>}
           </aside>
         </section>
       )}
