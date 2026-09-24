@@ -192,10 +192,13 @@ Update this file after every meaningful verified implementation change.
 - Added D1 latency to health checks, Server-Timing and request-correlation response headers, a restrictive production CSP, HSTS, cross-origin opener protection, and persisted Cloudflare logs/traces with query-string redaction.
 - Moved dynamic learner-code compilation out of the main application policy and into a dedicated external runner Worker whose response alone permits evaluation; the runner disables network APIs and remains bounded by termination and output limits.
 - Routed static assets through the Worker so production security and correlation headers cover the application shell instead of only API responses.
+- Added a requirement-by-requirement Forge 2.0 completion audit that distinguishes verified, partial, and pending capabilities and records the external provider inputs required for the remaining scope.
+- Added focused Node unit tests for evidence-derived gamification, request JSON/origin boundaries, password hashing, secure session cookies, and D1 migration ordering/critical tables.
+- Added a GitHub Actions quality workflow and a single `npm test` gate covering unit tests, ESLint, strict Worker/client TypeScript, and the Vite production build; all nine focused tests and the complete local quality gate pass.
 
 ## In Progress
 
-- None. A complete Forge 2.0 requirement audit is in progress.
+- Closing the remaining repository-controlled Forge 2.0 gaps in risk order; external identity, email, sandbox, and video inputs remain explicitly separated from source-controlled work.
 
 ## Next Up
 
@@ -203,7 +206,7 @@ Update this file after every meaningful verified implementation change.
 2. Add a constrained code runner and authored topic-linked test/assessment banks.
 3. Add freshness metadata, learner bookmarks, and review workflows to the Resource Academy.
 4. Decompose legacy prototype-only components out of `src/App.tsx`.
-5. Add focused component and state-repository tests alongside the expanded browser smoke coverage.
+5. Expand the new focused unit/migration/security test gate with component, state-repository, API-contract, load, and AI-evaluation coverage.
 
 ## Open Questions
 
@@ -228,7 +231,7 @@ Update this file after every meaningful verified implementation change.
 - `src/styles.css` contains prototype-era raw color values and very small metadata type; migrate touched areas to documented tokens and accessible sizing.
 - Legacy prototype-only components remain in `src/App.tsx` while the new functional views are incrementally separated in `src/FunctionalPages.tsx`.
 - Some feature-specific learning records remain local-first; account progress, onboarding, workspaces, snapshots, and AI usage are cloud-backed with conflict-aware workspace/progress writes.
-- Browser smoke coverage exists; focused component and state-repository tests are still needed.
+- Browser, account, production, domain, security-boundary, and migration coverage exists; focused component, state-repository, API-contract, load, and AI-evaluation tests are still needed.
 
 ## Session Notes
 

@@ -13,7 +13,14 @@ npm install
 npm run dev
 ```
 
-Create an optimized production build with `npm run build`, or validate the key learner journeys with `npm run test:smoke`. Forge includes the learning dashboard, visual roadmap, multi-level lesson experience, event-loop visualizer, project workshop, smart review queue, interview simulator, progress views, and a transparent local mentor workspace. Progress, notes, attempts, milestones, review completion, and theme preferences persist in browser local storage, so learners can practice and track progress without an account.
+Create an optimized production build with `npm run build`, run the unit, lint, and
+build quality gate with `npm test`, or validate the key learner journeys with
+`npm run test:smoke`. Forge includes the learning dashboard, visual roadmap,
+multi-level lesson experience, event-loop visualizer, project workshop, smart
+review queue, interview simulator, progress views, and a transparent local
+mentor workspace. Progress, notes, attempts, milestones, review completion, and
+theme preferences persist in browser local storage, so learners can practice
+and track progress without an account.
 
 Development is guided by the project-specific [Six-File Product Context](context/README.md), including product scope, architecture, UI language, code standards, workflow rules, current progress, and the ordered [build plan](context/specs/00-build-plan.md).
 
