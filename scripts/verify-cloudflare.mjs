@@ -163,7 +163,7 @@ try {
     !gamification.level?.includes("Level 1") ||
     !gamification.milestone?.includes("Solve a practice challenge") ||
     gamification.navigationHeadings.join("|") !==
-      "Learn|Practice|Build|Review|Career|Help" ||
+      "Learn|Practice|Build|Prepare|Personal|Help" ||
     gamification.navigationLabel !== "Main navigation" ||
     gamification.navigationOverflow !== "auto"
   )

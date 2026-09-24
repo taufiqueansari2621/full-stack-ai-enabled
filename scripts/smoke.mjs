@@ -212,7 +212,7 @@ try {
   }));
   if (
     navigationGroups.headings.join("|") !==
-      "Learn|Practice|Build|Review|Career|Help" ||
+      "Learn|Practice|Build|Prepare|Personal|Help" ||
     navigationGroups.label !== "Main navigation" ||
     navigationGroups.overflowY !== "auto"
   )

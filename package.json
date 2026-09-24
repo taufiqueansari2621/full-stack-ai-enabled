@@ -12,10 +12,11 @@
     "db:migrate:local": "wrangler d1 migrations apply forge-production --local",
     "db:migrate:remote": "wrangler d1 migrations apply forge-production --remote",
     "preview": "vite preview",
-    "test": "npm run test:unit && npm run lint && npm run build",
+    "test": "npm run test:unit && npm run lint && npm run build && npm run verify:bundle",
     "test:unit": "node --no-warnings=ExperimentalWarning --experimental-strip-types --test tests/*.test.mjs",
     "test:smoke": "node scripts/smoke.mjs",
     "test:account": "node scripts/account-smoke.mjs",
+    "verify:bundle": "node scripts/check-bundle-budgets.mjs",
     "lint": "eslint ."
   },
   "dependencies": {

@@ -13,9 +13,9 @@ npm install
 npm run dev
 ```
 
-Create an optimized production build with `npm run build`, run the unit, lint, and
-build quality gate with `npm test`, or validate the key learner journeys with
-`npm run test:smoke`. Forge includes the learning dashboard, visual roadmap,
+Create an optimized production build with `npm run build`, run the unit, lint,
+build, and bundle-budget quality gate with `npm test`, or validate the key
+learner journeys with `npm run test:smoke`. Forge includes the learning dashboard, visual roadmap,
 multi-level lesson experience, event-loop visualizer, project workshop, smart
 review queue, interview simulator, progress views, and a transparent local
 mentor workspace. Progress, notes, attempts, milestones, review completion, and

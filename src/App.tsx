@@ -109,13 +109,14 @@ const CatalogTopicLesson = lazy(() =>
 
 type NavigationItem = { id: NavId; label: string; icon: typeof Home };
 
+const homeNavItem: NavigationItem = { id: "home", label: "Home", icon: Home };
+
 const navGroups: { label: string; items: NavigationItem[] }[] = [
   {
     label: "Learn",
     items: [
-      { id: "home", label: "Home", icon: Home },
-      { id: "learn", label: "Lessons", icon: BookOpen },
       { id: "roadmap", label: "Learning Path", icon: Network },
+      { id: "learn", label: "Lessons", icon: BookOpen },
       { id: "resources", label: "Resources", icon: LibraryBig },
     ],
   },
@@ -124,35 +125,33 @@ const navGroups: { label: string; items: NavigationItem[] }[] = [
     items: [
       { id: "practice", label: "Practice", icon: Code2 },
       { id: "quizzes", label: "Quizzes", icon: CircleHelp },
-      { id: "labs", label: "Advanced Labs", icon: FlaskConical },
+      { id: "reviews", label: "Review", icon: TimerReset },
     ],
   },
   {
     label: "Build",
     items: [
-      { id: "projects", label: "Projects", icon: FolderKanban },
       { id: "workspace", label: "Workspace", icon: Code2 },
+      { id: "projects", label: "Projects", icon: FolderKanban },
+      { id: "labs", label: "Advanced Labs", icon: FlaskConical },
     ],
   },
   {
-    label: "Review",
-    items: [
-      { id: "knowledge", label: "My Notes", icon: BrainCircuit },
-      { id: "reviews", label: "Review", icon: TimerReset },
-      { id: "progress", label: "My Progress", icon: BarChart3 },
-    ],
-  },
-  {
-    label: "Career",
+    label: "Prepare",
     items: [
       { id: "interview", label: "Interview Prep", icon: BriefcaseBusiness },
+      { id: "progress", label: "My Progress", icon: BarChart3 },
       { id: "portfolio", label: "Portfolio", icon: IdCard },
       { id: "certificates", label: "Certificates", icon: Award },
     ],
   },
+  {
+    label: "Personal",
+    items: [{ id: "knowledge", label: "My Notes", icon: BrainCircuit }],
+  },
 ];
 
-const navItems = navGroups.flatMap((group) => group.items);
+const navItems = [homeNavItem, ...navGroups.flatMap((group) => group.items)];
 
 function ProgressRing({
   value,
@@ -278,6 +277,16 @@ function Sidebar({
           <small>{store.state.completedLessons.length} lessons completed</small>
         </div>
         <nav aria-label="Main navigation">
+          <button
+            className={active === homeNavItem.id ? "active" : ""}
+            onClick={() => {
+              onNavigate(homeNavItem.id);
+              close();
+            }}
+          >
+            <homeNavItem.icon size={18} aria-hidden="true" />
+            <span>{homeNavItem.label}</span>
+          </button>
           {navGroups.map((group) => {
             const headingId = `nav-${group.label.toLowerCase()}`;
             return (

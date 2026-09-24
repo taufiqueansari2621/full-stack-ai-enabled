@@ -7,7 +7,7 @@ Git history.
 ## Executive Status
 
 - **Production URL:** <https://forge-ai-engineering.taufiqueansari895.workers.dev>
-- **Verified Worker version:** `5cf5db66-5674-4a30-95b1-19e5a3dcb620`
+- **Verified Worker version:** `5b8ca2fc-7423-48dd-8513-c9fbf8557271`
 - **Current branch:** `main`, ahead of `origin/main`; push still requires exact
   approval for the GitHub destination.
 - **Verified:** 12 focused domain/security/migration/API-contract tests, lint, strict
@@ -71,8 +71,8 @@ capability is not implemented.
 |  44 | Offline experience                | **Complete** | Installable PWA, versioned shell cache, visited-asset caching, offline navigation, global offline state, local edit preservation, reconnect retry, and explicit cloud conflict choices are production-tested.                                                                                                                                                                          |
 |  45 | Responsive design                 | **Complete** | The suite covers 15 primary workspaces at 1440, 1280, 1024, 768, 390, and 320 px plus six focused lesson checks with horizontal-overflow rejection.                                                                                                                                                                                                                                    |
 |  46 | Design direction                  | **Complete** | Existing premium dark developer-tool identity, light theme, typography, semantic colors, panels, restrained motion, and plain-English hierarchy are preserved.                                                                                                                                                                                                                         |
-|  47 | Sidebar redesign                  | **Complete** | Responsive drawer, active states, current path, review count, weekly goal, profile, and focused-learning removal work. The full route set is semantically grouped into Learn, Practice, Build, Review, Career, and Help sections with independent short-viewport scrolling.                                                                                                            |
-|  48 | Performance                       | **Partial**  | Route/feature lazy loading, hashed assets, PWA cache, small Worker startup, and an initial bundle below the prior advisory threshold are verified. Large application-shell decomposition, font self-hosting, formal Web Vitals budgets, and targeted virtualization remain.                                                                                                            |
+|  47 | Sidebar redesign                  | **Complete** | Responsive drawer, active states, current path, review count, weekly goal, profile, and focused-learning removal work. Home is primary; the full route set follows in Learn, Practice, Build, Prepare, Personal, and Help sections with independent short-viewport scrolling.                                                                                                          |
+|  48 | Performance                       | **Complete** | Heavy workspaces, visualizers, search, resources, interview academy, portfolio, and topic lessons are lazy; broad lists are bounded; saves are debounced; hashed assets are PWA-cached; Worker startup is small. CI enforces entry JS/CSS, largest lazy chunk, and total-JS production budgets.                                                                                        |
 |  49 | Accessibility                     | **Complete** | Semantic controls, accessible names, visible focus, reduced motion, sufficient contrast, responsive touch sizing, accessible editor controls, text chart summaries, and unnamed-button regression checks exist. Every dialog has a name plus verified initial focus, Tab trapping, Escape close, and opener restoration.                                                               |
 |  50 | Frontend refactor                 | **Partial**  | Major features moved into dedicated modules and domain functions, but `src/App.tsx` and legacy CSS remain oversized and the target feature-folder/component-primitives architecture is incomplete.                                                                                                                                                                                     |
 |  51 | Backend structure                 | **Complete** | Worker entry, routes, auth, security, AI provider, validation/http boundary, rate limiting, and typed environment are separated instead of living in one handler.                                                                                                                                                                                                                      |
@@ -90,8 +90,8 @@ capability is not implemented.
 
 ## Completion Totals
 
-- **Complete:** 34 numbered areas
-- **Partial:** 25 numbered areas
+- **Complete:** 35 numbered areas
+- **Partial:** 24 numbered areas
 - **Pending:** 2 numbered areas
 - **Overall final objective:** partial; it must not be represented as 100% complete.
 
@@ -109,9 +109,9 @@ platform capabilities.
 2. Add email ownership verification, session/device management, Turnstile, and
    optional Google/GitHub OAuth after provider credentials and redirect domains
    are explicitly configured.
-3. Add automated accessibility scanning, Web Vitals budgets, and an
-   operator-executed D1 restore drill. The checked-in production runbook now
-   documents release, backup, restore, rollback, and incident procedures.
+3. Add field Core Web Vitals monitoring and an operator-executed D1 restore
+   drill. The checked-in production runbook now documents release, backup,
+   restore, rollback, and incident procedures, while CI enforces bundle budgets.
 
 ### Core capability gaps
 
@@ -132,8 +132,8 @@ platform capabilities.
 10. Expand DSA/system-design labs, AI response controls, prerequisite-aware
     recommendations, and every dynamic surface's loading/empty/error/retry
     matrix.
-11. Finish feature-oriented extraction from `src/App.tsx`, self-host fonts, and
-    add performance budgets/virtualization where measured.
+11. Finish feature-oriented extraction from `src/App.tsx` and self-host fonts
+    if measurements show the external font request harms real users.
 
 ## External Inputs Required for True 100%
 
