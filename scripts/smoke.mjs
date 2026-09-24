@@ -408,6 +408,34 @@ try {
   await clickText("Next lesson");
   await expectText("How the web works");
   await clickText("Back to Orientation & Developer Setup");
+  await clickText("Back to the full learning path");
+  await page.click('button[aria-label="Open JavaScript"]');
+  await clickText("Event loop");
+  await expectText("VIDEO LESSON");
+  const videoResource = await page.evaluate(() => {
+    const frame = document.querySelector(".lesson-video-frame iframe");
+    const metadata = document.querySelector(".lesson-video-metadata");
+    return {
+      src: frame?.getAttribute("src"),
+      title: frame?.getAttribute("title"),
+      metadata: metadata?.textContent,
+      fallback: document.querySelector(
+        '.lesson-video-details a[href="https://www.youtube.com/watch?v=cCOL7MC4Pl0"]',
+      )?.textContent,
+    };
+  });
+  if (
+    videoResource.src !==
+      "https://www.youtube-nocookie.com/embed/cCOL7MC4Pl0" ||
+    videoResource.title !== "In The Loop" ||
+    !videoResource.metadata?.includes("Reviewed 2026-09-25") ||
+    !videoResource.fallback?.includes("Watch on YouTube")
+  )
+    throw new Error(
+      `Video learning resource is incomplete: ${JSON.stringify(videoResource)}`,
+    );
+  await clickText("JavaScript · Asynchronous JavaScript");
+  await clickText("Back to the full learning path");
 
   await clickText("Practice");
   await expectText("Practice the skill");
@@ -983,7 +1011,7 @@ try {
 
   if (errors.length) throw new Error(`Browser errors: ${errors.join(" | ")}`);
   console.log(
-    "Smoke test passed: global render-error recovery; grouped and scroll-safe sidebar navigation; trapped and restored dialog focus; evidence-derived XP, levels, badges, milestones, and repeat protection; Markdown Notes 2.0 with tags, links, favorites, flashcards, and review actions; global multi-source search, eight command actions, evidence notifications, meaningful progress analytics, ten-skill evidence matrix, opt-in portfolio preview, four advanced engineering labs, saved lab evidence, evidence-based mastery, weak-signal spaced reviews, focused learning shell, unique npm chapters, saved interactive examples, named icon controls, project action icons, course-topic controls, framework paths, learning resources, topic practice, persistence, quizzes, certificates, plain-English checks, 90 primary responsive checks, and six focused lesson viewport checks.",
+    "Smoke test passed: global render-error recovery; grouped and scroll-safe sidebar navigation; trapped and restored dialog focus; evidence-derived XP, levels, badges, milestones, and repeat protection; Markdown Notes 2.0 with tags, links, favorites, flashcards, and review actions; global multi-source search, eight command actions, evidence notifications, meaningful progress analytics, ten-skill evidence matrix, opt-in portfolio preview, four advanced engineering labs, saved lab evidence, evidence-based mastery, weak-signal spaced reviews, focused learning shell, reviewed embedded video learning, unique npm chapters, saved interactive examples, named icon controls, project action icons, course-topic controls, framework paths, learning resources, topic practice, persistence, quizzes, certificates, plain-English checks, 90 primary responsive checks, and six focused lesson viewport checks.",
   );
 } finally {
   await browser.close();

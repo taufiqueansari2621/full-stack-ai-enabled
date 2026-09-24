@@ -7,10 +7,9 @@ Git history.
 ## Executive Status
 
 - **Production URL:** <https://forge-ai-engineering.taufiqueansari895.workers.dev>
-- **Verified Worker version:** `4df78778-8421-4417-9502-1cc74c1455d0`
-- **Current branch:** `main`, ahead of `origin/main`; push still requires exact
-  approval for the GitHub destination.
-- **Verified:** 18 focused runner/domain/security/migration/API-contract/repository/component tests, lint, strict
+- **Verified Worker version:** `6e0544c9-602d-4829-9716-1ed4a2f3d96c`
+- **Current branch:** `main`, synchronized with the approved GitHub `origin`.
+- **Verified:** 20 focused runner/domain/security/migration/API-contract/repository/component tests, lint, strict
   TypeScript/Vite production build, complete local browser regression, 90
   primary responsive checks, six focused lesson viewport checks, live
   route/PWA/security audit, and authenticated production lifecycle.
@@ -32,7 +31,7 @@ capability is not implemented.
 |   5 | Onboarding                        | **Complete** | Goal, experience, known topics, schedule, diagnostic, framework choice, personalized roadmap, and cloud profile persistence are implemented in `src/Onboarding.tsx` and `worker/routes/profile.ts`.                                                                                                                                                                                    |
 |   6 | Home dashboard                    | **Complete** | Current mission, position, reviews, streak, evidence mastery, project/interview stats, skill signals, and evidence-based gamification are live.                                                                                                                                                                                                                                        |
 |   7 | Interactive lessons               | **Complete** | Full Learning Mode provides continuous chapters, mental models, examples, prediction/reveal labs, mistakes, exercises, assessments, mastery studios, resources, notes, and next actions across 684 topics.                                                                                                                                                                             |
-|   8 | Video learning                    | **Pending**  | No first-party video player, transcript synchronization, playback tracking, caption controls, or video-linked notes exist. External video resources are links only.                                                                                                                                                                                                                    |
+|   8 | Video learning                    | **Complete** | Lessons can contain legitimate privacy-enhanced YouTube embeds plus official documentation and curated tutorials. Every resource is normalized with title, provider, URL, topic, difficulty, duration, type, review date, and quality status; direct-link fallbacks remain available and no third-party media is copied.                                                              |
 |   9 | Real coding workspace             | **Partial**  | File explorer, multi-file editing, save status, console, deterministic tests, preview, AI help, templates, export, cloud persistence, and history work. The editor is a lightweight textarea rather than Monaco/CodeMirror and lacks autocomplete and rich diagnostics.                                                                                                                |
 |  10 | Multi-language practice           | **Complete** | The architecture progressively supports HTML/CSS/JavaScript preview plus typed runner selection for JavaScript, TypeScript, Node.js, and Python. All eight specified project starters exist. Only JavaScript executes today; unsupported languages route to the honest remote-sandbox boundary instead of unsafe or fake execution.                                                    |
 |  11 | JavaScript/TypeScript playground  | **Partial**  | JavaScript runs in a network-disabled external Worker with a 1.5-second timeout, bounded logs, reset, and deterministic tests. TypeScript transpilation/type diagnostics are not implemented.                                                                                                                                                                                          |
@@ -84,54 +83,48 @@ capability is not implemented.
 |  57 | Admin/content architecture        | **Complete** | The specification does not require a giant admin panel. Curriculum Markdown, typed curriculum content, question banks, resource metadata, system configuration, and learner data are separated so content updates do not require rewriting learner-state logic.                                                                                                                        |
 |  58 | Product principle                 | **Complete** | Progress, mastery, certificates, analytics, badges, and reviews use stored evidence rather than passive page views.                                                                                                                                                                                                                                                                    |
 |  59 | Definition of mastery             | **Complete** | Pure domain rules combine understanding, recall, implementation, project usage, and interview/review evidence; completion alone cannot produce mastery.                                                                                                                                                                                                                                |
-|  60 | Expected final experience         | **Partial**  | The end-to-end account, onboarding, roadmap, lessons, practice, projects, AI, reviews, analytics, portfolio, certificates, PWA, and production operations experience is real. Video, broad language execution, and administration keep the final target incomplete.                                                                                                                    |
+|  60 | Expected final experience         | **Partial**  | The end-to-end account, onboarding, roadmap, interactive/video lessons, practice, projects, AI, reviews, analytics, portfolio, certificates, PWA, and production operations experience is real. The remaining advanced workspace, lab, personalization, normalization, and frontend-architecture scope keeps the final target incomplete.                                             |
 |  61 | Coding-agent implementation rules | **Complete** | Work has remained incremental, verified, migration-safe, documented, cloud-aware, and committed in outcome-oriented units.                                                                                                                                                                                                                                                             |
 |  62 | First implementation priority     | **Complete** | Work followed the requested order: repository/architecture audit, boundary extraction, Worker/D1/migrations, authentication/profile, local import/cloud sync, then workspace/projects, Forge AI, mastery, labs, portfolio, security, tests, and production deployment.                                                                                                                 |
 
 ## Completion Totals
 
-- **Complete:** 44 numbered areas
+- **Complete:** 45 numbered areas
 - **Partial:** 16 numbered areas
-- **Pending:** 1 numbered area
+- **Pending:** 0 numbered areas
 - **Overall final objective:** partial; it must not be represented as 100% complete.
 
 These counts treat broad specification chapters as one area each. They are not
-a percentage of engineering effort; the remaining partial and pending areas
-include expensive platform capabilities.
+a percentage of engineering effort; several remaining partial areas include
+expensive platform capabilities.
 
 ## Remaining Work, Ordered by Production Risk
 
 ### Release-critical hardening
 
-1. Add focused component and state-repository coverage to the new
-   unit/migration/security/API-contract CI gate; keep the existing real-browser
-   and authenticated production lifecycle suites as release gates.
-2. Add email ownership verification, session/device management, Turnstile, and
+1. Add email ownership verification, session/device management, Turnstile, and
    optional Google/GitHub OAuth after provider credentials and redirect domains
    are explicitly configured.
-3. Add field Core Web Vitals monitoring and an operator-executed D1 restore
+2. Add field Core Web Vitals monitoring and an operator-executed D1 restore
    drill. The checked-in production runbook now documents release, backup,
    restore, rollback, and incident procedures, while CI enforces bundle budgets.
 
 ### Core capability gaps
 
-5. Build remote Python/backend execution using a separately isolated sandbox;
+3. Build remote Python/backend execution using a separately isolated sandbox;
    never run it in the application Worker.
-6. Add TypeScript compilation/diagnostics and React/Angular preview builds on
+4. Add TypeScript compilation/diagnostics and React/Angular preview builds on
    the same sandbox boundary.
-7. Replace the demonstration SQL/RAG engines with safe real engines: isolated
+5. Replace the demonstration SQL/RAG engines with safe real engines: isolated
    SQLite/D1 exercises and optional Workers AI embeddings/Vectorize retrieval.
-8. Add first-party accessible video lessons only when licensed media,
-   transcripts, captions, hosting, and progress rules are available.
-
 ### Product-completeness gaps
 
-9. Normalize projects, milestones, attempts, reviews, notes, mastery evidence,
+6. Normalize projects, milestones, attempts, reviews, notes, mastery evidence,
    and interview sessions from the progress JSON into D1 repositories through
    reversible migrations.
-10. Expand DSA/system-design labs, prerequisite-aware recommendations, and every
+7. Expand DSA/system-design labs, prerequisite-aware recommendations, and every
     dynamic surface's loading/empty/error/retry matrix.
-11. Finish feature-oriented extraction from `src/App.tsx` and self-host fonts
+8. Finish feature-oriented extraction from `src/App.tsx` and self-host fonts
     if measurements show the external font request harms real users.
 
 ## External Inputs Required for True 100%
@@ -145,8 +138,6 @@ The following cannot be safely invented from source code alone:
   email recovery.
 - Sandbox/container cost ceiling, supported package policy, network policy, and
   required Python/Node versions.
-- Licensed or owned video files, transcript/caption sources, and hosting policy.
-- Exact approved Git remote destination for the pending push.
 
 ## Current Verification Commands
 

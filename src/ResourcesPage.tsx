@@ -177,7 +177,9 @@ export default function ResourcesPage() {
                 <h3>{item.title}</h3>
                 <p>{item.description}</p>
                 <div className="resource-card-footer">
-                  <span>{item.provider} · {item.kind} · {item.level}</span>
+                  <span>
+                    {item.provider} · {item.resourceType} · {item.difficulty} · {item.duration} · Reviewed {item.lastReviewedAt}
+                  </span>
                   <a href={item.url} target="_blank" rel="noreferrer">
                     Open <ArrowUpRight />
                   </a>

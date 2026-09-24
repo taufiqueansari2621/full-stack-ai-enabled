@@ -1,20 +1,13 @@
-import type { LearningResource } from "./resourceTypes";
+import {
+  normalizeLearningResource,
+  type LearningResource,
+  type LearningResourceSource,
+} from "./resourceTypes";
 
-type TopicResource = Pick<
-  LearningResource,
-  | "id"
-  | "technology"
-  | "title"
-  | "provider"
-  | "url"
-  | "kind"
-  | "level"
-  | "description"
-  | "official"
-  | "free"
->;
+type TopicResource = LearningResource;
 
-const resource = (item: TopicResource) => item;
+const resource = (item: LearningResourceSource): TopicResource =>
+  normalizeLearningResource(item);
 
 const phaseResources: Record<string, TopicResource[]> = {
   orientation: [
@@ -31,6 +24,7 @@ const phaseResources: Record<string, TopicResource[]> = {
     resource({ id: "mdn-js-guide", technology: "JavaScript", title: "JavaScript Guide", provider: "MDN Web Docs", url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide", kind: "Official documentation", level: "Foundation", description: "A standards-oriented guide from grammar and control flow through objects, promises, modules, and advanced language features.", official: true, free: true }),
     resource({ id: "javascript-info", technology: "JavaScript", title: "The Modern JavaScript Tutorial", provider: "JavaScript.info", url: "https://javascript.info/", kind: "Guided course", level: "Foundation", description: "A structured zero-to-advanced language and browser tutorial with tasks after major concepts.", free: true }),
     resource({ id: "exercism-js", technology: "JavaScript", title: "JavaScript Track", provider: "Exercism", url: "https://exercism.org/tracks/javascript", kind: "Practice", level: "Intermediate", description: "Test-driven concept and practice exercises with automated tests, hints, and optional mentoring.", free: true }),
+    resource({ id: "freecodecamp-js-video", technology: "JavaScript", title: "Learn JavaScript — Full Course for Beginners", provider: "freeCodeCamp.org", url: "https://www.youtube.com/watch?v=PkZNo7MFNFg", kind: "Video tutorial", level: "Foundation", description: "A complete beginner JavaScript course with runnable examples and chapter navigation.", duration: "3h 27m", youtubeVideoId: "PkZNo7MFNFg", free: true }),
   ],
   typescript: [
     resource({ id: "ts-handbook", technology: "TypeScript", title: "TypeScript Handbook", provider: "TypeScript", url: "https://www.typescriptlang.org/docs/handbook/", kind: "Official documentation", level: "Foundation", description: "The canonical path through everyday types, narrowing, functions, object types, generics, classes, and modules.", official: true, free: true }),
@@ -86,6 +80,8 @@ const phaseResources: Record<string, TopicResource[]> = {
     resource({ id: "openai-production", technology: "Full-Stack AI", title: "Production best practices", provider: "OpenAI", url: "https://developers.openai.com/api/docs/guides/production-best-practices", kind: "Official documentation", level: "Professional", description: "Production planning for reliability, security, scaling, latency, cost, and operational ownership.", official: true, free: true }),
     resource({ id: "github-actions", technology: "Full-Stack AI", title: "GitHub Actions documentation", provider: "GitHub", url: "https://docs.github.com/en/actions", kind: "Official documentation", level: "Intermediate", description: "Automate builds, tests, security checks, deployment, release workflows, and repository operations.", official: true, free: true }),
     resource({ id: "fullstack-open", technology: "Full-Stack AI", title: "Full Stack Open", provider: "University of Helsinki", url: "https://fullstackopen.com/en/", kind: "Guided course", level: "Intermediate", description: "Modern full-stack development through React, Node, testing, GraphQL, TypeScript, CI/CD, containers, and relational databases.", official: true, free: true }),
+    resource({ id: "cloudflare-workers-video", technology: "Full-Stack AI", title: "Learn Cloudflare Workers 101", provider: "Cloudflare Developers", url: "https://www.youtube.com/watch?v=H7Qe96fqg1M", kind: "Video tutorial", level: "Foundation", description: "An official course covering local Worker development, bindings, deployment, and a first Workers AI application.", duration: "59m", youtubeVideoId: "H7Qe96fqg1M", official: true, free: true }),
+    resource({ id: "cloudflare-workers-ai-video", technology: "Full-Stack AI", title: "Build a Workers AI application", provider: "Cloudflare Developers", url: "https://www.youtube.com/watch?v=cK_leoJsBWY", kind: "Video tutorial", level: "Intermediate", description: "An official walkthrough for connecting a Cloudflare Worker to Workers AI inference.", duration: "Video", youtubeVideoId: "cK_leoJsBWY", official: true, free: true }),
   ],
   devops: [
     resource({ id: "docker-start", technology: "DevOps & Cloud", title: "Docker Get Started", provider: "Docker", url: "https://docs.docker.com/get-started/", kind: "Official documentation", level: "Foundation", description: "Build, run, compose, publish, and reason about reproducible containerized applications.", official: true, free: true }),
@@ -118,6 +114,11 @@ const frontendResources: Record<"common" | "react" | "angular", TopicResource[]>
 };
 
 const topicResources: Record<string, TopicResource[]> = {
+  "javascript:event loop": [
+    resource({ id: "jsconf-event-loop-video", technology: "JavaScript", title: "In The Loop", provider: "JSConf / Jake Archibald", url: "https://www.youtube.com/watch?v=cCOL7MC4Pl0", kind: "Video tutorial", level: "Intermediate", description: "A visual deep dive into tasks, microtasks, rendering, and the browser event loop.", duration: "35m", youtubeVideoId: "cCOL7MC4Pl0", free: true }),
+    phaseResources.javascript[0],
+    phaseResources.javascript[1],
+  ],
   "orientation:npm and package management": [
     resource({
       id: "npm-dependencies",

@@ -1,11 +1,13 @@
 import { coreResourceCatalog } from "./topicResources";
 import type {
   LearningResource,
+  LearningResourceSource,
   ResourceKind,
   ResourceLevel,
 } from "./resourceTypes";
+import { normalizeLearningResource } from "./resourceTypes";
 
-const additionalResources: LearningResource[] = [
+const additionalResources: LearningResourceSource[] = [
   {
     id: "freecodecamp",
     technology: "Learning Platforms",
@@ -195,7 +197,7 @@ const additionalResources: LearningResource[] = [
 ];
 
 export const learningResources: LearningResource[] = coreResourceCatalog
-  .concat(additionalResources)
+  .concat(additionalResources.map(normalizeLearningResource))
   .filter(
     (item, index, items) =>
       items.findIndex((candidate) => candidate.id === item.id) === index,
@@ -209,6 +211,7 @@ export const resourceTechnologies = [
 export const resourceKinds: ("All resources" | ResourceKind)[] = [
   "All resources",
   "Official documentation",
+  "Video tutorial",
   "Guided course",
   "Practice",
   "Projects",

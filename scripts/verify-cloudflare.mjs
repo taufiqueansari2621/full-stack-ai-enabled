@@ -119,6 +119,9 @@ try {
     !operations.requestId ||
     !operations.serverTiming?.startsWith("forge;dur=") ||
     !operations.contentSecurityPolicy?.includes("frame-ancestors 'none'") ||
+    !operations.contentSecurityPolicy?.includes(
+      "frame-src https://www.youtube-nocookie.com",
+    ) ||
     operations.contentSecurityPolicy?.includes("unsafe-eval") ||
     !operations.runnerContentSecurityPolicy?.includes("unsafe-eval") ||
     !operations.runnerContentSecurityPolicy?.includes("connect-src 'none'") ||
@@ -248,6 +251,36 @@ try {
   await page.$eval(".topic-rail-toggle", (button) => button.click());
   await page.waitForFunction(() => !document.querySelector(".related-topics"));
   await page.$eval(".topic-rail-toggle", (button) => button.click());
+  await open("/roadmap", "Start at zero. Grow into an");
+  await page.click('button[aria-label="Open JavaScript"]');
+  await page.evaluate(() => {
+    const target = [...document.querySelectorAll("button")].find((button) =>
+      button.textContent?.includes("Event loop"),
+    );
+    if (!(target instanceof HTMLButtonElement))
+      throw new Error("Event loop topic button was not available");
+    target.click();
+  });
+  await page.waitForSelector(".lesson-video-frame iframe");
+  const videoLearning = await page.evaluate(() => ({
+    src: document
+      .querySelector(".lesson-video-frame iframe")
+      ?.getAttribute("src"),
+    metadata: document.querySelector(".lesson-video-metadata")?.textContent,
+    fallback: document
+      .querySelector(".lesson-video-details a")
+      ?.getAttribute("href"),
+  }));
+  if (
+    videoLearning.src !==
+      "https://www.youtube-nocookie.com/embed/cCOL7MC4Pl0" ||
+    !videoLearning.metadata?.includes("Reviewed 2026-09-25") ||
+    videoLearning.fallback !==
+      "https://www.youtube.com/watch?v=cCOL7MC4Pl0"
+  )
+    throw new Error(
+      `Production video learning failed: ${JSON.stringify(videoLearning)}`,
+    );
   await open("/learn", "How computers execute instructions");
   const focused = await page.$(".learning-focus");
   const globalChrome = await page.$(
@@ -317,7 +350,7 @@ try {
   if (unexpectedBrowserErrors.length)
     throw new Error(`Browser errors: ${unexpectedBrowserErrors.join(" | ")}`);
   console.log(
-    `Cloudflare verification passed for ${baseUrl}: versioned OpenAPI discovery, correlated health/database timing and security headers, grouped and scroll-safe sidebar navigation, trapped and restored dialog focus, evidence-derived gamification, installable PWA metadata, registered offline shell, cached offline navigation, SPA routes, deep npm lesson, interactive examples, project icons and named controls, focused learning, course-rail controls, console health, and 390px overflow.`,
+    `Cloudflare verification passed for ${baseUrl}: versioned OpenAPI discovery, correlated health/database timing and security headers, grouped and scroll-safe sidebar navigation, trapped and restored dialog focus, evidence-derived gamification, installable PWA metadata, registered offline shell, cached offline navigation, SPA routes, deep npm lesson, reviewed video learning, interactive examples, project icons and named controls, focused learning, course-rail controls, console health, and 390px overflow.`,
   );
 } finally {
   await browser.close();
