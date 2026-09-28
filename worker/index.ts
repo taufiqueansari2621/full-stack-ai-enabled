@@ -169,6 +169,11 @@ export default {
         RUNNER_CONTENT_SECURITY_POLICY,
       );
     secured.headers.set("x-request-id", requestId);
+    if (/^\/assets\/sql-tool-sql\.worker-[\w-]+\.js$/.test(url.pathname))
+      secured.headers.set(
+        "content-security-policy",
+        "default-src 'none'; connect-src 'self'; script-src 'self' 'wasm-unsafe-eval'",
+      );
     if (apiRequest) {
       secured.headers.set("x-forge-api-version", API_VERSION);
       secured.headers.set(

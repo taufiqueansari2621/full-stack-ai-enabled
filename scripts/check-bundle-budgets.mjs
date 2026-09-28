@@ -11,6 +11,7 @@ const budgets = {
   totalJavaScript: 800 * kib,
   // Parser bundles are fetched only after an explicit Format action in a worker.
   formatterJavaScript: 3_000 * kib,
+  sqlRuntime: 1000 * kib,
 };
 
 const index = await readFile(path.join(dist, "index.html"), "utf8");
@@ -33,7 +34,10 @@ const formatterFiles = files.filter((file) =>
   /^format-tool-.*\.js$/.test(file),
 );
 const jsFiles = files.filter(
-  (file) => file.endsWith(".js") && !formatterFiles.includes(file),
+  (file) =>
+    file.endsWith(".js") &&
+    !formatterFiles.includes(file) &&
+    !file.startsWith("sql-tool-"),
 );
 const lazyFiles = jsFiles.filter((file) => file !== entryJavaScript);
 const largestLazy = lazyFiles.reduce(
@@ -42,6 +46,9 @@ const largestLazy = lazyFiles.reduce(
   lazyFiles[0],
 );
 const measurements = {
+  sqlRuntime: files
+    .filter((file) => file.startsWith("sql-tool-") || file.endsWith(".wasm"))
+    .reduce((sum, file) => sum + (sizes.get(file) ?? 0), 0),
   formatterJavaScript: formatterFiles.reduce(
     (total, file) => total + (sizes.get(file) ?? 0),
     0,
@@ -66,6 +73,7 @@ console.log(
     `Largest lazy JavaScript (${largestLazy}): ${format(measurements.lazyJavaScript)} / ${format(budgets.lazyJavaScript)}`,
     `Total JavaScript: ${format(measurements.totalJavaScript)} / ${format(budgets.totalJavaScript)}`,
     `On-demand formatter: ${format(measurements.formatterJavaScript)} / ${format(budgets.formatterJavaScript)}`,
+    `On-demand SQL runtime: ${format(measurements.sqlRuntime)} / ${format(budgets.sqlRuntime)}`,
   ].join("\n"),
 );
 if (failures.length)

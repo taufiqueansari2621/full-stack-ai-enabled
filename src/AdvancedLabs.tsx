@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -17,12 +17,9 @@ import {
   systemDesignPrompts,
   systemDesignScenarios,
 } from "./domain/systemDesignScenarios";
-import {
-  runSqlLesson,
-  sqlLabLessons,
-  sqlSchema,
-  type SqlLabResult,
-} from "./domain/sqlLab";
+import { sqlLabLessons, sqlSchema } from "./domain/sqlLab";
+import { runSql } from "./services/sqlRunner";
+import type { SqlExecution } from "./services/sqlEngine";
 import { aiLabExercises, runAiLab, type AiLabResult } from "./domain/aiLab";
 import "./advanced-labs.css";
 
@@ -45,8 +42,29 @@ export default function AdvancedLabs({
   const [sqlLessonId, setSqlLessonId] = useState(sqlLabLessons[0].id);
   const [query, setQuery] = useState(sqlLabLessons[0].query);
   const [sqlResult, setSqlResult] = useState<
-    SqlLabResult | { error: string } | null
+    SqlExecution | { error: string } | null
   >(null);
+  const [sqlRunning, setSqlRunning] = useState(false);
+  const sqlRequest = useRef<AbortController | null>(null);
+  useEffect(() => () => sqlRequest.current?.abort(), [lab]);
+  const executeQuery = async () => {
+    sqlRequest.current?.abort();
+    const request = new AbortController();
+    sqlRequest.current = request;
+    setSqlRunning(true);
+    setSqlResult(null);
+    try {
+      const result = await runSql(query, request.signal);
+      if (sqlRequest.current === request) setSqlResult(result);
+    } catch (error) {
+      if (sqlRequest.current === request)
+        setSqlResult({
+          error: error instanceof Error ? error.message : "SQL failed.",
+        });
+    } finally {
+      if (sqlRequest.current === request) setSqlRunning(false);
+    }
+  };
   const [aiExerciseId, setAiExerciseId] = useState(aiLabExercises[0].id);
   const [aiInput, setAiInput] = useState(aiLabExercises[0].defaultInput);
   const [aiResult, setAiResult] = useState<
@@ -279,6 +297,7 @@ export default function AdvancedLabs({
               SQL topic
               <select
                 value={sqlLessonId}
+                disabled={sqlRunning}
                 onChange={(event) => {
                   const next =
                     sqlLabLessons.find(
@@ -306,13 +325,20 @@ export default function AdvancedLabs({
               aria-label={`${activeSqlLesson.title} query editor`}
               className="query-editor"
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              disabled={sqlRunning}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                setSqlResult(null);
+              }}
             />
-            <button
-              onClick={() => setSqlResult(runSqlLesson(activeSqlLesson, query))}
-            >
-              <Database /> Run query
+            <button disabled={sqlRunning} onClick={() => void executeQuery()}>
+              <Database /> {sqlRunning ? "Running SQL…" : "Run query"}
             </button>
+            {sqlRunning && (
+              <button onClick={() => sqlRequest.current?.abort()}>
+                Cancel SQL run
+              </button>
+            )}
             {sqlResult && "error" in sqlResult && (
               <p className="sql-error" role="alert">
                 {sqlResult.error}
@@ -321,30 +347,49 @@ export default function AdvancedLabs({
             {sqlResult && !("error" in sqlResult) && (
               <>
                 <p role="status">
-                  Authored example results — this walkthrough checks query
-                  keywords; it does not execute your SQL.
+                  SQLite executed {sqlResult.statements} statement(s) in{" "}
+                  {sqlResult.durationMs.toFixed(2)} ms. Fresh teaching database
+                  for each run.
                 </p>
-                <table>
-                  <thead>
-                    <tr>
-                      {sqlResult.columns.map((column) => (
-                        <th key={column}>{column}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {sqlResult.rows.map((row, rowIndex) => (
-                      <tr key={`${activeSqlLesson.id}-${rowIndex}`}>
-                        {row.map((value, columnIndex) => (
-                          <td key={`${value}-${columnIndex}`}>{value}</td>
+                {sqlResult.tables.length === 0 && (
+                  <p>
+                    Statements completed. No rows returned; add SELECT to
+                    inspect changes.
+                  </p>
+                )}
+                {sqlResult.tables.map((table, tableIndex) => (
+                  <div className="sql-result-table" key={tableIndex}>
+                    {table.truncated && (
+                      <p role="status">
+                        Output truncated: at most 200 rows and 2,000 characters
+                        per cell.
+                      </p>
+                    )}
+                    {table.rows.length === 0 && <p>No matching rows.</p>}
+                    <table>
+                      <caption>Result {tableIndex + 1}</caption>
+                      <thead>
+                        <tr>
+                          {table.columns.map((column, index) => (
+                            <th key={`${column}-${index}`}>{column}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {table.rows.map((row, rowIndex) => (
+                          <tr key={`${activeSqlLesson.id}-${rowIndex}`}>
+                            {row.map((value, columnIndex) => (
+                              <td key={`${value}-${columnIndex}`}>{value}</td>
+                            ))}
+                          </tr>
                         ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                      </tbody>
+                    </table>
+                  </div>
+                ))}
                 <div className="sql-explanation">
                   <b>Explanation</b>
-                  <p>{sqlResult.explanation}</p>
+                  <p>{activeSqlLesson.explanation}</p>
                   <b>Query plan</b>
                   <code>{sqlResult.plan}</code>
                 </div>
@@ -355,8 +400,11 @@ export default function AdvancedLabs({
             <b>{activeSqlLesson.title} challenge</b>
             <p>{activeSqlLesson.challenge}</p>
             <p>
-              Example walkthrough: changing a filter does not change the example
-              rows. A real SQL execution engine is still being implemented.
+              Real SQLite runs locally in a disposable worker, never on account
+              data. Each run resets the three sample tables. Put related
+              statements in one script to test indexes, COMMIT, or ROLLBACK.
+              Runs are limited to 5 seconds, 20 statements, and 200 displayed
+              rows per result.
             </p>
           </aside>
         </section>

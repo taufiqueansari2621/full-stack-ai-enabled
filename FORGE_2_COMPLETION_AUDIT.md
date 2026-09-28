@@ -7,9 +7,9 @@ Git history.
 ## Executive Status
 
 - **Production URL:** <https://forge-ai-engineering.taufiqueansari895.workers.dev>
-- **Verified Worker version:** `c3237c93-315f-4745-8cd6-dd825adb60f8`
+- **Verified Worker version:** `4ce762bf-d537-4f2b-b7f2-830ee1e3fbb2`
 - **Current branch:** `main`, synchronized with the approved GitHub `origin`.
-- **Verified:** 46 focused runner/domain/security/migration/API-contract/repository/component/state tests, lint, strict
+- **Verified:** 49 focused runner/domain/security/migration/API-contract/repository/component/state tests, lint, strict
   TypeScript/Vite production build, complete local browser regression, 90
   primary responsive checks, six focused lesson viewport checks, live
   route/PWA/security audit, and authenticated production lifecycle.
@@ -51,7 +51,7 @@ capability is not implemented.
 |  25 | Interview simulator               | **Complete** | Configurable role/difficulty/format sessions, 10,260-question bank, timed question flow, rubric scoring, feedback, history, weak-topic review scheduling, and project/behavioral modes are implemented.                                                                                                                                                                                |
 |  26 | DSA visualizer                    | **Complete** | A typed 13-trace catalog covers arrays, linked lists, stacks, queues, hash maps, trees, graphs, sorting, binary search, recursion, BFS, DFS, and dynamic programming. Previous, Next, Play, Pause, and Reset expose data-structure state, variables, call stack, current operation, time, and space with responsive browser and test coverage.                                             |
 |  27 | System design lab                 | **Complete** | Seven required scenarios—URL Shortener, Chat, Notifications, E-commerce, Video, Search, and AI RAG—load editable connected starter flows. The complete Client/CDN/LB/API/Service/Database/Cache/Queue/Object Storage/Search/Vector/AI palette supports append/remove/clear, while evidence prompts cover scaling, availability, consistency, security, failures, cost, and trade-offs.        |
-|  28 | SQL lab | **Partial** | Ten authored walkthroughs provide schema, query examples, fixed result tables, and explanatory plans. Keyword checks do not execute SQL; a real input-dependent engine is still required. The UI now labels this limitation explicitly. |
+|  28 | SQL lab | **Complete** | All ten topics execute against real SQLite WASM in a disposable browser worker. Edited queries drive results; errors, index plans, commit/rollback, timing, output limits, cancellation, timeout recovery, and responsive layouts are production-verified. Every run starts with an isolated sample database; no learner SQL reaches D1. |
 |  29 | AI/RAG lab | **Partial** | Nine illustrated walkthroughs exist. Outputs and quality/cost figures are authored examples, not measured model results; real input-dependent chunking, retrieval, and evaluation experiments remain. The UI now labels illustrative figures explicitly. |
 |  30 | Progress analytics                | **Complete** | Eight evidence-backed metrics, weekly activity, learning time, lesson/project/practice/interview/review data, trends, and explicit empty states are implemented.                                                                                                                                                                                                                       |
 |  31 | Skill matrix                      | **Complete** | Ten skill states derive from lessons, practice, projects, reviews, interviews, and lab evidence; each state explains its evidence and next action.                                                                                                                                                                                                                                     |
@@ -89,8 +89,8 @@ capability is not implemented.
 
 ## Completion Totals
 
-- **Complete:** 52 numbered areas
-- **Partial:** 9 numbered areas
+- **Complete:** 53 numbered areas
+- **Partial:** 8 numbered areas
 - **Pending:** 0 numbered areas
 - **Overall final objective:** partial; it must not be represented as 100% complete.
 
@@ -115,8 +115,8 @@ expensive platform capabilities.
    never run it in the application Worker.
 4. Add TypeScript compilation/diagnostics and React/Angular preview builds on
    the same sandbox boundary.
-5. Replace the SQL/RAG illustrated walkthroughs with real input-dependent
-   execution and measured experiments. They must not be counted as completed labs.
+5. Replace the remaining AI/RAG illustrated walkthroughs with real input-dependent
+   execution and measured experiments. Real SQL execution is now deployed.
 ### Product-completeness gaps
 
 6. Extend the deployed notes, attempts, reviews, and mastery projections with

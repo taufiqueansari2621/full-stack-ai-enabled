@@ -130,6 +130,12 @@ Components must not read or write browser storage directly. Storage access belon
 
 ## Code Execution Boundary
 
+- SQL teaching scripts execute against a fresh in-memory SQLite WASM database
+  in a disposable browser worker. The worker alone allows WASM compilation;
+  the application page keeps its existing script policy. A five-second deadline,
+  SQLite heap/page limits, query/output bounds, cancellation, and same-origin
+  runtime assets constrain execution. No learner SQL reaches D1.
+
 - Untrusted learner code never runs in the main UI thread or application API process.
 - Browser-compatible exercises use a constrained Web Worker with time and output limits.
 - Multi-language or package-based execution requires a dedicated sandbox service with resource, network, and filesystem restrictions.

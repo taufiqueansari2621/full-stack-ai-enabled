@@ -22,10 +22,11 @@ explanation and query plan.
 
 ## Execution boundary
 
-The current engine is deliberately deterministic and limited to authored
-teaching datasets. It validates the required concept in the learner query and
-never implies that arbitrary SQL ran against production D1. A future isolated
-SQLite runtime can implement the same interface without changing the lesson UI.
+The original keyword-matching walkthrough has been replaced by real SQLite
+WASM in a disposable browser worker. Each run resets the teaching dataset;
+multiple statements share state within a script. Query plans, results, errors,
+and timing come from actual execution, not authored outputs. No SQL reaches D1.
+See `34-real-sql-execution.md` for resource and security limits.
 
 ## Verification
 
@@ -36,4 +37,6 @@ SQLite runtime can implement the same interface without changing the lesson UI.
 - `scripts/verify-cloudflare.mjs` repeats the critical assertions against the
   deployed Worker.
 - Verified production version:
-  `5dd0e1d4-e970-4a7a-9f2d-8f28d61d374e`.
+  `4ce762bf-d537-4f2b-b7f2-830ee1e3fbb2` (real SQLite execution).
+- `npm run test:sql` verifies actual execution, all ten topics, cancellation,
+  timeout recovery, and responsive layouts. Use `FORGE_SQL_TEST_URL` for live checks.

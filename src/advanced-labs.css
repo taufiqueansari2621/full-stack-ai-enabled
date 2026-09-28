@@ -63,7 +63,9 @@
 }
 .dsa-state small {
   color: var(--teal);
-  font: 800 10px Manrope, sans-serif;
+  font:
+    800 10px Manrope,
+    sans-serif;
   letter-spacing: 0.08em;
 }
 .dsa-state pre {
@@ -135,6 +137,18 @@
 }
 .lab-grid table {
   border-collapse: collapse;
+}
+.sql-result-table {
+  min-width: 0;
+  max-width: 100%;
+  overflow: auto;
+}
+.sql-result-table td {
+  overflow-wrap: anywhere;
+  max-width: 300px;
+}
+.sql-explanation code {
+  white-space: pre-wrap;
 }
 .lab-grid th,
 .lab-grid td {

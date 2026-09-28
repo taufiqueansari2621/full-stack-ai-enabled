@@ -242,6 +242,19 @@ Update this file after every meaningful verified implementation change.
 
 ## In Progress
 
+- Real SQL deployed and production-verified on September 28 as Worker
+  `4ce762bf-d537-4f2b-b7f2-830ee1e3fbb2`. Dedicated live execution checks and
+  public/PWA/security regression both pass. Audit: 53 complete, 8 partial areas.
+
+- Real SQL unit: removed fixed keyword-matched results. SQLite WASM now runs in
+  a disposable browser worker against a fresh three-table fixture. All ten
+  topics execute, with real results, plans, errors, commit/rollback, bounded
+  output, cancellation, and five-second termination. SQL never reaches D1.
+- Verified 18 Node and 31 Vitest tests, lint/build/bundle budgets, all-ten-topic
+  production-style browser checks, timeout/cancel recovery, four SQL viewport
+  widths, and the full 90-responsive/six-focused regression. Runtime assets add
+  684.3 KiB only on Run; initial application bundle remains 459.0 KiB.
+
 - September 28 release verification: Worker
   `c3237c93-315f-4745-8cd6-dd825adb60f8` is serving production. Migration 0010
   is now applied remotely (27 commands); all three projection triggers and

@@ -17,6 +17,7 @@
     "test:component": "vitest run",
     "test:smoke": "node scripts/smoke.mjs",
     "test:editor": "node scripts/editor-smoke.mjs",
+    "test:sql": "node scripts/sql-smoke.mjs",
     "test:account": "node scripts/account-smoke.mjs",
     "verify:bundle": "node scripts/check-bundle-budgets.mjs",
     "lint": "eslint ."
@@ -26,6 +27,7 @@
     "lucide-react": "latest",
     "react": "latest",
     "react-dom": "latest",
+    "sql.js": "^1.14.2",
     "vite": "latest"
   },
   "devDependencies": {
@@ -34,6 +36,7 @@
     "@testing-library/react": "^16.3.3",
     "@types/react": "latest",
     "@types/react-dom": "latest",
+    "@types/sql.js": "^1.4.11",
     "eslint": "latest",
     "eslint-plugin-react-hooks": "latest",
     "eslint-plugin-react-refresh": "latest",
