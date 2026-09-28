@@ -242,6 +242,42 @@ Update this file after every meaningful verified implementation change.
 
 ## In Progress
 
+- September 28 release verification: Worker
+  `c3237c93-315f-4745-8cd6-dd825adb60f8` is serving production. Migration 0010
+  is now applied remotely (27 commands); all three projection triggers and
+  backfilled practice/topic rows were confirmed without reading private records.
+- A fresh Cloudflare Time Travel bookmark provided managed recovery without the
+  rejected sensitive local export. See `docs/operations/release-2026-09-28.md`.
+  No database restore or private export was performed.
+- Post-migration public/PWA/security browser checks, editor/project-note checks,
+  and authenticated account/AI/recovery/privacy lifecycle all pass. Concurrent
+  progress and workspace writes each produce one success and one stale-write
+  rejection. The first account check timed out after registration; a rerun with
+  explicit registration-response diagnostics passed. All 46 local tests, lint,
+  builds, and bundle budgets also passed again.
+
+- September 27: corrected the interrupted editor/challenge draft. Parser-based
+  worker formatting preserves invalid/unsupported files and concurrent edits;
+  syntax overlays and cursor snippets pass the dedicated browser check at
+  1440/768/390/320px. Every quick-check screen opens; repeated answers no longer
+  award mastery and saved learner explanations are required for Explained.
+- Replaced the unused schema draft with eight populated domain projections and
+  atomic progress/workspace revision checks. Backfill, isolation, reset, cascade,
+  stale-write, and validation tests pass; migration 0010 applies to local D1.
+- Current local gates pass: 18 Node tests, 28 Vitest tests, lint, strict builds,
+  separate application/formatter bundle budgets, and full browser regression.
+  Production migration, deployment, and live verification are recorded above.
+- Corrected two previous audit overclaims: SQL and AI/RAG are currently authored
+  walkthroughs with fixed example outputs, not real execution engines. They are
+  marked Partial and labelled honestly in the interface. Current audit counts:
+  52 complete, 9 partial. These counts do not measure engineering effort.
+- Replaced the project guidance's toast-only Add entry action with editable,
+  persisted notes linked to the project and section; existing progress sync
+  carries them across devices.
+- The earlier migration blocker is resolved through approved managed recovery
+  metadata, not a local export. The production runbook now distinguishes
+  additive migrations from destructive maintenance and sensitive exports.
+
 - Closing the remaining repository-controlled Forge 2.0 gaps in risk order; external identity, email, sandbox, and video inputs remain explicitly separated from source-controlled work.
 
 ## Next Up
@@ -277,7 +313,11 @@ Update this file after every meaningful verified implementation change.
 - Some feature-specific learning records remain local-first; account progress, onboarding, workspaces, snapshots, and AI usage are cloud-backed with conflict-aware workspace/progress writes.
 - Browser, account, production, domain, security-boundary, migration, API-contract, repository, and component coverage exists; state-repository, load, and AI-evaluation breadth can still grow.
 
-## Session Notes
+## Historical Session Notes
+
+For the current deployed version and September 28 migration verification, see
+the release entry under In Progress above. The following notes describe earlier
+releases; SQL/AI walkthrough completion claims are superseded by the audit.
 
 - Latest implementation state: evidence-derived XP, levels, badges, and milestones; an installable offline-capable PWA with reconnect/conflict recovery; Notes 2.0 with Markdown/code rendering, tags, links, favorites, flashcards, review actions, and note-aware Forge AI; plus distraction-free Complete Lessons, hideable course-topic navigation, prediction-first interactive examples, deeper practice, five skill levels, React/Angular/Both paths, 684 topics, 74 trusted resources, curriculum-wide three-level topic practice, and plain-English learner copy.
 - Headless Chrome confirmed Notes 2.0 persistence and review conversions, the Angular-only path, lesson resources, Resource Academy, Medium practice artifacts, logout/login restoration, clean reset, and every existing learner workflow.

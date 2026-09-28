@@ -9,6 +9,8 @@ const budgets = {
   entryCss: 160 * kib,
   lazyJavaScript: 140 * kib,
   totalJavaScript: 800 * kib,
+  // Parser bundles are fetched only after an explicit Format action in a worker.
+  formatterJavaScript: 3_000 * kib,
 };
 
 const index = await readFile(path.join(dist, "index.html"), "utf8");
@@ -27,7 +29,12 @@ const entryCss = index.match(/href="\/assets\/(index-[^"]+\.css)"/)?.[1];
 if (!entryJavaScript || !entryCss)
   throw new Error("Could not identify the hashed entry JavaScript and CSS.");
 
-const jsFiles = files.filter((file) => file.endsWith(".js"));
+const formatterFiles = files.filter((file) =>
+  /^format-tool-.*\.js$/.test(file),
+);
+const jsFiles = files.filter(
+  (file) => file.endsWith(".js") && !formatterFiles.includes(file),
+);
 const lazyFiles = jsFiles.filter((file) => file !== entryJavaScript);
 const largestLazy = lazyFiles.reduce(
   (largest, file) =>
@@ -35,6 +42,10 @@ const largestLazy = lazyFiles.reduce(
   lazyFiles[0],
 );
 const measurements = {
+  formatterJavaScript: formatterFiles.reduce(
+    (total, file) => total + (sizes.get(file) ?? 0),
+    0,
+  ),
   entryJavaScript: sizes.get(entryJavaScript) ?? 0,
   entryCss: sizes.get(entryCss) ?? 0,
   lazyJavaScript: sizes.get(largestLazy) ?? 0,
@@ -54,6 +65,7 @@ console.log(
     `Entry CSS: ${format(measurements.entryCss)} / ${format(budgets.entryCss)}`,
     `Largest lazy JavaScript (${largestLazy}): ${format(measurements.lazyJavaScript)} / ${format(budgets.lazyJavaScript)}`,
     `Total JavaScript: ${format(measurements.totalJavaScript)} / ${format(budgets.totalJavaScript)}`,
+    `On-demand formatter: ${format(measurements.formatterJavaScript)} / ${format(budgets.formatterJavaScript)}`,
   ].join("\n"),
 );
 if (failures.length)

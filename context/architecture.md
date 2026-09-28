@@ -136,6 +136,21 @@ Components must not read or write browser storage directly. Storage access belon
 
 ## Invariants
 
+### September 2026 persistence update
+
+The deployed account product now uses D1; the local-first MVP descriptions above
+are historical. Migration 0010 adds indexed domain projections for notes,
+practice attempts, review schedules, quiz/interview results, completed topics,
+mastery artifacts, and project tasks. Each snapshot insert or update applies its
+changed collections atomically through SQLite triggers. Existing snapshots are
+preserved as the version-1 sync/rollback contract. The initial backfill does not
+change revision numbers, timestamps, or learner payloads.
+
+Progress and workspace saves use SQL compare-and-swap conditions, avoiding the
+race in a separate read-then-write revision check. The editor formatter runs in
+its own disposable worker with a deadline and language-specific parsers, fetched
+only on explicit use. Its bundle budget is distinct from navigation bundles.
+
 1. A lesson-completed flag or submitted artifact alone never equals mastery.
 2. UI components never calculate final mastery or review dates; domain functions own those rules.
 3. External and persisted data is validated before entering trusted domain state.

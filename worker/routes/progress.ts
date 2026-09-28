@@ -5,6 +5,8 @@ import {
   readJsonObject,
   type Route,
 } from "../http";
+import { SAVE_PROGRESS_SQL } from "../repositories/snapshotSql";
+import { validateProgress } from "../progressValidation";
 
 type ProgressRow = { stateJson: string; revision: number; updatedAt: string };
 
@@ -36,6 +38,8 @@ export const progressRoutes: Route[] = [
       const body = await readJsonObject(request, 550_000);
       const state = body.state;
       const expectedRevision = body.revision;
+      const invalid = validateProgress(state);
+      if (invalid) throw new HttpError(400, "INVALID_PROGRESS", invalid);
       if (
         !state ||
         typeof state !== "object" ||
@@ -47,7 +51,10 @@ export const progressRoutes: Route[] = [
           "INVALID_PROGRESS",
           "Progress must be a Forge version 1 state object.",
         );
-      if (!Number.isInteger(expectedRevision) || Number(expectedRevision) < 0)
+      if (
+        !Number.isSafeInteger(expectedRevision) ||
+        Number(expectedRevision) < 0
+      )
         throw new HttpError(
           400,
           "INVALID_REVISION",
@@ -60,34 +67,27 @@ export const progressRoutes: Route[] = [
           "PROGRESS_TOO_LARGE",
           "Progress exceeds the 512 KB limit.",
         );
+      const now = new Date().toISOString();
+      const saved = await env.DB.prepare(SAVE_PROGRESS_SQL)
+        .bind(user!.id, stateJson, expectedRevision, now)
+        .first<{ revision: number; updatedAt: string }>();
+      if (saved) return json(saved);
       const current = await env.DB.prepare(
         "SELECT revision FROM progress_snapshots WHERE user_id = ?",
       )
         .bind(user!.id)
         .first<{ revision: number }>();
       const revision = current?.revision ?? 0;
-      if (revision !== expectedRevision)
-        return json(
-          {
-            error: {
-              code: "REVISION_CONFLICT",
-              message: "Cloud progress changed. Reload before saving.",
-            },
-            revision,
+      return json(
+        {
+          error: {
+            code: "REVISION_CONFLICT",
+            message: "Cloud progress changed. Reload before saving.",
           },
-          409,
-        );
-      const nextRevision = revision + 1;
-      const now = new Date().toISOString();
-      await env.DB.prepare(
-        `INSERT INTO progress_snapshots (user_id, state_json, revision, updated_at)
-         VALUES (?, ?, ?, ?)
-         ON CONFLICT(user_id) DO UPDATE SET state_json = excluded.state_json,
-           revision = excluded.revision, updated_at = excluded.updated_at`,
-      )
-        .bind(user!.id, stateJson, nextRevision, now)
-        .run();
-      return json({ revision: nextRevision, updatedAt: now });
+          revision,
+        },
+        409,
+      );
     },
   },
 ];

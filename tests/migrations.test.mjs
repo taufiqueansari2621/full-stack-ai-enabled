@@ -10,7 +10,7 @@ test("D1 migrations are ordered and contain release-critical tables", async () =
     .sort();
   assert.deepEqual(
     files.map((file) => file.slice(0, 4)),
-    ["0001", "0002", "0003", "0004", "0005", "0006", "0007", "0008", "0009"],
+    ["0001", "0002", "0003", "0004", "0005", "0006", "0007", "0008", "0009", "0010"],
   );
   const sql = (
     await Promise.all(
@@ -30,6 +30,14 @@ test("D1 migrations are ordered and contain release-critical tables", async () =
     "workspace_snapshots",
     "public_portfolios",
     "certificate_credentials",
+    "topic_progress",
+    "practice_attempts",
+    "review_items",
+    "notes",
+    "project_tasks",
+    "interview_results",
+    "quiz_attempts",
+    "mastery_artifacts",
   ]) {
     assert.match(
       sql,

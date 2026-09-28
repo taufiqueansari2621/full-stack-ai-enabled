@@ -40,7 +40,20 @@ try {
   await page.type('input[autocomplete="username"]', username);
   await page.type('input[type="email"]', email);
   await page.type('input[type="password"]', "account-smoke-password");
+  const registrationResponse = page.waitForResponse(
+    (response) =>
+      response.url().endsWith("/api/auth/register") &&
+      response.request().method() === "POST",
+    { timeout: 30_000 },
+  );
   await clickText("Create secure account");
+  const registration = await registrationResponse;
+  if (registration.status() !== 201) {
+    const failure = await registration.json();
+    throw new Error(
+      `Registration failed: ${registration.status()} ${failure.error?.code ?? "unknown"}`,
+    );
+  }
   await clickText("Full Stack AI Engineer");
   await clickText("Continue");
   await clickText("Some Programming Experience");
@@ -404,6 +417,40 @@ try {
     throw new Error(
       `Server certificate verification failed: ${JSON.stringify(certificateResult)}`,
     );
+  const concurrentSaves = await page.evaluate(async () => {
+    const outcomes = {};
+    for (const path of ["/api/progress", "/api/workspaces/default"]) {
+      const current = await (await fetch(path)).json();
+      const body =
+        path === "/api/progress"
+          ? { state: current.state, revision: current.revision }
+          : {
+              files: current.files,
+              activePath: current.activePath,
+              revision: current.revision,
+            };
+      outcomes[path] = (
+        await Promise.all(
+          [1, 2].map(() =>
+            fetch(path, {
+              method: "PUT",
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify(body),
+            }),
+          ),
+        )
+      )
+        .map((response) => response.status)
+        .sort();
+    }
+    return outcomes;
+  });
+  for (const [path, statuses] of Object.entries(concurrentSaves)) {
+    if (statuses.join(",") !== "200,409")
+      throw new Error(
+        `Concurrent ${path} saves must accept one write and reject the stale peer: ${statuses}`,
+      );
+  }
   const unpublish = await page.evaluate(async (name) => {
     const portfolio = (await (await fetch("/api/portfolio")).json()).portfolio;
     const saved = await fetch("/api/portfolio", {

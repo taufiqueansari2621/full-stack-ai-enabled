@@ -2859,5 +2859,52 @@ h3 {
   line-height: 1.5;
 }
 @media (max-width: 640px) {
-  .project-brief-grid { grid-template-columns: 1fr; }
+  .project-brief-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.challenge-contract {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0;
+}
+.challenge-contract > span {
+  padding: 7px 9px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.challenge-contract details {
+  flex-basis: 100%;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel-2);
+}
+.challenge-contract summary {
+  cursor: pointer;
+  color: var(--teal);
+  font-weight: 700;
+}
+.challenge-contract p {
+  margin: 8px 0 0;
+}
+.challenge-reflection {
+  display: grid;
+  gap: 10px;
+  margin-block: 16px;
+}
+.challenge-reflection label {
+  display: grid;
+  gap: 8px;
+}
+.challenge-reflection textarea {
+  min-height: 90px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--text);
+  background: var(--panel-2);
 }

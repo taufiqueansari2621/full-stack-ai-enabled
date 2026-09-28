@@ -11,10 +11,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import type { ForgeStore, LabArtifact } from "./useForgeStore";
-import {
-  dsaAlgorithms,
-  type DsaAlgorithmId,
-} from "./domain/dsaAlgorithms";
+import { dsaAlgorithms, type DsaAlgorithmId } from "./domain/dsaAlgorithms";
 import {
   systemDesignComponents,
   systemDesignPrompts,
@@ -26,11 +23,7 @@ import {
   sqlSchema,
   type SqlLabResult,
 } from "./domain/sqlLab";
-import {
-  aiLabExercises,
-  runAiLab,
-  type AiLabResult,
-} from "./domain/aiLab";
+import { aiLabExercises, runAiLab, type AiLabResult } from "./domain/aiLab";
 import "./advanced-labs.css";
 
 type Lab = LabArtifact["lab"];
@@ -56,7 +49,9 @@ export default function AdvancedLabs({
   >(null);
   const [aiExerciseId, setAiExerciseId] = useState(aiLabExercises[0].id);
   const [aiInput, setAiInput] = useState(aiLabExercises[0].defaultInput);
-  const [aiResult, setAiResult] = useState<AiLabResult | { error: string } | null>(null);
+  const [aiResult, setAiResult] = useState<
+    AiLabResult | { error: string } | null
+  >(null);
   const [evidence, setEvidence] = useState("");
   const saved = store.state.labArtifacts.find((item) => item.lab === lab);
   const activeAlgorithm = dsaAlgorithms[algorithm];
@@ -66,7 +61,9 @@ export default function AdvancedLabs({
     systemDesignScenarios[0];
   const activeSqlLesson =
     sqlLabLessons.find((item) => item.id === sqlLessonId) ?? sqlLabLessons[0];
-  const activeAiExercise = aiLabExercises.find((item) => item.id === aiExerciseId) ?? aiLabExercises[0];
+  const activeAiExercise =
+    aiLabExercises.find((item) => item.id === aiExerciseId) ??
+    aiLabExercises[0];
   useEffect(() => {
     if (!playing) return;
     const timer = window.setInterval(() => {
@@ -191,9 +188,21 @@ export default function AdvancedLabs({
             <p>
               Step {step + 1}/{activeAlgorithm.steps.length}
             </p>
-            <p><b>Current operation</b><br />{activeStep.operation}</p>
-            <p><b>Variables</b><br />{activeStep.variables}</p>
-            <p><b>Call stack</b><br />{activeStep.callStack}</p>
+            <p>
+              <b>Current operation</b>
+              <br />
+              {activeStep.operation}
+            </p>
+            <p>
+              <b>Variables</b>
+              <br />
+              {activeStep.variables}
+            </p>
+            <p>
+              <b>Call stack</b>
+              <br />
+              {activeStep.callStack}
+            </p>
             <p>Time: {activeAlgorithm.time}</p>
             <p>Space: {activeAlgorithm.space}</p>
           </aside>
@@ -289,7 +298,9 @@ export default function AdvancedLabs({
             </label>
             <div className="sql-schema">
               <b>Database schema</b>
-              {sqlSchema.map((table) => <code key={table}>{table}</code>)}
+              {sqlSchema.map((table) => (
+                <code key={table}>{table}</code>
+              ))}
             </div>
             <textarea
               aria-label={`${activeSqlLesson.title} query editor`}
@@ -303,37 +314,50 @@ export default function AdvancedLabs({
               <Database /> Run query
             </button>
             {sqlResult && "error" in sqlResult && (
-              <p className="sql-error" role="alert">{sqlResult.error}</p>
+              <p className="sql-error" role="alert">
+                {sqlResult.error}
+              </p>
             )}
             {sqlResult && !("error" in sqlResult) && (
               <>
-              <table>
-                <thead>
-                  <tr>
-                    {sqlResult.columns.map((column) => <th key={column}>{column}</th>)}
-                  </tr>
-                </thead>
-                <tbody>
-                  {sqlResult.rows.map((row, rowIndex) => (
-                    <tr key={`${activeSqlLesson.id}-${rowIndex}`}>
-                      {row.map((value, columnIndex) => (
-                        <td key={`${value}-${columnIndex}`}>{value}</td>
+                <p role="status">
+                  Authored example results — this walkthrough checks query
+                  keywords; it does not execute your SQL.
+                </p>
+                <table>
+                  <thead>
+                    <tr>
+                      {sqlResult.columns.map((column) => (
+                        <th key={column}>{column}</th>
                       ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-              <div className="sql-explanation">
-                <b>Explanation</b><p>{sqlResult.explanation}</p>
-                <b>Query plan</b><code>{sqlResult.plan}</code>
-              </div>
+                  </thead>
+                  <tbody>
+                    {sqlResult.rows.map((row, rowIndex) => (
+                      <tr key={`${activeSqlLesson.id}-${rowIndex}`}>
+                        {row.map((value, columnIndex) => (
+                          <td key={`${value}-${columnIndex}`}>{value}</td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <div className="sql-explanation">
+                  <b>Explanation</b>
+                  <p>{sqlResult.explanation}</p>
+                  <b>Query plan</b>
+                  <code>{sqlResult.plan}</code>
+                </div>
               </>
             )}
           </div>
           <aside>
             <b>{activeSqlLesson.title} challenge</b>
             <p>{activeSqlLesson.challenge}</p>
-            <p>This is a bounded teaching dataset. It validates the selected concept and never sends arbitrary SQL to the production database.</p>
+            <p>
+              Example walkthrough: changing a filter does not change the example
+              rows. A real SQL execution engine is still being implemented.
+            </p>
           </aside>
         </section>
       )}
@@ -342,15 +366,30 @@ export default function AdvancedLabs({
           <div>
             <label>
               AI engineering lab
-              <select value={aiExerciseId} onChange={(event) => {
-                const next = aiLabExercises.find((item) => item.id === event.target.value) ?? aiLabExercises[0];
-                setAiExerciseId(next.id);
-                setAiInput(next.defaultInput);
-                setAiResult(null);
-              }}>
-                {aiLabExercises.map((exercise) => <option value={exercise.id} key={exercise.id}>{exercise.title}</option>)}
+              <select
+                value={aiExerciseId}
+                onChange={(event) => {
+                  const next =
+                    aiLabExercises.find(
+                      (item) => item.id === event.target.value,
+                    ) ?? aiLabExercises[0];
+                  setAiExerciseId(next.id);
+                  setAiInput(next.defaultInput);
+                  setAiResult(null);
+                }}
+              >
+                {aiLabExercises.map((exercise) => (
+                  <option value={exercise.id} key={exercise.id}>
+                    {exercise.title}
+                  </option>
+                ))}
               </select>
             </label>
+            <p>
+              Illustrated walkthrough: outputs and quality/cost figures are
+              authored examples. This activity does not call a model or measure
+              its performance.
+            </p>
             <label>
               {activeAiExercise.inputLabel}
               <textarea
@@ -358,7 +397,9 @@ export default function AdvancedLabs({
                 onChange={(e) => setAiInput(e.target.value)}
               />
             </label>
-            <button onClick={() => setAiResult(runAiLab(activeAiExercise, aiInput))}>
+            <button
+              onClick={() => setAiResult(runAiLab(activeAiExercise, aiInput))}
+            >
               <Sparkles /> Run experiment
             </button>
             <div className="rag-flow">
@@ -366,19 +407,45 @@ export default function AdvancedLabs({
                 <span key={x}>{x}</span>
               ))}
             </div>
-            {aiResult && "error" in aiResult && <p className="sql-error" role="alert">{aiResult.error}</p>}
-            {aiResult && !("error" in aiResult) && <div className="ai-output" aria-live="polite"><b>Experiment output</b><p>{aiResult.output}</p></div>}
+            {aiResult && "error" in aiResult && (
+              <p className="sql-error" role="alert">
+                {aiResult.error}
+              </p>
+            )}
+            {aiResult && !("error" in aiResult) && (
+              <div className="ai-output" aria-live="polite">
+                <b>Experiment output</b>
+                <p>{aiResult.output}</p>
+              </div>
+            )}
           </div>
           <aside>
             <Sparkles />
             <b>{activeAiExercise.title}</b>
             <p>{activeAiExercise.challenge}</p>
             <b>Pipeline telemetry</b>
-            {aiResult && !("error" in aiResult) ? <>
-              <p>Latency: {aiResult.latencyMs} ms · token usage: {aiResult.tokenUsage}</p>
-              <p>Retrieval quality: {aiResult.retrievalQuality}% · context size: {aiResult.contextSize} characters</p>
-              <p>Model cost: ${aiResult.modelCostUsd.toFixed(5)} · evaluation score: {aiResult.evaluationScore}%</p>
-            </> : <p>Run the experiment to measure latency, token usage, retrieval quality, context size, model cost, and evaluation score.</p>}
+            {aiResult && !("error" in aiResult) ? (
+              <>
+                <p>
+                  Illustrative latency: {aiResult.latencyMs} ms · estimated
+                  token count: {aiResult.tokenUsage}
+                </p>
+                <p>
+                  Example retrieval quality: {aiResult.retrievalQuality}% ·
+                  input size: {aiResult.contextSize} characters
+                </p>
+                <p>
+                  Example model cost: ${aiResult.modelCostUsd.toFixed(5)} ·
+                  example evaluation score: {aiResult.evaluationScore}%
+                </p>
+              </>
+            ) : (
+              <p>
+                Inspect example latency, token usage, retrieval quality, context
+                size, model cost, and evaluation score. No model charge is
+                incurred.
+              </p>
+            )}
           </aside>
         </section>
       )}

@@ -5,6 +5,7 @@ import {
   readJsonObject,
   type Route,
 } from "../http";
+import { SAVE_WORKSPACE_SQL } from "../repositories/snapshotSql";
 
 type WorkspaceRow = {
   filesJson: string;
@@ -94,41 +95,38 @@ export const workspaceRoutes: Route[] = [
           "INVALID_ACTIVE_FILE",
           "Select a file in this workspace.",
         );
-      const expectedRevision = Number(body.revision);
-      if (!Number.isInteger(expectedRevision) || expectedRevision < 0)
+      const expectedRevision = body.revision;
+      if (
+        typeof expectedRevision !== "number" ||
+        !Number.isSafeInteger(expectedRevision) ||
+        expectedRevision < 0
+      )
         throw new HttpError(
           400,
           "INVALID_REVISION",
           "A non-negative revision is required.",
         );
+      const updatedAt = new Date().toISOString();
+      const saved = await env.DB.prepare(SAVE_WORKSPACE_SQL)
+        .bind(user!.id, filesJson, activePath, expectedRevision, updatedAt)
+        .first<{ revision: number; updatedAt: string }>();
+      if (saved) return json(saved);
       const current = await env.DB.prepare(
         "SELECT revision FROM workspaces WHERE user_id = ?",
       )
         .bind(user!.id)
         .first<{ revision: number }>();
       const revision = current?.revision ?? 0;
-      if (revision !== expectedRevision)
-        return json(
-          {
-            error: {
-              code: "REVISION_CONFLICT",
-              message: "Workspace changed on another device.",
-            },
-            revision,
+      return json(
+        {
+          error: {
+            code: "REVISION_CONFLICT",
+            message: "Workspace changed on another device.",
           },
-          409,
-        );
-      const nextRevision = revision + 1;
-      const updatedAt = new Date().toISOString();
-      await env.DB.prepare(
-        `INSERT INTO workspaces (user_id, files_json, active_path, revision, updated_at)
-         VALUES (?, ?, ?, ?, ?)
-         ON CONFLICT(user_id) DO UPDATE SET files_json = excluded.files_json,
-           active_path = excluded.active_path, revision = excluded.revision, updated_at = excluded.updated_at`,
-      )
-        .bind(user!.id, filesJson, activePath, nextRevision, updatedAt)
-        .run();
-      return json({ revision: nextRevision, updatedAt });
+          revision,
+        },
+        409,
+      );
     },
   },
   {

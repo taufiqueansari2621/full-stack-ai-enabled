@@ -23,6 +23,9 @@ import {
   type CodeRunResult,
 } from "./services/codeRunner";
 import { useDialogFocus } from "./hooks/useDialogFocus";
+import { editorCompletions, tokenizeSource } from "./domain/editorTools";
+import { canFormat } from "./services/formatSource";
+import { formatInWorker } from "./services/formatInWorker";
 import "./workspace.css";
 
 type Files = Record<string, string>;
@@ -237,10 +240,21 @@ export function Workspace({
   const [projectDescription, setProjectDescription] = useState("");
   const [projectGoals, setProjectGoals] = useState("");
   const [workspaceMessage, setWorkspaceMessage] = useState<string | null>(null);
+  const [editorScroll, setEditorScroll] = useState({ left: 0, top: 0 });
+  const [formatting, setFormatting] = useState(false);
+  const editorRef = useRef<HTMLTextAreaElement>(null);
   const dialogRef = useDialogFocus<HTMLElement>(Boolean(dialog), () =>
     setDialog(null),
   );
   const activeContent = files[activePath] ?? "";
+  const syntaxTokens = useMemo(
+    () => tokenizeSource(activeContent, activePath),
+    [activeContent, activePath],
+  );
+  const completions = useMemo(
+    () => editorCompletions(activePath),
+    [activePath],
+  );
 
   useEffect(() => () => aiRequest.current?.abort(), []);
 
@@ -292,10 +306,33 @@ export function Workspace({
   }, [activePath, cloudEnabled, files, hydrated, learnerId]);
 
   const selectFile = (path: string) => {
+    setEditorScroll({ left: 0, top: 0 });
     setActivePath(path);
     setOpenFiles((current) =>
       current.includes(path) ? current : [...current, path],
     );
+  };
+  const formatFile = async () => {
+    const path = activePath;
+    const source = activeContent;
+    setFormatting(true);
+    try {
+      const formatted = await formatInWorker(source, path);
+      setFiles((current) =>
+        current[path] === source ? { ...current, [path]: formatted } : current,
+      );
+      setWorkspaceMessage(
+        "Formatting finished. Newer edits are preserved if the file changed while formatting.",
+      );
+    } catch (error) {
+      setWorkspaceMessage(
+        error instanceof Error
+          ? error.message
+          : "Formatting failed; file unchanged.",
+      );
+    } finally {
+      setFormatting(false);
+    }
   };
   const run = async () => {
     setRunning(true);
@@ -532,6 +569,21 @@ export function Workspace({
         >
           Give me a level {Math.min(3, hint + 1)} hint
         </button>
+        {!metadata &&
+          result &&
+          result.passed > 0 &&
+          result.failed === 0 &&
+          !result.error && (
+            <aside className="solution-explanation">
+              <CheckCircle2 />
+              <span>
+                <b>Why this solution passes</b> It returns the expected sum for
+                positive, negative, and empty inputs. The zero accumulator
+                preserves the empty-array case while each value contributes
+                exactly once.
+              </span>
+            </aside>
+          )}
       </section>
       <section className="workspace-ide">
         <aside className="file-explorer">
@@ -556,31 +608,109 @@ export function Workspace({
               <button
                 key={path}
                 className={activePath === path ? "active" : ""}
-                onClick={() => setActivePath(path)}
+                onClick={() => selectFile(path)}
               >
                 <FileCode2 />
                 {path.split("/").at(-1)}
               </button>
             ))}
           </div>
+          <div className="editor-tools" aria-label="Editor tools">
+            <button
+              disabled={formatting || !canFormat(activePath)}
+              onClick={() => void formatFile()}
+            >
+              {formatting ? "Formatting…" : "Format file"}
+            </button>
+            <label>
+              Insert snippet
+              <select
+                defaultValue=""
+                onChange={(event) => {
+                  if (!event.target.value) return;
+                  const start =
+                    editorRef.current?.selectionStart ?? activeContent.length;
+                  const end = editorRef.current?.selectionEnd ?? start;
+                  const insertion = event.target.value;
+                  setResult(null);
+                  setFiles((current) => ({
+                    ...current,
+                    [activePath]:
+                      activeContent.slice(0, start) +
+                      insertion +
+                      activeContent.slice(end),
+                  }));
+                  window.requestAnimationFrame(() => {
+                    editorRef.current?.focus();
+                    editorRef.current?.setSelectionRange(
+                      start + insertion.length,
+                      start + insertion.length,
+                    );
+                  });
+                  event.target.value = "";
+                }}
+              >
+                <option value="">Choose…</option>
+                {completions.map((completion) => (
+                  <option value={completion} key={completion}>
+                    {completion}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
           <div className="code-editor">
             <pre aria-hidden="true">
-              {Array.from(
-                { length: activeContent.split("\n").length },
-                (_, index) => index + 1,
-              ).join("\n")}
+              <span
+                style={{
+                  display: "block",
+                  transform: `translateY(${-editorScroll.top}px)`,
+                }}
+              >
+                {Array.from(
+                  { length: activeContent.split("\n").length },
+                  (_, index) => index + 1,
+                ).join("\n")}
+              </span>
             </pre>
-            <textarea
-              aria-label={`Editing ${activePath}`}
-              spellCheck={false}
-              value={activeContent}
-              onChange={(event) =>
-                setFiles((current) => ({
-                  ...current,
-                  [activePath]: event.target.value,
-                }))
-              }
-            />
+            <div className="highlighted-editor">
+              <pre
+                aria-hidden="true"
+                className="syntax-layer"
+                style={{
+                  transform: `translate(${-editorScroll.left}px, ${-editorScroll.top}px)`,
+                }}
+              >
+                {syntaxTokens.map((token, index) => (
+                  <span
+                    className={`syntax-${token.kind}`}
+                    key={`${index}-${token.text}`}
+                  >
+                    {token.text}
+                  </span>
+                ))}
+              </pre>
+              <textarea
+                key={activePath}
+                ref={editorRef}
+                aria-label={`Editing ${activePath}`}
+                spellCheck={false}
+                value={activeContent}
+                onScroll={(event) =>
+                  setEditorScroll({
+                    left: event.currentTarget.scrollLeft,
+                    top: event.currentTarget.scrollTop,
+                  })
+                }
+                onChange={(event) => {
+                  setResult(null);
+                  setFiles((current) => ({
+                    ...current,
+                    [activePath]: event.target.value,
+                  }));
+                }}
+              />
+            </div>
           </div>
         </div>
         <aside className="workspace-assistant">

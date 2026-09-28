@@ -20,6 +20,7 @@ import {
   NotebookPen,
   Plus,
   RotateCcw,
+  Save,
   Search,
   Sparkles,
   Target,
@@ -36,6 +37,10 @@ import { buildSkillMatrix } from "./domain/skills";
 import { forgeApi } from "./services/forgeApi";
 import { useDialogFocus } from "./hooks/useDialogFocus";
 import { buildProjectBrief } from "./domain/projectWorkspace";
+import {
+  challengeDefinitions,
+  challengeLifecycle,
+} from "./domain/challengeSystem";
 
 const TopicPracticeLab = lazy(() => import("./TopicPracticeLab"));
 const InterviewAcademy = lazy(() => import("./InterviewAcademy"));
@@ -303,7 +308,8 @@ const projectGuidance: Record<
       "Link architecture, API, testing, and operating guidance",
       "Keep examples verified against the current release",
     ],
-    evidence: "A reviewed README with working setup, usage, and operations links.",
+    evidence:
+      "A reviewed README with working setup, usage, and operations links.",
   },
   Retrospective: {
     goal: "Turn delivery evidence into a better next engineering decision.",
@@ -312,7 +318,8 @@ const projectGuidance: Record<
       "Record surprises, failures, and trade-offs",
       "Choose one evidence-backed follow-up improvement",
     ],
-    evidence: "A concise retrospective linked to tests, metrics, and decisions.",
+    evidence:
+      "A concise retrospective linked to tests, metrics, and decisions.",
   },
 };
 
@@ -349,11 +356,24 @@ export function PracticePage({ store, notify }: PageProps) {
     [checked, setChecked] = useState(false),
     [hint, setHint] = useState(false);
   const item = challenges[index],
-    correct = checked && selected === item.answer;
+    correct = checked && selected === item.answer,
+    definition = challengeDefinitions[item.id],
+    itemAttempts = store.state.practiceAttempts.filter(
+      (attempt) => attempt.challengeId === item.id,
+    ),
+    savedExplanation = store.state.knowledge.find(
+      (entry) => entry.topicLink === `challenge:${item.id}`,
+    ),
+    lifecycle = challengeLifecycle(itemAttempts, {
+      attempted: Boolean(selected),
+      explanation: savedExplanation?.body,
+    });
+  const [explanation, setExplanation] = useState("");
   const reset = () => {
     setSelected("");
     setChecked(false);
     setHint(false);
+    setExplanation("");
   };
   const submit = () => {
     if (!selected) return;
@@ -451,6 +471,45 @@ export function PracticePage({ store, notify }: PageProps) {
             </div>
             <h2>{item.title}</h2>
             <p>{item.prompt}</p>
+            <div className="challenge-contract" aria-label="Challenge contract">
+              <span>
+                <b>Status</b> {lifecycle}
+              </span>
+              <span>
+                <b>Difficulty</b> {definition.difficulty}
+              </span>
+              <span>
+                <b>Skills</b> {definition.skills.join(", ")}
+              </span>
+              <details>
+                <summary>Requirements and relevance</summary>
+                <p>
+                  <b>Prerequisites:</b> {definition.prerequisites.join(", ")}
+                </p>
+                <p>
+                  <b>Starter files:</b>{" "}
+                  {definition.starterFiles.join(", ") || "No files required"}
+                </p>
+                <p>
+                  <b>Expected behavior:</b> {definition.expectedBehavior}
+                </p>
+                <p>
+                  <b>Answer criteria:</b> {definition.visibleTests.join(" · ")}
+                </p>
+                <p>
+                  <b>Constraints:</b> {definition.constraints.join(" · ")}
+                </p>
+                <p>
+                  <b>Related lessons:</b> {definition.relatedLessons.join(", ")}
+                </p>
+                <p>
+                  <b>Project relevance:</b> {definition.projectRelevance}
+                </p>
+                <p>
+                  <b>Interview relevance:</b> {definition.interviewRelevance}
+                </p>
+              </details>
+            </div>
             {item.code && <pre className="code-block">{item.code}</pre>}
             <div className="challenge-options">
               {item.options.map((o) => (
@@ -474,6 +533,39 @@ export function PracticePage({ store, notify }: PageProps) {
                 title={correct ? "Correct" : "Try again"}
                 text={item.explanation}
               />
+            )}
+            {correct && (
+              <div className="challenge-reflection">
+                <label>
+                  Explain why this answer works
+                  <textarea
+                    value={explanation}
+                    onChange={(event) => setExplanation(event.target.value)}
+                    placeholder="Explain the reasoning and one edge case (at least 40 characters)."
+                  />
+                </label>
+                <button
+                  className="secondary-button"
+                  disabled={explanation.trim().length < 40}
+                  onClick={() => {
+                    if (savedExplanation)
+                      store.updateKnowledge(savedExplanation.id, {
+                        body: explanation.trim(),
+                      });
+                    else
+                      store.addKnowledge({
+                        kind: "note",
+                        title: `${item.title} explanation`,
+                        topic: item.topic,
+                        body: explanation.trim(),
+                        topicLink: `challenge:${item.id}`,
+                      });
+                    notify("Explanation saved in My Notes");
+                  }}
+                >
+                  Save explanation
+                </button>
+              </div>
             )}
             <div className="challenge-actions">
               <button
@@ -1556,6 +1648,58 @@ export function ProjectsHub({
     </>
   );
 }
+function ProjectEvidenceEditor({
+  projectId,
+  title,
+  section,
+  store,
+  notify,
+}: {
+  projectId: string;
+  title: string;
+  section: string;
+  store: ForgeStore;
+  notify: (text: string) => void;
+}) {
+  const saved = store.state.knowledge.find(
+    (entry) =>
+      entry.projectLink === projectId &&
+      entry.title === `${title} · ${section}`,
+  );
+  const [body, setBody] = useState(saved?.body ?? "");
+  return (
+    <div className="challenge-reflection">
+      <label>
+        {section} entry
+        <textarea
+          value={body}
+          onChange={(event) => setBody(event.target.value)}
+          placeholder="Record your decisions, results, and links to supporting work."
+        />
+      </label>
+      <button
+        className="secondary-button"
+        disabled={body.trim().length < 10}
+        onClick={() => {
+          if (saved) store.updateKnowledge(saved.id, { body: body.trim() });
+          else
+            store.addKnowledge({
+              kind: "note",
+              title: `${title} · ${section}`,
+              topic: section,
+              body: body.trim(),
+              projectLink: projectId,
+            });
+          notify("Project entry saved in My Notes");
+        }}
+      >
+        {saved ? "Update entry" : "Save entry"} <Save />
+      </button>
+      {saved && <small role="status">Saved to this project and My Notes</small>}
+    </div>
+  );
+}
+
 export function ProjectWorkspace({
   projectId,
   store,
@@ -1704,12 +1848,14 @@ export function ProjectWorkspace({
                     </span>
                   </div>
                 </aside>
-                <button
-                  className="secondary-button"
-                  onClick={() => notify(`${tab} entry saved as a future task`)}
-                >
-                  Add entry <Plus />
-                </button>
+                <ProjectEvidenceEditor
+                  key={`${projectId}:${tab}`}
+                  projectId={projectId}
+                  title={title}
+                  section={tab}
+                  store={store}
+                  notify={notify}
+                />
               </div>
             )}
           </section>

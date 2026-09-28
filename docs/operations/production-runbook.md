@@ -29,8 +29,25 @@ finite D1 latency. The response must also contain `x-request-id`,
 
 ## D1 backup
 
-Create a full SQL export before applying a migration or destructive data
-maintenance. Replace the date in the filename with the UTC backup date:
+Before an additive, backward-compatible migration, retrieve and record a fresh
+Cloudflare-managed recovery bookmark without copying learner data locally:
+
+```bash
+npx wrangler d1 time-travel info forge-production --json
+```
+
+Record the UTC time, database, bookmark, migration, and deployed Worker version.
+If the bookmark lookup fails, stop the migration. Time Travel is always enabled
+on supported production databases; retention depends on the account plan (at
+least seven days). A bookmark is not a permanent archive. See the
+[Cloudflare recovery documentation](https://developers.cloudflare.com/d1/reference/time-travel/).
+Prefer a corrective forward migration for failures. A Time Travel restore
+overwrites the live database and can lose newer learner writes: never perform
+one as a test or without explicit incident-specific authorization.
+
+For destructive maintenance or longer-lived archives, obtain explicit approval
+for a full SQL export and its sensitive-data destination first. Replace the date
+in the filename with the UTC backup date:
 
 ```bash
 mkdir -p backups

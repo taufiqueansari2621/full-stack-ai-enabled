@@ -22,7 +22,9 @@ release, backup, restore-drill, rollback, and incident procedures.
 
 - The release gate runs focused unit/API/migration/security tests, lint, strict
   TypeScript, production build, browser regression, and live verification.
-- Production D1 is exported before schema or destructive maintenance.
+- Additive compatible schema changes require a verified, recorded D1 Time Travel
+  bookmark. Destructive maintenance requires an explicitly approved sensitive
+  export destination; production restores require separate incident approval.
 - Restore drills target a temporary database, never the live database.
 - Worker rollback requires a known version ID and confirmation that the older
   Worker is compatible with already-applied forward-only migrations.

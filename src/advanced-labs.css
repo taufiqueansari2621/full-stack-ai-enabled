@@ -131,7 +131,7 @@
   line-height: 1.5;
 }
 .sql-error {
-  color: var(--danger);
+  color: var(--rose);
 }
 .lab-grid table {
   border-collapse: collapse;
