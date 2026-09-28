@@ -5,6 +5,7 @@ import { progressRoutes } from "./routes/progress";
 import { profileRoutes } from "./routes/profile";
 import { workspaceRoutes } from "./routes/workspace";
 import { aiRoutes } from "./routes/ai";
+import { embeddingRoutes } from "./routes/embeddings";
 import { portfolioRoutes } from "./routes/portfolio";
 import { certificateRoutes } from "./routes/certificates";
 import { openApiRoutes } from "./openapi";
@@ -33,6 +34,7 @@ const routes: Route[] = [
   ...profileRoutes,
   ...workspaceRoutes,
   ...aiRoutes,
+  ...embeddingRoutes,
   ...portfolioRoutes,
   ...certificateRoutes,
 ];

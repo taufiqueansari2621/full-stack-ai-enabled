@@ -242,6 +242,19 @@ Update this file after every meaningful verified implementation change.
 
 ## In Progress
 
+- September 29: deployed input-dependent AI experiments as Worker
+  `4faf7405-7a1a-4795-b6b3-dfd912fb1b50`. Production account tests verify actual
+  384-dimensional embeddings and grounded generation; public/PWA/security and
+  real SQL regressions pass. Local gates pass 18 Node + 35 Vitest tests, lint,
+  strict builds, bundle budgets, and the complete responsive browser suite.
+- AI experiments now compute chunking, explicit validated read-only tool calls,
+  and lexical F1 locally, or use authenticated Workers AI for embeddings,
+  cosine-ranked retrieval and generation. Consent, shared quota, input/output
+  validation, bounded batches, deadlines, and cancellation are explicit.
+  Similarity is not quality; lexical F1 is not factual correctness; unknown
+  charges are not fabricated. Autonomous tool selection and broader evaluation
+  remain outside this bounded lab release, so the AI chapter stays Partial.
+
 - Real SQL deployed and production-verified on September 28 as Worker
   `4ce762bf-d537-4f2b-b7f2-830ee1e3fbb2`. Dedicated live execution checks and
   public/PWA/security regression both pass. Audit: 53 complete, 8 partial areas.

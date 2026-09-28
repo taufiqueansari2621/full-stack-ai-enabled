@@ -737,6 +737,7 @@ try {
     !aiLabCoverage.metrics?.includes("model cost")
   )
     throw new Error(`AI lab coverage failed: ${JSON.stringify(aiLabCoverage)}`);
+  await page.select(".lab-grid select", "chunking");
   await clickText("Run experiment");
   await expectText("Experiment output");
   await expectText("evaluation score");

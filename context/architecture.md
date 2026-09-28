@@ -122,6 +122,14 @@ Components must not read or write browser storage directly. Storage access belon
 
 ## AI Model Boundary
 
+- AI lab learned embeddings use a bounded authenticated endpoint with the same
+  hourly AI quota and metadata-only usage records as tutoring. Source passages
+  are explicitly entered and consented, not fetched from learner records. RAG
+  performs exact cosine ranking over a small input batch before generation;
+  no persistent vector index is required for this bounded experiment. Local
+  chunking, explicit JSON tool execution, and lexical evaluation do not claim
+  to be model inference or verified factual scoring.
+
 - UI components call a typed mentor/evaluation interface, never a model SDK directly.
 - The gateway owns prompt versions, structured output validation, timeouts, retries, quotas, safety policy, and observability.
 - AI evaluation contributes evidence but is not treated as unquestionable truth.

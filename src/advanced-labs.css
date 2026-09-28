@@ -132,6 +132,13 @@
   color: var(--muted);
   line-height: 1.5;
 }
+.ai-output {
+  min-width: 0;
+}
+.ai-output p {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
 .sql-error {
   color: var(--rose);
 }

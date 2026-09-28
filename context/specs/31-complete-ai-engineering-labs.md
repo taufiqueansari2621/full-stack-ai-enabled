@@ -15,10 +15,11 @@ result exposes latency, token usage, retrieval quality, context size, model
 cost, and evaluation score. Zero retrieval quality is explicit for modes where
 retrieval is not part of the pipeline.
 
-The teaching engine is deliberately bounded and does not misrepresent a local
-numeric illustration as a call to a production embedding or vector service.
-Workers AI or Vectorize can later implement the same interface when live model
-variation is itself the lesson objective.
+The original authored-output engine is superseded by the input-dependent
+implementation in `35-real-ai-lab-experiments.md`. Cloud modes use learned
+embeddings and real generation; local modes perform actual chunking, validated
+explicit tool calls, and lexical evaluation. Similarity is not retrieval quality,
+lexical F1 is not factual correctness, and provider charges are not fabricated.
 
 ## Verification
 
@@ -28,4 +29,4 @@ variation is itself the lesson objective.
   experiment execution, saved evidence, and responsive behavior.
 - The Cloudflare production gate repeats the critical experiment assertions.
 - Verified production version:
-  `cac994e3-c382-446a-9f0d-8a51df77e90d`.
+  `4faf7405-7a1a-4795-b6b3-dfd912fb1b50` (real embeddings and generation).

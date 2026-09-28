@@ -83,6 +83,11 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const forgeApi = {
+  embedTexts: (texts: string[], signal?: AbortSignal) =>
+    request<{ vectors: number[][]; model: string; latencyMs: number }>(
+      "/api/ai/embeddings",
+      { method: "POST", body: JSON.stringify({ texts }), signal },
+    ),
   session: () => request<{ user: AccountUser | null }>("/api/me"),
   register: (input: {
     email: string;

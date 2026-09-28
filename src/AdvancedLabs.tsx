@@ -20,7 +20,13 @@ import {
 import { sqlLabLessons, sqlSchema } from "./domain/sqlLab";
 import { runSql } from "./services/sqlRunner";
 import type { SqlExecution } from "./services/sqlEngine";
-import { aiLabExercises, runAiLab, type AiLabResult } from "./domain/aiLab";
+import { aiLabExercises } from "./domain/aiLab";
+import { labSource } from "./domain/aiExperiments";
+import {
+  needsModel,
+  runAiExperiment,
+  type AiLabResult,
+} from "./services/aiExperiments";
 import "./advanced-labs.css";
 
 type Lab = LabArtifact["lab"];
@@ -67,6 +73,13 @@ export default function AdvancedLabs({
   };
   const [aiExerciseId, setAiExerciseId] = useState(aiLabExercises[0].id);
   const [aiInput, setAiInput] = useState(aiLabExercises[0].defaultInput);
+  const [aiSource, setAiSource] = useState(labSource);
+  const [aiConsent, setAiConsent] = useState(false);
+  const [aiRunning, setAiRunning] = useState(false);
+  const [topK, setTopK] = useState(2);
+  const [chunkSize, setChunkSize] = useState(300);
+  const aiRequest = useRef<AbortController | null>(null);
+  useEffect(() => () => aiRequest.current?.abort(), [lab]);
   const [aiResult, setAiResult] = useState<
     AiLabResult | { error: string } | null
   >(null);
@@ -82,6 +95,41 @@ export default function AdvancedLabs({
   const activeAiExercise =
     aiLabExercises.find((item) => item.id === aiExerciseId) ??
     aiLabExercises[0];
+  const executeAi = async () => {
+    const request = new AbortController();
+    aiRequest.current?.abort();
+    aiRequest.current = request;
+    setAiRunning(true);
+    setAiResult(null);
+    const timer = setTimeout(() => request.abort(), 45000);
+    try {
+      if (needsModel(activeAiExercise.id) && !aiConsent)
+        throw new Error(
+          "Confirm sharing the entered text before calling Workers AI. Cloud login is required.",
+        );
+      const result = await runAiExperiment(
+        activeAiExercise,
+        aiInput,
+        aiSource,
+        topK,
+        chunkSize,
+        request.signal,
+      );
+      if (aiRequest.current === request) setAiResult(result);
+    } catch (error) {
+      if (aiRequest.current === request)
+        setAiResult({
+          error: request.signal.aborted
+            ? "Experiment cancelled or exceeded 45 seconds. Provider usage may still be charged."
+            : error instanceof Error
+              ? error.message
+              : "Experiment failed.",
+        });
+    } finally {
+      clearTimeout(timer);
+      if (aiRequest.current === request) setAiRunning(false);
+    }
+  };
   useEffect(() => {
     if (!playing) return;
     const timer = window.setInterval(() => {
@@ -416,6 +464,7 @@ export default function AdvancedLabs({
               AI engineering lab
               <select
                 value={aiExerciseId}
+                disabled={aiRunning}
                 onChange={(event) => {
                   const next =
                     aiLabExercises.find(
@@ -434,22 +483,85 @@ export default function AdvancedLabs({
               </select>
             </label>
             <p>
-              Illustrated walkthrough: outputs and quality/cost figures are
-              authored examples. This activity does not call a model or measure
-              its performance.
+              Chunking, explicit tool calls, and lexical evaluation run locally.
+              Other modes call Workers AI with your entered text and require a
+              cloud account. RAG uses up to two requests from the shared hourly
+              AI quota.
             </p>
             <label>
               {activeAiExercise.inputLabel}
               <textarea
                 value={aiInput}
-                onChange={(e) => setAiInput(e.target.value)}
+                maxLength={800}
+                disabled={aiRunning}
+                onChange={(e) => {
+                  setAiInput(e.target.value);
+                  setAiResult(null);
+                }}
               />
             </label>
-            <button
-              onClick={() => setAiResult(runAiLab(activeAiExercise, aiInput))}
-            >
-              <Sparkles /> Run experiment
+            <label>
+              Source / evaluation reference
+              <textarea
+                aria-label="AI lab source"
+                value={aiSource}
+                maxLength={4800}
+                disabled={aiRunning}
+                onChange={(event) => {
+                  setAiSource(event.target.value);
+                  setAiResult(null);
+                }}
+              />
+            </label>
+            <label>
+              Top-k results (1–5)
+              <input
+                type="number"
+                min={1}
+                max={5}
+                value={topK}
+                disabled={aiRunning}
+                onChange={(event) => {
+                  setTopK(Number(event.target.value));
+                  setAiResult(null);
+                }}
+              />
+            </label>
+            <label>
+              Chunk characters (300–800)
+              <input
+                type="number"
+                min={300}
+                max={800}
+                value={chunkSize}
+                disabled={aiRunning}
+                onChange={(event) => {
+                  setChunkSize(Number(event.target.value));
+                  setAiResult(null);
+                }}
+              />
+            </label>
+            {needsModel(aiExerciseId) && (
+              <label>
+                <input
+                  type="checkbox"
+                  checked={aiConsent}
+                  disabled={aiRunning}
+                  onChange={(event) => setAiConsent(event.target.checked)}
+                />
+                Share my entered query and source with Workers AI. Model usage
+                may incur charges; no private account records are retrieved.
+              </label>
+            )}
+            <button disabled={aiRunning} onClick={() => void executeAi()}>
+              <Sparkles />{" "}
+              {aiRunning ? "Running experiment…" : "Run experiment"}
             </button>
+            {aiRunning && (
+              <button onClick={() => aiRequest.current?.abort()}>
+                Cancel experiment
+              </button>
+            )}
             <div className="rag-flow">
               {activeAiExercise.steps.map((x) => (
                 <span key={x}>{x}</span>
@@ -463,6 +575,7 @@ export default function AdvancedLabs({
             {aiResult && !("error" in aiResult) && (
               <div className="ai-output" aria-live="polite">
                 <b>Experiment output</b>
+                <p>{aiResult.method}</p>
                 <p>{aiResult.output}</p>
               </div>
             )}
@@ -475,23 +588,31 @@ export default function AdvancedLabs({
             {aiResult && !("error" in aiResult) ? (
               <>
                 <p>
-                  Illustrative latency: {aiResult.latencyMs} ms · estimated
-                  token count: {aiResult.tokenUsage}
+                  Measured latency: {aiResult.latencyMs.toFixed(2)} ms ·
+                  estimated token count: {aiResult.tokenUsage}
                 </p>
                 <p>
-                  Example retrieval quality: {aiResult.retrievalQuality}% ·
+                  Retrieval quality is not measured. Cosine similarity:{" "}
+                  {aiResult.retrievalQuality?.toFixed(4) ?? "not applicable"} ·
                   input size: {aiResult.contextSize} characters
                 </p>
                 <p>
-                  Example model cost: ${aiResult.modelCostUsd.toFixed(5)} ·
-                  example evaluation score: {aiResult.evaluationScore}%
+                  Model cost:{" "}
+                  {aiResult.modelCostUsd === null
+                    ? "not reported by provider"
+                    : "$0 (local)"}{" "}
+                  · lexical evaluation score (not correctness):{" "}
+                  {aiResult.evaluationScore === null
+                    ? "not applicable"
+                    : `${aiResult.evaluationScore.toFixed(1)}%`}
                 </p>
               </>
             ) : (
               <p>
-                Inspect example latency, token usage, retrieval quality, context
-                size, model cost, and evaluation score. No model charge is
-                incurred.
+                Inspect measured latency, estimated token usage, retrieval
+                quality limitations, context size, model cost availability, and
+                lexical evaluation score. No fabricated quality or billing
+                figures.
               </p>
             )}
           </aside>

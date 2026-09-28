@@ -457,6 +457,7 @@ try {
     !aiLab.telemetry?.includes("model cost")
   )
     throw new Error(`Production AI lab failed: ${JSON.stringify(aiLab)}`);
+  await page.select(".lab-grid select", "chunking");
   await page.evaluate(() => {
     const target = [...document.querySelectorAll("button")].find(
       (button) => button.textContent?.trim() === "Run experiment",

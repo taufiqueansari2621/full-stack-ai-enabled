@@ -465,6 +465,46 @@ try {
   }, username);
   if (unpublish.saved !== 200 || unpublish.publicStatus !== 404)
     throw new Error(`Portfolio unpublish failed: ${JSON.stringify(unpublish)}`);
+  await page.goto(`${baseUrl}/labs`, { waitUntil: "networkidle0" });
+  await page.waitForSelector(".lab-tabs");
+  await clickText("RAG");
+  await page.select(".lab-grid select", "embedding");
+  await page.click('.lab-grid input[type="checkbox"]');
+  await clickText("Run experiment");
+  await page.waitForFunction(
+    () =>
+      document.querySelector(".ai-output") ||
+      document.querySelector(".sql-error"),
+    { timeout: 50000 },
+  );
+  const embeddingResult = await page.evaluate(
+    () =>
+      document.querySelector(".ai-output")?.textContent ??
+      document.querySelector(".sql-error")?.textContent,
+  );
+  if (
+    !embeddingResult?.includes('"dimensions": 384') ||
+    !embeddingResult.includes("bge-small")
+  )
+    throw new Error(`Live embedding experiment failed: ${embeddingResult}`);
+  await page.select(".lab-grid select", "rag");
+  await clickText("Run experiment");
+  await page.waitForFunction(
+    () =>
+      document.querySelector(".ai-output") ||
+      document.querySelector(".sql-error"),
+    { timeout: 50000 },
+  );
+  const ragResult = await page.evaluate(
+    () =>
+      document.querySelector(".ai-output")?.textContent ??
+      document.querySelector(".sql-error")?.textContent,
+  );
+  if (
+    !ragResult?.includes("Retrieved passages:") ||
+    !ragResult.includes("live generation")
+  )
+    throw new Error(`Live RAG experiment failed: ${ragResult}`);
   if (errors.length) throw new Error(`Browser errors: ${errors.join(" | ")}`);
   console.log(
     "Account smoke passed: registration, onboarding, diagnostic roadmap, all project starters, isolated code tests, workspace snapshots, Forge AI with eight response actions, note AI context, opt-in public portfolio, unpublish privacy, server-verified certificate, recovery, progress sync, and authorization.",

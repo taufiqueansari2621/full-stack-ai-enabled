@@ -89,6 +89,29 @@ export const OPENAPI_DOCUMENT = {
     { name: "Certificates" },
   ],
   paths: {
+    "/ai/embeddings": {
+      post: operation(
+        "embedLabTexts",
+        "Embed bounded explicitly shared lab texts",
+        "AI",
+        {
+          authenticated: true,
+          mutating: true,
+          requestSchema: {
+            type: "object",
+            required: ["texts"],
+            properties: {
+              texts: {
+                type: "array",
+                minItems: 1,
+                maxItems: 17,
+                items: { type: "string", minLength: 1, maxLength: 800 },
+              },
+            },
+          },
+        },
+      ),
+    },
     "/health": {
       get: operation("getHealth", "Check Worker and D1 health", "Operations"),
     },
