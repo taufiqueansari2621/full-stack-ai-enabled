@@ -17,8 +17,9 @@ export type AiLabResult = {
   evaluationScore: number | null;
   method: string;
 };
-export const needsModel = (id: string) =>
-  !["chunking", "tool-calling", "evaluation"].includes(id);
+export const needsModel = (id: string, localOnly = false) =>
+  id !== "chunking" &&
+  !(localOnly && ["tool-calling", "evaluation"].includes(id));
 
 export async function runAiExperiment(
   exercise: AiLabExercise,
@@ -27,7 +28,9 @@ export async function runAiExperiment(
   topK: number,
   chunkSize: number,
   signal: AbortSignal,
+  localOnly = false,
 ): Promise<AiLabResult> {
+  signal.throwIfAborted();
   if (!source.trim() || source.length > 4800)
     throw new Error("Source must contain 1–4,800 characters.");
   if (input.trim().length < 12 || input.length > 800)
@@ -53,16 +56,76 @@ export async function runAiExperiment(
     );
     method = "Local bounded text chunking";
     context = input;
-  } else if (exercise.id === "tool-calling") {
+  } else if (localOnly && exercise.id === "tool-calling") {
     output = JSON.stringify(executeLabTool(input, source), null, 2);
     method =
-      "Validated read-only search_source tool; explicit JSON call, not model-selected";
+      "Local explicit JSON search_source call; no model selection or cloud request.";
+  } else if (localOnly && exercise.id === "evaluation") {
+    output = JSON.stringify(lexicalEvaluation(input, source), null, 2);
+    method =
+      "Local lexical precision/recall/F1 baseline only; no claim review or factual correctness score.";
+  } else if (["tool-calling", "agent-workflow"].includes(exercise.id)) {
+    const planned = await forgeApi.labInference("plan", input, source, signal);
+    signal.throwIfAborted();
+    if (!planned.plan) throw new Error("The planner returned no decision.");
+    const plan = planned.plan;
+    const trace: unknown[] = [
+      { step: "model plan", model: planned.model, ...plan },
+    ];
+    if (plan.action === "stop") {
+      trace.push({ step: "stop", reason: plan.reason, toolsExecuted: 0 });
+    } else {
+      const call = {
+        tool: "search_source",
+        arguments: { query: plan.query, limit: Math.min(topK, plan.limit) },
+      };
+      const found = executeLabTool(JSON.stringify(call), source);
+      trace.push({ step: "validated read-only tool", call, result: found });
+      if (exercise.id === "agent-workflow" && found.length) {
+        context = found.map((item) => `[${item.id}] ${item.text}`).join("\n");
+        signal.throwIfAborted();
+        const answer = await forgeApi.labInference(
+          "answer",
+          input,
+          context,
+          signal,
+        );
+        signal.throwIfAborted();
+        if (!answer.answer) throw new Error("The workflow returned no answer.");
+        trace.push({
+          step: "answer from observed passages",
+          answer: answer.answer,
+          model: answer.model,
+        });
+      }
+      trace.push({
+        step: "stop",
+        reason: found.length
+          ? "One-tool execution budget reached."
+          : "No source evidence found; abstained without generating an answer.",
+      });
+    }
+    output = JSON.stringify(trace, null, 2);
+    method =
+      "Model-selected search/stop with a validated read-only tool and explicit one-tool budget. No file, network, or account-data actions.";
   } else if (exercise.id === "evaluation") {
     const metrics = lexicalEvaluation(input, source);
-    score = metrics.f1 * 100;
-    output = JSON.stringify(metrics, null, 2);
-    method =
-      "Lexical precision/recall/F1 against source; NOT factual correctness or model quality";
+    const review = await forgeApi.labInference(
+      "evaluate",
+      input,
+      source,
+      signal,
+    );
+    signal.throwIfAborted();
+    if (!review.evaluation)
+      throw new Error("The model returned no claim review.");
+    score = review.evaluation.supportedPercent;
+    output = JSON.stringify(
+      { lexicalBaseline: metrics, claimReview: review.evaluation },
+      null,
+      2,
+    );
+    method = `Model-assisted groundedness review: ${review.model}. Exact quote presence is checked; claim judgments remain fallible. Lexical F1 is a separate baseline.`;
   } else if (exercise.id === "prompt") {
     const answer = await forgeApi.askAi(
       {
@@ -101,21 +164,29 @@ export async function runAiExperiment(
         null,
         2,
       );
-    else if (["rag", "agent-workflow"].includes(exercise.id)) {
-      const answer = await forgeApi.askAi(
-        {
-          mode: "explain",
-          level: 5,
-          message: `${input}\nUse only the supplied source passages. Cite passage IDs and say when evidence is missing.`,
-          context: {
-            lesson: "Grounded lab experiment",
-            note: context.slice(0, 4000),
-          },
-        },
+    else if (exercise.id === "rag") {
+      signal.throwIfAborted();
+      const answer = await forgeApi.labInference(
+        "answer",
+        input,
+        context,
         signal,
       );
-      output = `${exercise.id === "agent-workflow" ? "Executed bounded workflow: embed → retrieve → generate → stop. No file mutations.\n\n" : ""}${answer.response}\n\nRetrieved passages:\n${context}`;
-      method += `; live generation: ${answer.model}. Citations are model output, not verified truth.`;
+      signal.throwIfAborted();
+      if (!answer.answer)
+        throw new Error("The model returned no grounded answer.");
+      const review = await forgeApi.labInference(
+        "evaluate",
+        answer.answer,
+        context,
+        signal,
+      );
+      signal.throwIfAborted();
+      if (!review.evaluation)
+        throw new Error("The model returned no claim review.");
+      score = review.evaluation.supportedPercent;
+      output = `${answer.answer}\n\nRetrieved passages:\n${context}\n\nClaim review:\n${JSON.stringify(review.evaluation, null, 2)}`;
+      method += `; live generation: ${answer.model}; model-assisted claim review with quote checks. Citations and judgments are not verified truth.`;
     } else output = JSON.stringify(selected, null, 2);
   }
   return {
@@ -124,7 +195,7 @@ export async function runAiExperiment(
     tokenUsage: Math.ceil((input.length + context.length + output.length) / 4),
     retrievalQuality: similarity,
     contextSize: context.length,
-    modelCostUsd: needsModel(exercise.id) ? null : 0,
+    modelCostUsd: needsModel(exercise.id, localOnly) ? null : 0,
     evaluationScore: score,
     method,
   };

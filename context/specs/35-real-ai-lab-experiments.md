@@ -17,3 +17,8 @@ Test input dependence, chunk bounds, vector validation, cosine ranking,
 tool-schema rejection, no automatic side effects, auth/error/cancel recovery,
 and model response boundaries. Public regression uses a local chunking experiment;
 authenticated verification must exercise the actual embedding and generation.
+
+Specification 38 adds schema-constrained model-selected source search/stop,
+bounded agent decisions, and claim review with exact source-quote checks. RAG
+now has an actual evaluation step. Local explicit tools and lexical F1 remain
+available as offline baselines. Model-assessed support is not factual truth.

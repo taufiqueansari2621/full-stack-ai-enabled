@@ -242,6 +242,19 @@ Update this file after every meaningful verified implementation change.
 
 ## In Progress
 
+- September 29 AI decisions: implemented authenticated plan/answer/evaluate,
+  schema-constrained read-only tool choice, evidence-empty abstention, explicit
+  stop, and groundedness review with exact quote-presence checks. Local baselines
+  remain available. Local tests pass 18 Node + 57 Vitest, lint/build/budgets,
+  full responsive browser regression, and real-model account checks. Plain JSON
+  initially failed output validation; schema constraints on the existing fast
+  model pass. An alternate model returned a provider error and was not retained.
+  Production release `c86797cc-a4ae-4dfd-b91d-9c3bf112b16b` passes public
+  PWA/security/route checks and authenticated real-model checks for embeddings,
+  RAG with claim review, tool selection, agent answers, and evaluation. Preserved
+  offline-baseline coverage brings the local gate to 18 Node + 57 Vitest tests.
+  Audit: 56 complete, 5 partial. No new services or database migrations.
+
 - September 29 editor completion: added create, file/folder rename/move,
   confirmed deletion and non-overwriting undo, plus compiler-backed JS/TS
   semantic suggestions and diagnostics. Corrected the TypeScript shortcut's

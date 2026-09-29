@@ -74,9 +74,8 @@ export const aiLabExercises: AiLabExercise[] = [
     title: "Tool Calling",
     challenge:
       "Choose a typed tool and validate its arguments before execution.",
-    inputLabel: "Explicit tool-call JSON",
-    defaultInput:
-      '{"tool":"search_source","arguments":{"query":"reviews","limit":3}}',
+    inputLabel: "Goal for model-selected source search",
+    defaultInput: "Find what the source says about spaced reviews and recall.",
     steps: [
       "Request",
       "Tool choice",
@@ -98,7 +97,7 @@ export const aiLabExercises: AiLabExercise[] = [
     id: "evaluation",
     title: "Evaluation Lab",
     challenge:
-      "Compare an answer with a reference using lexical F1; explain why word overlap cannot prove factual correctness.",
+      "Compare lexical F1 with a model-assisted claim review. Inspect source quotes and challenge unsupported judgments; neither score proves factual correctness.",
     inputLabel: "Answer to evaluate",
     defaultInput:
       "Forge uses lessons, evidence-based practice, projects, and spaced reviews.",

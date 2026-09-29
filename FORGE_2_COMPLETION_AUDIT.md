@@ -7,11 +7,11 @@ Git history.
 ## Executive Status
 
 - **Production URL:** <https://forge-ai-engineering.taufiqueansari895.workers.dev>
-- **Verified Worker version:** `ee0de99c-dc51-477f-99b9-939395dbea2b`
+- **Verified Worker version:** `c86797cc-a4ae-4dfd-b91d-9c3bf112b16b`
 - **Current branch:** `main`. The latest TypeScript release is committed locally;
   pushing is blocked by unavailable macOS Keychain credentials and no GitHub CLI
   login. The deployed Worker is unaffected; GitHub synchronization remains pending.
-- **Verified:** 64 focused runner/domain/security/migration/API-contract/repository/component/state tests, lint, strict
+- **Verified:** 75 focused runner/domain/security/migration/API-contract/repository/component/state tests, lint, strict
   TypeScript/Vite production build, complete local browser regression, 90
   primary responsive checks, six focused lesson viewport checks, live
   route/PWA/security audit, and authenticated production lifecycle.
@@ -54,7 +54,7 @@ capability is not implemented.
 |  26 | DSA visualizer                    | **Complete** | A typed 13-trace catalog covers arrays, linked lists, stacks, queues, hash maps, trees, graphs, sorting, binary search, recursion, BFS, DFS, and dynamic programming. Previous, Next, Play, Pause, and Reset expose data-structure state, variables, call stack, current operation, time, and space with responsive browser and test coverage.                                             |
 |  27 | System design lab                 | **Complete** | Seven required scenarios—URL Shortener, Chat, Notifications, E-commerce, Video, Search, and AI RAG—load editable connected starter flows. The complete Client/CDN/LB/API/Service/Database/Cache/Queue/Object Storage/Search/Vector/AI palette supports append/remove/clear, while evidence prompts cover scaling, availability, consistency, security, failures, cost, and trade-offs.        |
 |  28 | SQL lab | **Complete** | All ten topics execute against real SQLite WASM in a disposable browser worker. Edited queries drive results; errors, index plans, commit/rollback, timing, output limits, cancellation, timeout recovery, and responsive layouts are production-verified. Every run starts with an isolated sample database; no learner SQL reaches D1. |
-|  29 | AI/RAG lab | **Partial** | Nine input-dependent experiments now use real local chunking, explicit validated tools, lexical evaluation, learned embeddings, cosine retrieval, and authenticated generation. Live embedding/RAG calls are production-tested. Model-selected tool calling, richer workflow decisions, and groundedness evaluation beyond lexical heuristics remain; similarity and charges are labelled honestly. |
+|  29 | AI/RAG lab | **Complete** | Nine input-dependent labs use real chunking, learned embeddings, cosine retrieval, generation, model-selected read-only search/stop, bounded agent decisions, and claim review with exact quote checks. RAG includes an actual evaluation step; explicit tools and lexical F1 remain available offline. Production verifies all model paths. Model-assessed sampled-claim support is labelled fallible, not factual correctness; no arbitrary tools or account-data retrieval are permitted. |
 |  30 | Progress analytics                | **Complete** | Eight evidence-backed metrics, weekly activity, learning time, lesson/project/practice/interview/review data, trends, and explicit empty states are implemented.                                                                                                                                                                                                                       |
 |  31 | Skill matrix                      | **Complete** | Ten skill states derive from lessons, practice, projects, reviews, interviews, and lab evidence; each state explains its evidence and next action.                                                                                                                                                                                                                                     |
 |  32 | Search everything                 | **Complete** | Global search covers lessons, topics, projects, interviews, resources, notes, commands, and code snippets with direct navigation.                                                                                                                                                                                                                                                      |
@@ -78,7 +78,7 @@ capability is not implemented.
 |  50 | Frontend refactor                 | **Complete** | New work is no longer accumulated in `App.tsx`: onboarding, lessons, resources, assessments, interviews, workspace, labs, portfolio, search, notifications, error recovery, hooks, services, and pure domains live in focused modules. The brief asks to move toward feature boundaries incrementally, not perform a risky wholesale rewrite; remaining legacy extraction is technical debt. |
 |  51 | Backend structure                 | **Complete** | Worker entry, routes, auth, security, AI provider, validation/http boundary, rate limiting, and typed environment are separated instead of living in one handler.                                                                                                                                                                                                                      |
 |  52 | Migration strategy                | **Complete** | Worker API, D1 migrations, auth, cloud sync, workspace/history, safe execution boundary, AI gateway, dynamic review/mastery, projects, interviews, analytics/portfolio, offline hardening, security/performance/accessibility audits, and production deployment shipped incrementally without breaking the existing product.                                                           |
-|  53 | Testing                           | **Complete** | The CI gate runs 18 focused Node unit/API/security/migration/runner tests plus 46 Vitest compiler/editor/lab/repository/component/state tests, ESLint, strict client/Worker builds, and bundle budgets. Browser smoke, authenticated account/authorization, live deployment, responsive, persistence, reset, offline, runner, AI, certificate, and privacy suites cover every named critical flow. |
+|  53 | Testing                           | **Complete** | The CI gate runs 18 focused Node unit/API/security/migration/runner tests plus 57 Vitest compiler/editor/lab/repository/component/state tests, ESLint, strict client/Worker builds, and bundle budgets. Browser smoke, authenticated account/authorization, live deployment, responsive, persistence, reset, offline, runner, AI, certificate, and privacy suites cover every named critical flow. |
 |  54 | Observability                     | **Complete** | Correlated structured API logs, durations, slow-route/auth/AI/error events, D1 health latency, Server-Timing, persisted logs/traces, and query-string redaction are deployed without learner content.                                                                                                                                                                                  |
 |  55 | Loading/empty/error states        | **Complete** | A typed, test-enforced matrix covers account, onboarding, progress sync, workspace/runner/snapshots, portfolios, certificates, search/resources/notifications, lesson media, and local learning. Loading, empty, error, retry, and appropriate offline decisions are explicit; public profiles now distinguish loading, unavailable, offline, and server failure with retry.            |
 |  56 | Demo data                         | **Complete** | Rich typed curriculum, project, challenge, interview, and resource seed data makes development complete-looking and remains clearly separated from local learner records and authenticated production D1 data. The brief does not require an admin-managed demo-account lifecycle.                                                                                                     |
@@ -91,8 +91,8 @@ capability is not implemented.
 
 ## Completion Totals
 
-- **Complete:** 55 numbered areas
-- **Partial:** 6 numbered areas
+- **Complete:** 56 numbered areas
+- **Partial:** 5 numbered areas
 - **Pending:** 0 numbered areas
 - **Overall final objective:** partial; it must not be represented as 100% complete.
 
@@ -117,17 +117,15 @@ expensive platform capabilities.
    never run it in the application Worker.
 4. Add React/Angular and package-based preview builds on the isolated sandbox
    boundary. Standalone TypeScript compilation, diagnostics, and execution are live.
-5. Extend the deployed real AI/RAG experiments with model-selected tools, richer
-   workflow decisions, and evaluation beyond lexical heuristics. Real SQL is deployed.
-6. Add authored hidden challenge tests, per-test diagnostics, and a generalized
+5. Add authored hidden challenge tests, per-test diagnostics, and a generalized
    judge across supported languages without exposing private judge cases.
 
 ### Product-completeness gaps
 
-7. Extend the deployed notes, attempts, reviews, and mastery projections with
+6. Extend the deployed notes, attempts, reviews, and mastery projections with
    independent project/milestone and interview-session repositories where needed;
    retain compatible snapshot sync and forward-only production migrations.
-8. Continue low-risk legacy extraction from `src/App.tsx` and self-host fonts
+7. Continue low-risk legacy extraction from `src/App.tsx` and self-host fonts
    if measurements show the external font request harms real users; these are
    maintainability improvements rather than unimplemented product requirements.
 

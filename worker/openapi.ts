@@ -89,6 +89,26 @@ export const OPENAPI_DOCUMENT = {
     { name: "Certificates" },
   ],
   paths: {
+    "/ai/lab": {
+      post: operation(
+        "runBoundedLabInference",
+        "Plan read-only source search, answer, or review groundedness",
+        "AI",
+        {
+          authenticated: true,
+          mutating: true,
+          requestSchema: {
+            type: "object",
+            required: ["action", "input", "source"],
+            properties: {
+              action: { type: "string", enum: ["plan", "answer", "evaluate"] },
+              input: { type: "string", minLength: 1, maxLength: 4000 },
+              source: { type: "string", minLength: 1, maxLength: 4800 },
+            },
+          },
+        },
+      ),
+    },
     "/ai/embeddings": {
       post: operation(
         "embedLabTexts",

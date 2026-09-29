@@ -1,3 +1,5 @@
+import type { LabAction, LabModelResult } from "../domain/aiLabProtocol";
+
 export type AccountUser = {
   id: string;
   email: string;
@@ -83,6 +85,20 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const forgeApi = {
+  labInference: (
+    action: LabAction,
+    input: string,
+    source: string,
+    signal?: AbortSignal,
+  ) =>
+    request<LabModelResult & { model: string; latencyMs: number }>(
+      "/api/ai/lab",
+      {
+        method: "POST",
+        body: JSON.stringify({ action, input, source }),
+        signal,
+      },
+    ),
   embedTexts: (texts: string[], signal?: AbortSignal) =>
     request<{ vectors: number[][]; model: string; latencyMs: number }>(
       "/api/ai/embeddings",

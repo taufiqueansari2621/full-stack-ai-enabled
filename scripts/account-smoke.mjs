@@ -34,6 +34,24 @@ try {
   };
   page.on("pageerror", (error) => errors.push(error.message));
   await page.goto(baseUrl, { waitUntil: "networkidle0" });
+  const anonymousLabStatus = await page.evaluate(
+    async () =>
+      (
+        await fetch("/api/ai/lab", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            action: "plan",
+            input: "Find how reviews help",
+            source: "Reviews strengthen recall.",
+          }),
+        })
+      ).status,
+  );
+  if (anonymousLabStatus !== 401)
+    throw new Error(
+      `Unauthenticated AI lab should return 401, got ${anonymousLabStatus}`,
+    );
   await clickText("Sign in to Forge");
   await clickText("New to Forge? Create an account");
   await page.type('input[autocomplete="name"]', "Account Smoke");
@@ -502,9 +520,36 @@ try {
   );
   if (
     !ragResult?.includes("Retrieved passages:") ||
-    !ragResult.includes("live generation")
+    !ragResult.includes("live generation") ||
+    !ragResult.includes("Claim review:")
   )
     throw new Error(`Live RAG experiment failed: ${ragResult}`);
+  for (const mode of ["tool-calling", "agent-workflow", "evaluation"]) {
+    await page.select(".lab-grid select", mode);
+    await clickText("Run experiment");
+    await page.waitForFunction(
+      () =>
+        document.querySelector(".ai-output") ||
+        document.querySelector(".sql-error"),
+      { timeout: 70000 },
+    );
+    const output = await page.evaluate(
+      () =>
+        document.querySelector(".ai-output")?.textContent ??
+        document.querySelector(".sql-error")?.textContent,
+    );
+    const expected =
+      mode === "evaluation" ? "quoteVerified" : "validated read-only tool";
+    if (!output?.includes(expected))
+      throw new Error(`Live ${mode} failed: ${output}`);
+    if (
+      mode === "agent-workflow" &&
+      !output.includes("answer from observed passages")
+    )
+      throw new Error(
+        `Workflow did not generate from observed source: ${output}`,
+      );
+  }
   if (errors.length) throw new Error(`Browser errors: ${errors.join(" | ")}`);
   console.log(
     "Account smoke passed: registration, onboarding, diagnostic roadmap, all project starters, isolated code tests, workspace snapshots, Forge AI with eight response actions, note AI context, opt-in public portfolio, unpublish privacy, server-verified certificate, recovery, progress sync, and authorization.",

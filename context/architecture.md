@@ -122,6 +122,13 @@ Components must not read or write browser storage directly. Storage access belon
 
 ## AI Model Boundary
 
+- Bounded lab inference has its own authenticated same-origin endpoint for
+  plan/answer/evaluate, sharing the tutor's quota and existing fixed model.
+  Model decisions are schema-validated before the client can invoke one
+  read-only source search; no model can name executable code or a network tool.
+  Claim evaluation checks exact quote presence separately from model judgments.
+  Only usage metadata is persisted by this endpoint; no source or claim text.
+
 - AI lab learned embeddings use a bounded authenticated endpoint with the same
   hourly AI quota and metadata-only usage records as tutoring. Source passages
   are explicitly entered and consented, not fetched from learner records. RAG

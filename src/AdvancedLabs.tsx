@@ -75,6 +75,7 @@ export default function AdvancedLabs({
   const [aiInput, setAiInput] = useState(aiLabExercises[0].defaultInput);
   const [aiSource, setAiSource] = useState(labSource);
   const [aiConsent, setAiConsent] = useState(false);
+  const [aiLocalOnly, setAiLocalOnly] = useState(false);
   const [aiRunning, setAiRunning] = useState(false);
   const [topK, setTopK] = useState(2);
   const [chunkSize, setChunkSize] = useState(300);
@@ -103,7 +104,7 @@ export default function AdvancedLabs({
     setAiResult(null);
     const timer = setTimeout(() => request.abort(), 45000);
     try {
-      if (needsModel(activeAiExercise.id) && !aiConsent)
+      if (needsModel(activeAiExercise.id, aiLocalOnly) && !aiConsent)
         throw new Error(
           "Confirm sharing the entered text before calling Workers AI. Cloud login is required.",
         );
@@ -114,6 +115,7 @@ export default function AdvancedLabs({
         topK,
         chunkSize,
         request.signal,
+        aiLocalOnly,
       );
       if (aiRequest.current === request) setAiResult(result);
     } catch (error) {
@@ -471,6 +473,7 @@ export default function AdvancedLabs({
                       (item) => item.id === event.target.value,
                     ) ?? aiLabExercises[0];
                   setAiExerciseId(next.id);
+                  setAiLocalOnly(false);
                   setAiInput(next.defaultInput);
                   setAiResult(null);
                 }}
@@ -483,13 +486,17 @@ export default function AdvancedLabs({
               </select>
             </label>
             <p>
-              Chunking, explicit tool calls, and lexical evaluation run locally.
-              Other modes call Workers AI with your entered text and require a
-              cloud account. RAG uses up to two requests from the shared hourly
-              AI quota.
+              Chunking runs locally. Other modes call Workers AI with your
+              entered text and require a cloud account. Tool Calling uses one
+              model plan; Agent Workflow uses up to two requests and one
+              read-only search. RAG uses three requests, including claim review,
+              from the shared hourly AI quota. Cancel stops further workflow
+              steps; already-started provider processing may continue.
             </p>
             <label>
-              {activeAiExercise.inputLabel}
+              {aiLocalOnly && aiExerciseId === "tool-calling"
+                ? "Explicit tool-call JSON"
+                : activeAiExercise.inputLabel}
               <textarea
                 value={aiInput}
                 maxLength={800}
@@ -541,7 +548,27 @@ export default function AdvancedLabs({
                 }}
               />
             </label>
-            {needsModel(aiExerciseId) && (
+            {["tool-calling", "evaluation"].includes(aiExerciseId) && (
+              <label>
+                <input
+                  type="checkbox"
+                  checked={aiLocalOnly}
+                  disabled={aiRunning}
+                  onChange={(event) => {
+                    setAiLocalOnly(event.target.checked);
+                    setAiResult(null);
+                    if (aiExerciseId === "tool-calling")
+                      setAiInput(
+                        event.target.checked
+                          ? '{"tool":"search_source","arguments":{"query":"reviews","limit":3}}'
+                          : activeAiExercise.defaultInput,
+                      );
+                  }}
+                />
+                Use offline baseline only (explicit JSON tool / lexical F1)
+              </label>
+            )}
+            {needsModel(aiExerciseId, aiLocalOnly) && (
               <label>
                 <input
                   type="checkbox"
@@ -589,7 +616,8 @@ export default function AdvancedLabs({
               <>
                 <p>
                   Measured latency: {aiResult.latencyMs.toFixed(2)} ms ·
-                  estimated token count: {aiResult.tokenUsage}
+                  estimated tokens in entered text and shown output (not billed
+                  usage): {aiResult.tokenUsage}
                 </p>
                 <p>
                   Retrieval quality is not measured. Cosine similarity:{" "}
@@ -601,7 +629,8 @@ export default function AdvancedLabs({
                   {aiResult.modelCostUsd === null
                     ? "not reported by provider"
                     : "$0 (local)"}{" "}
-                  · lexical evaluation score (not correctness):{" "}
+                  · evaluation score (model-assessed support over sampled
+                  claims, not correctness):{" "}
                   {aiResult.evaluationScore === null
                     ? "not applicable"
                     : `${aiResult.evaluationScore.toFixed(1)}%`}
@@ -611,7 +640,7 @@ export default function AdvancedLabs({
               <p>
                 Inspect measured latency, estimated token usage, retrieval
                 quality limitations, context size, model cost availability, and
-                lexical evaluation score. No fabricated quality or billing
+                claim review limitations. No fabricated quality or billing
                 figures.
               </p>
             )}
