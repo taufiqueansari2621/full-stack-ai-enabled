@@ -76,7 +76,7 @@ capability is not implemented.
 |  50 | Frontend refactor                 | **Complete** | New work is no longer accumulated in `App.tsx`: onboarding, lessons, resources, assessments, interviews, workspace, labs, portfolio, search, notifications, error recovery, hooks, services, and pure domains live in focused modules. The brief asks to move toward feature boundaries incrementally, not perform a risky wholesale rewrite; remaining legacy extraction is technical debt. |
 |  51 | Backend structure                 | **Complete** | Worker entry, routes, auth, security, AI provider, validation/http boundary, rate limiting, and typed environment are separated instead of living in one handler.                                                                                                                                                                                                                      |
 |  52 | Migration strategy                | **Complete** | Worker API, D1 migrations, auth, cloud sync, workspace/history, safe execution boundary, AI gateway, dynamic review/mastery, projects, interviews, analytics/portfolio, offline hardening, security/performance/accessibility audits, and production deployment shipped incrementally without breaking the existing product.                                                           |
-|  53 | Testing                           | **Complete** | The CI gate runs 18 focused Node unit/API/security/migration/runner tests plus 28 Vitest repository/component/state tests, ESLint, strict client/Worker builds, and bundle budgets. Browser smoke, authenticated account/authorization, live deployment, responsive, persistence, reset, offline, runner, AI, certificate, and privacy suites cover every named critical flow. |
+|  53 | Testing                           | **Complete** | The CI gate runs 18 focused Node unit/API/security/migration/runner tests plus 38 Vitest compiler/lab/repository/component/state tests, ESLint, strict client/Worker builds, and bundle budgets. Browser smoke, authenticated account/authorization, live deployment, responsive, persistence, reset, offline, runner, AI, certificate, and privacy suites cover every named critical flow. |
 |  54 | Observability                     | **Complete** | Correlated structured API logs, durations, slow-route/auth/AI/error events, D1 health latency, Server-Timing, persisted logs/traces, and query-string redaction are deployed without learner content.                                                                                                                                                                                  |
 |  55 | Loading/empty/error states        | **Complete** | A typed, test-enforced matrix covers account, onboarding, progress sync, workspace/runner/snapshots, portfolios, certificates, search/resources/notifications, lesson media, and local learning. Loading, empty, error, retry, and appropriate offline decisions are explicit; public profiles now distinguish loading, unavailable, offline, and server failure with retry.            |
 |  56 | Demo data                         | **Complete** | Rich typed curriculum, project, challenge, interview, and resource seed data makes development complete-looking and remains clearly separated from local learner records and authenticated production D1 data. The brief does not require an admin-managed demo-account lifecycle.                                                                                                     |
@@ -117,12 +117,17 @@ expensive platform capabilities.
    boundary. Standalone TypeScript compilation, diagnostics, and execution are live.
 5. Extend the deployed real AI/RAG experiments with model-selected tools, richer
    workflow decisions, and evaluation beyond lexical heuristics. Real SQL is deployed.
+6. Extend editor file/folder management and semantic autocomplete. Standalone
+   TypeScript run-time diagnostics are implemented; snippets are not autocomplete.
+7. Add authored hidden challenge tests, per-test diagnostics, and a generalized
+   judge across supported languages without exposing private judge cases.
+
 ### Product-completeness gaps
 
-6. Extend the deployed notes, attempts, reviews, and mastery projections with
+8. Extend the deployed notes, attempts, reviews, and mastery projections with
    independent project/milestone and interview-session repositories where needed;
    retain compatible snapshot sync and forward-only production migrations.
-7. Continue low-risk legacy extraction from `src/App.tsx` and self-host fonts
+9. Continue low-risk legacy extraction from `src/App.tsx` and self-host fonts
    if measurements show the external font request harms real users; these are
    maintainability improvements rather than unimplemented product requirements.
 
