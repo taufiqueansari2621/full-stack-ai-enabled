@@ -8,7 +8,9 @@ Git history.
 
 - **Production URL:** <https://forge-ai-engineering.taufiqueansari895.workers.dev>
 - **Verified Worker version:** `7ef90281-2270-474d-82fb-ce2983367e32`
-- **Current branch:** `main`, synchronized with the approved GitHub `origin`.
+- **Current branch:** `main`. The latest TypeScript release is committed locally;
+  pushing is blocked by unavailable macOS Keychain credentials and no GitHub CLI
+  login. The deployed Worker is unaffected; GitHub synchronization remains pending.
 - **Verified:** 56 focused runner/domain/security/migration/API-contract/repository/component/state tests, lint, strict
   TypeScript/Vite production build, complete local browser regression, 90
   primary responsive checks, six focused lesson viewport checks, live
