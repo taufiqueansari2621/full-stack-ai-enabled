@@ -1,4 +1,5 @@
 import { compileTypeScript } from "../services/typescriptCompiler";
+import { analyzeEditorSource } from "../services/editorIntelligence";
 
 const libraryModules = import.meta.glob<string>(
   [
@@ -13,12 +14,29 @@ const libraries = Object.fromEntries(
     text,
   ]),
 );
-self.onmessage = (event: MessageEvent<{ source: string }>) => {
+self.onmessage = (
+  event: MessageEvent<{
+    source: string;
+    mode?: "analyze";
+    path?: string;
+    position?: number;
+  }>,
+) => {
   try {
-    self.postMessage(compileTypeScript(event.data.source, libraries));
+    self.postMessage(
+      event.data.mode === "analyze"
+        ? analyzeEditorSource(
+            event.data.source,
+            event.data.path ?? "",
+            event.data.position ?? -1,
+            libraries,
+          )
+        : compileTypeScript(event.data.source, libraries),
+    );
   } catch (error) {
     self.postMessage({
       javascript: "",
+      suggestions: [],
       diagnostics: [
         error instanceof Error
           ? error.message

@@ -53,6 +53,91 @@ try {
   await click("Create profile & start");
   await click("Workspace");
   await page.waitForSelector(editor);
+  const fill = async (selector, value) => {
+    await page.$eval(
+      selector,
+      (element, text) => {
+        Object.getOwnPropertyDescriptor(
+          element.tagName === "TEXTAREA"
+            ? HTMLTextAreaElement.prototype
+            : HTMLInputElement.prototype,
+          "value",
+        ).set.call(element, text);
+        element.dispatchEvent(new Event("input", { bubbles: true }));
+      },
+      value,
+    );
+  };
+  await click("New file");
+  await fill('input[aria-label="New file path"]', "practice/nested/answer.ts");
+  await click("Create file");
+  await page.waitForSelector(
+    'textarea[aria-label="Editing practice/nested/answer.ts"]',
+  );
+  await fill(
+    'textarea[aria-label="Editing practice/nested/answer.ts"]',
+    'const learner = { score: 42, name: "Ada" }; learner.sc',
+  );
+  await page.$eval(
+    'textarea[aria-label="Editing practice/nested/answer.ts"]',
+    (element) => {
+      element.focus();
+      element.setSelectionRange(element.value.length, element.value.length);
+    },
+  );
+  await click("Suggest at cursor / check code");
+  await page.waitForSelector('select[aria-label="Semantic suggestions"]');
+  const scoreOption = await page.$eval(
+    'select[aria-label="Semantic suggestions"]',
+    (element) =>
+      [...element.options].find((option) => option.textContent === "score")
+        ?.value,
+  );
+  assert.ok(scoreOption !== undefined);
+  await page.select('select[aria-label="Semantic suggestions"]', scoreOption);
+  assert.ok(
+    (
+      await page.$eval(
+        'textarea[aria-label="Editing practice/nested/answer.ts"]',
+        (element) => element.value,
+      )
+    ).endsWith("learner.score"),
+  );
+  await click("Rename / move");
+  await page.select('select[aria-label="File or folder to move"]', "practice");
+  await fill('input[aria-label="Destination path"]', "examples");
+  await click("Apply move");
+  await page.waitForSelector(
+    'textarea[aria-label="Editing examples/nested/answer.ts"]',
+  );
+  await click("Delete file");
+  await click("Cancel file operation");
+  assert.ok(
+    await page.$('textarea[aria-label="Editing examples/nested/answer.ts"]'),
+  );
+  await click("Delete file");
+  await click("Confirm delete");
+  assert.equal(
+    await page.$('textarea[aria-label="Editing examples/nested/answer.ts"]'),
+    null,
+  );
+  await click("Undo delete");
+  await page.waitForSelector(
+    'textarea[aria-label="Editing examples/nested/answer.ts"]',
+  );
+  await page.reload({ waitUntil: "networkidle0" });
+  await page.waitForSelector(
+    'textarea[aria-label="Editing examples/nested/answer.ts"]',
+  );
+  assert.ok(
+    (
+      await page.$eval(
+        'textarea[aria-label="Editing examples/nested/answer.ts"]',
+        (element) => element.value,
+      )
+    ).endsWith("learner.score"),
+  );
+  await click("src/index.js");
   await edit(
     "function sum(numbers){return numbers.reduce((a,b)=>a+b,0)}\nconsole.log(sum([2,3,4]));",
   );

@@ -6,8 +6,9 @@
   in a disposable module worker, loaded only after a Format action. Invalid or
   unsupported source stays unchanged; edits made during formatting take priority.
 - Syntax highlighting uses escaped React text and a synchronized editable
-  overlay. Language snippets insert at the current selection. These are snippets,
-  not semantic autocomplete or a language server.
+  overlay. Language snippets insert at the current selection. A separate bounded
+  TypeScript language-service action now provides semantic JS/TS completion and
+  diagnostics; see specification 37 for scope and file-management guarantees.
 - Every existing quick check has metadata. Failed later attempts revoke passing
   state. An explanation must be authored and saved to advance beyond passing;
   repetition alone cannot award mastery.

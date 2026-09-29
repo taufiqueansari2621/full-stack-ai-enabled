@@ -235,8 +235,53 @@
   color: var(--text);
   background: var(--panel-2);
 }
+.workspace-file-actions {
+  min-width: 0;
+  padding: 6px;
+  border-bottom: 1px solid var(--line);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.workspace-file-actions form,
+.workspace-file-actions label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+.workspace-file-actions input,
+.workspace-file-actions select {
+  width: 100%;
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--text);
+  background: var(--panel);
+}
+.workspace-file-actions button {
+  min-height: 44px;
+  white-space: normal;
+}
 .editor-area {
   min-width: 0;
+}
+.editor-intelligence {
+  max-height: 180px;
+  overflow: auto;
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.editor-intelligence button,
+.editor-intelligence select {
+  min-height: 44px;
+  max-width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--text);
+  background: var(--panel);
 }
 .editor-tools {
   display: flex;
@@ -645,6 +690,9 @@
   }
   .file-explorer > b {
     display: none;
+  }
+  .workspace-file-actions {
+    flex: 0 0 220px;
   }
   .file-explorer button {
     flex: 0 0 auto;

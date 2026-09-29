@@ -138,6 +138,12 @@ Components must not read or write browser storage directly. Storage access belon
 
 ## Code Execution Boundary
 
+- Editor suggestions and diagnostics use the TypeScript language service in the
+  same disposable, on-demand compiler worker. Analysis is current-file/ES2022
+  only, never executes code, and has bounded input, output, and time. Pure file
+  operations enforce cloud-compatible limits, reject collisions, map open tabs
+  on moves, and preserve subsequent edits during deletion undo.
+
 - Standalone TypeScript is type-checked and emitted inside an on-demand compiler
   worker using bundled ES2022 libraries, bounded source, and a ten-second
   deadline. Only error-free scripts enter the existing JavaScript runner.

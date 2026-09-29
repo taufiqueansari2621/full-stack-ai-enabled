@@ -242,6 +242,16 @@ Update this file after every meaningful verified implementation change.
 
 ## In Progress
 
+- September 29 editor completion: added create, file/folder rename/move,
+  confirmed deletion and non-overwriting undo, plus compiler-backed JS/TS
+  semantic suggestions and diagnostics. Corrected the TypeScript shortcut's
+  20-file allowance to match the API's 12-file limit. Local verification passes
+  18 Node + 46 Vitest tests, lint, strict builds, bundle budgets, the expanded
+  real-browser editor flow, and all 90 responsive/six lesson regression checks.
+  Deployed as Worker `ee0de99c-dc51-477f-99b9-939395dbea2b`; the expanded live
+  editor suite and production PWA/security/route checks pass. Audit: 55 complete,
+  6 partial areas. GitHub push remains blocked by missing usable authentication.
+
 - September 29: standalone TypeScript execution and stale-result protection are
   deployed as Worker `7ef90281-2270-474d-82fb-ce2983367e32`. The live editor suite
   verifies compilation, rejected type errors, recovery, and edits during execution;

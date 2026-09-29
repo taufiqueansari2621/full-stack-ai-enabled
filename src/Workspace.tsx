@@ -26,6 +26,9 @@ import { useDialogFocus } from "./hooks/useDialogFocus";
 import { editorCompletions, tokenizeSource } from "./domain/editorTools";
 import { canFormat } from "./services/formatSource";
 import { formatInWorker } from "./services/formatInWorker";
+import { WorkspaceFileActions } from "./components/WorkspaceFileActions";
+import { EditorIntelligence } from "./components/EditorIntelligence";
+import { MAX_WORKSPACE_FILES } from "./domain/workspaceFiles";
 import "./workspace.css";
 
 type Files = Record<string, string>;
@@ -598,6 +601,26 @@ export function Workspace({
           <b>
             <Folder /> EXPLORER
           </b>
+          <WorkspaceFileActions
+            files={files}
+            activePath={activePath}
+            onChange={(next, path, renamed = {}) => {
+              setFiles(next);
+              setActivePath(path);
+              setOpenFiles((current) => [
+                ...new Set([
+                  ...current
+                    .map((item) =>
+                      Object.hasOwn(renamed, item) ? renamed[item] : item,
+                    )
+                    .filter((item) => Object.hasOwn(next, item)),
+                  path,
+                ]),
+              ]);
+              setResult(null);
+              setEditorScroll({ left: 0, top: 0 });
+            }}
+          />
           {Object.keys(files).map((path) => (
             <button
               key={path}
@@ -630,10 +653,10 @@ export function Workspace({
                 const path = "src/exercise.ts";
                 if (
                   !Object.hasOwn(files, path) &&
-                  Object.keys(files).length >= 20
+                  Object.keys(files).length >= MAX_WORKSPACE_FILES
                 ) {
                   setWorkspaceMessage(
-                    "This workspace already has 20 files. Export your work or use a fresh workspace.",
+                    `This workspace already has ${MAX_WORKSPACE_FILES} files. Export your work or remove a file first.`,
                   );
                   return;
                 }
@@ -698,6 +721,21 @@ export function Workspace({
               </select>
             </label>
           </div>
+          <EditorIntelligence
+            source={activeContent}
+            path={activePath}
+            cursor={() =>
+              editorRef.current?.selectionStart ?? activeContent.length
+            }
+            onApply={(source, position) => {
+              setFiles((current) => ({ ...current, [activePath]: source }));
+              setResult(null);
+              window.requestAnimationFrame(() => {
+                editorRef.current?.focus();
+                editorRef.current?.setSelectionRange(position, position);
+              });
+            }}
+          />
           <div className="code-editor">
             <pre aria-hidden="true">
               <span

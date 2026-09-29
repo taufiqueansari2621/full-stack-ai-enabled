@@ -1,4 +1,41 @@
 import type { TypeScriptCompilation } from "./typescriptCompiler";
+import type { EditorAnalysis } from "./editorIntelligence";
+
+export function analyzeInWorker(
+  source: string,
+  path: string,
+  position: number,
+): Promise<EditorAnalysis> {
+  return new Promise((resolve, reject) => {
+    const worker = new Worker(
+      new URL("../workers/typescript.worker.ts", import.meta.url),
+      { type: "module" },
+    );
+    const timer = setTimeout(() => {
+      worker.terminate();
+      reject(
+        new Error(
+          "Editor analysis exceeded ten seconds. Retry or simplify the file.",
+        ),
+      );
+    }, 10_000);
+    const cleanup = () => {
+      clearTimeout(timer);
+      worker.terminate();
+    };
+    worker.onmessage = (event: MessageEvent<EditorAnalysis>) => {
+      cleanup();
+      resolve(event.data);
+    };
+    worker.onerror = () => {
+      cleanup();
+      reject(
+        new Error("Editor analysis could not load. Retry when connected."),
+      );
+    };
+    worker.postMessage({ mode: "analyze", source, path, position });
+  });
+}
 
 export function compileInWorker(
   source: string,

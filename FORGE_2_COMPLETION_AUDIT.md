@@ -7,11 +7,11 @@ Git history.
 ## Executive Status
 
 - **Production URL:** <https://forge-ai-engineering.taufiqueansari895.workers.dev>
-- **Verified Worker version:** `7ef90281-2270-474d-82fb-ce2983367e32`
+- **Verified Worker version:** `ee0de99c-dc51-477f-99b9-939395dbea2b`
 - **Current branch:** `main`. The latest TypeScript release is committed locally;
   pushing is blocked by unavailable macOS Keychain credentials and no GitHub CLI
   login. The deployed Worker is unaffected; GitHub synchronization remains pending.
-- **Verified:** 56 focused runner/domain/security/migration/API-contract/repository/component/state tests, lint, strict
+- **Verified:** 64 focused runner/domain/security/migration/API-contract/repository/component/state tests, lint, strict
   TypeScript/Vite production build, complete local browser regression, 90
   primary responsive checks, six focused lesson viewport checks, live
   route/PWA/security audit, and authenticated production lifecycle.
@@ -34,7 +34,7 @@ capability is not implemented.
 |   6 | Home dashboard                    | **Complete** | Current mission, position, reviews, streak, evidence mastery, project/interview stats, skill signals, and evidence-based gamification are live.                                                                                                                                                                                                                                        |
 |   7 | Interactive lessons               | **Complete** | Full Learning Mode provides continuous chapters, mental models, examples, prediction/reveal labs, mistakes, exercises, assessments, mastery studios, resources, notes, and next actions across 684 topics.                                                                                                                                                                             |
 |   8 | Video learning                    | **Complete** | Lessons can contain legitimate privacy-enhanced YouTube embeds plus official documentation and curated tutorials. Every resource is normalized with title, provider, URL, topic, difficulty, duration, type, review date, and quality status; direct-link fallbacks remain available and no third-party media is copied.                                                              |
-|   9 | Real coding workspace | **Partial** | The editor now has parser-based JavaScript/TypeScript/JSON/HTML/CSS formatting in a disposable worker, syntax highlighting, synchronized line numbers, cursor snippets, saved-state feedback, and post-pass explanations. Snippets are not semantic autocomplete; deeper language diagnostics and richer file/folder management remain. |
+|   9 | Real coding workspace | **Complete** | Parser formatting, syntax highlighting, line numbers, snippets, console/tests, saving/export/history, hints and explanations are joined by compiler-backed JS/TS semantic suggestions and diagnostics, nested file creation, file/folder moves, and confirmed deletion with non-overwriting undo. Browser tests verify completion, persistence, path changes, error recovery and four viewport widths on production. Semantic assistance is bounded to the current file and ES2022 types, not installed packages. |
 |  10 | Multi-language practice           | **Complete** | The architecture progressively supports HTML/CSS/JavaScript preview plus typed runner selection for JavaScript, TypeScript, Node.js, and Python. All eight specified project starters exist. JavaScript and standalone TypeScript execute today; unsupported languages route to the honest remote-sandbox boundary instead of unsafe or fake execution.                                                    |
 |  11 | JavaScript/TypeScript playground | **Complete** | Standalone TypeScript is semantically type-checked and compiled in a disposable browser worker before running through the constrained JavaScript runner. Syntax/type diagnostics, error recovery, input bounds, compiler/execution deadlines, and real exercise tests are verified. Package modules and JSX belong to the still-partial framework preview capability. |
 |  12 | Frontend playground               | **Partial**  | Isolated HTML/CSS/JS live preview and multi-file templates work. React and Angular compilation/preview pipelines remain.                                                                                                                                                                                                                                                               |
@@ -78,7 +78,7 @@ capability is not implemented.
 |  50 | Frontend refactor                 | **Complete** | New work is no longer accumulated in `App.tsx`: onboarding, lessons, resources, assessments, interviews, workspace, labs, portfolio, search, notifications, error recovery, hooks, services, and pure domains live in focused modules. The brief asks to move toward feature boundaries incrementally, not perform a risky wholesale rewrite; remaining legacy extraction is technical debt. |
 |  51 | Backend structure                 | **Complete** | Worker entry, routes, auth, security, AI provider, validation/http boundary, rate limiting, and typed environment are separated instead of living in one handler.                                                                                                                                                                                                                      |
 |  52 | Migration strategy                | **Complete** | Worker API, D1 migrations, auth, cloud sync, workspace/history, safe execution boundary, AI gateway, dynamic review/mastery, projects, interviews, analytics/portfolio, offline hardening, security/performance/accessibility audits, and production deployment shipped incrementally without breaking the existing product.                                                           |
-|  53 | Testing                           | **Complete** | The CI gate runs 18 focused Node unit/API/security/migration/runner tests plus 38 Vitest compiler/lab/repository/component/state tests, ESLint, strict client/Worker builds, and bundle budgets. Browser smoke, authenticated account/authorization, live deployment, responsive, persistence, reset, offline, runner, AI, certificate, and privacy suites cover every named critical flow. |
+|  53 | Testing                           | **Complete** | The CI gate runs 18 focused Node unit/API/security/migration/runner tests plus 46 Vitest compiler/editor/lab/repository/component/state tests, ESLint, strict client/Worker builds, and bundle budgets. Browser smoke, authenticated account/authorization, live deployment, responsive, persistence, reset, offline, runner, AI, certificate, and privacy suites cover every named critical flow. |
 |  54 | Observability                     | **Complete** | Correlated structured API logs, durations, slow-route/auth/AI/error events, D1 health latency, Server-Timing, persisted logs/traces, and query-string redaction are deployed without learner content.                                                                                                                                                                                  |
 |  55 | Loading/empty/error states        | **Complete** | A typed, test-enforced matrix covers account, onboarding, progress sync, workspace/runner/snapshots, portfolios, certificates, search/resources/notifications, lesson media, and local learning. Loading, empty, error, retry, and appropriate offline decisions are explicit; public profiles now distinguish loading, unavailable, offline, and server failure with retry.            |
 |  56 | Demo data                         | **Complete** | Rich typed curriculum, project, challenge, interview, and resource seed data makes development complete-looking and remains clearly separated from local learner records and authenticated production D1 data. The brief does not require an admin-managed demo-account lifecycle.                                                                                                     |
@@ -91,8 +91,8 @@ capability is not implemented.
 
 ## Completion Totals
 
-- **Complete:** 54 numbered areas
-- **Partial:** 7 numbered areas
+- **Complete:** 55 numbered areas
+- **Partial:** 6 numbered areas
 - **Pending:** 0 numbered areas
 - **Overall final objective:** partial; it must not be represented as 100% complete.
 
@@ -119,17 +119,15 @@ expensive platform capabilities.
    boundary. Standalone TypeScript compilation, diagnostics, and execution are live.
 5. Extend the deployed real AI/RAG experiments with model-selected tools, richer
    workflow decisions, and evaluation beyond lexical heuristics. Real SQL is deployed.
-6. Extend editor file/folder management and semantic autocomplete. Standalone
-   TypeScript run-time diagnostics are implemented; snippets are not autocomplete.
-7. Add authored hidden challenge tests, per-test diagnostics, and a generalized
+6. Add authored hidden challenge tests, per-test diagnostics, and a generalized
    judge across supported languages without exposing private judge cases.
 
 ### Product-completeness gaps
 
-8. Extend the deployed notes, attempts, reviews, and mastery projections with
+7. Extend the deployed notes, attempts, reviews, and mastery projections with
    independent project/milestone and interview-session repositories where needed;
    retain compatible snapshot sync and forward-only production migrations.
-9. Continue low-risk legacy extraction from `src/App.tsx` and self-host fonts
+8. Continue low-risk legacy extraction from `src/App.tsx` and self-host fonts
    if measurements show the external font request harms real users; these are
    maintainability improvements rather than unimplemented product requirements.
 
