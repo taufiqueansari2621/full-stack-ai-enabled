@@ -216,6 +216,10 @@ export function Workspace({
   >("output");
   const [result, setResult] = useState<CodeRunResult | null>(null);
   const [running, setRunning] = useState(false);
+  const runRevision = useRef(0);
+  useEffect(() => {
+    runRevision.current += 1;
+  }, [files, activePath]);
   const [hint, setHint] = useState(0);
   const [saveState, setSaveState] = useState<
     "local" | "saving" | "saved" | "offline" | "conflict"
@@ -335,6 +339,7 @@ export function Workspace({
     }
   };
   const run = async () => {
+    const startedRevision = runRevision.current;
     setRunning(true);
     setPanel("output");
     const language = detectRunnerLanguage(files, activePath);
@@ -342,14 +347,17 @@ export function Workspace({
       language === "javascript" && Object.hasOwn(files, "src/index.js")
         ? "src/index.js"
         : activePath;
-    setResult(
-      await runnerFor(language).run({
-        language,
-        entryPath,
-        files,
-        timeoutMs: 1_500,
-      }),
-    );
+    const nextResult = await runnerFor(language).run({
+      language,
+      entryPath,
+      files,
+      timeoutMs: 1_500,
+    });
+    if (startedRevision === runRevision.current) setResult(nextResult);
+    else
+      setWorkspaceMessage(
+        "Files changed during execution. Run again to test the current code.",
+      );
     setRunning(false);
   };
   const preview = `${files["web/index.html"] ?? ""}<style>${files["web/styles.css"] ?? ""}</style><script>${files["web/app.js"] ?? ""}</script>`;
@@ -616,6 +624,37 @@ export function Workspace({
             ))}
           </div>
           <div className="editor-tools" aria-label="Editor tools">
+            <button
+              disabled={running}
+              onClick={() => {
+                const path = "src/exercise.ts";
+                if (
+                  !Object.hasOwn(files, path) &&
+                  Object.keys(files).length >= 20
+                ) {
+                  setWorkspaceMessage(
+                    "This workspace already has 20 files. Export your work or use a fresh workspace.",
+                  );
+                  return;
+                }
+                setFiles((current) =>
+                  Object.hasOwn(current, path)
+                    ? current
+                    : {
+                        ...current,
+                        [path]:
+                          "function sum(numbers: number[]): number {\n  return numbers.reduce((total, value) => total + value, 0);\n}\nconsole.log(sum([2, 3, 4]));\n",
+                      },
+                );
+                selectFile(path);
+                setResult(null);
+                setWorkspaceMessage(
+                  "Standalone TypeScript: type-check, compile, then run in the isolated browser worker. Package imports and JSX require a framework sandbox.",
+                );
+              }}
+            >
+              Open TypeScript exercise
+            </button>
             <button
               disabled={formatting || !canFormat(activePath)}
               onClick={() => void formatFile()}

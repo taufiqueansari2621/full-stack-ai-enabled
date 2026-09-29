@@ -2,11 +2,19 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   RemoteSandboxRunner,
+  TypeScriptRunner,
   detectRunnerLanguage,
   runnerFor,
 } from "../src/services/codeRunner.ts";
 
 test("runner language detection follows the workspace files", () => {
+  assert.equal(
+    detectRunnerLanguage(
+      { "main.py": "", "src/exercise.ts": "" },
+      "src/exercise.ts",
+    ),
+    "typescript",
+  );
   assert.equal(
     detectRunnerLanguage({ "src/index.js": "" }, "src/index.js"),
     "javascript",
@@ -26,7 +34,8 @@ test("runner language detection follows the workspace files", () => {
 });
 
 test("unsupported backend languages use an honest remote-sandbox boundary", async () => {
-  for (const language of ["python", "node", "typescript"]) {
+  assert.ok(runnerFor("typescript") instanceof TypeScriptRunner);
+  for (const language of ["python", "node"]) {
     const runner = runnerFor(language);
     assert.ok(runner instanceof RemoteSandboxRunner);
     const result = await runner.run({

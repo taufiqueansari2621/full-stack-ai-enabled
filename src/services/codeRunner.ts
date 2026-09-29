@@ -83,7 +83,7 @@ export class RemoteSandboxRunner implements CodeRunner {
   readonly id = "remote-sandbox";
 
   supports(language: RunnerLanguage) {
-    return ["typescript", "node", "python"].includes(language);
+    return ["node", "python"].includes(language);
   }
 
   async run(request: CodeRunRequest): Promise<CodeRunResult> {
@@ -98,15 +98,61 @@ export class RemoteSandboxRunner implements CodeRunner {
 }
 
 const browserRunner = new BrowserRunner();
+export class TypeScriptRunner implements CodeRunner {
+  readonly id = "typescript-browser-worker";
+  supports(language: RunnerLanguage) {
+    return language === "typescript";
+  }
+  async run(request: CodeRunRequest): Promise<CodeRunResult> {
+    try {
+      const { compileInWorker } = await import("./compileInWorker");
+      const compiled = await compileInWorker(
+        request.files[request.entryPath] ?? "",
+      );
+      if (compiled.diagnostics.length)
+        return {
+          logs: [],
+          error: compiled.diagnostics.join("\n"),
+          passed: 0,
+          failed: 0,
+          executionMs: 0,
+        };
+      const result = await browserRunner.run({
+        ...request,
+        language: "javascript",
+        files: { [request.entryPath]: compiled.javascript },
+      });
+      return {
+        ...result,
+        logs: [
+          "TypeScript type-check passed; running compiled JavaScript.",
+          ...result.logs,
+        ],
+      };
+    } catch (error) {
+      return {
+        logs: [],
+        error:
+          error instanceof Error
+            ? error.message
+            : "TypeScript failed to start.",
+        passed: 0,
+        failed: 0,
+        executionMs: 0,
+      };
+    }
+  }
+}
+const typescriptRunner = new TypeScriptRunner();
 const remoteSandboxRunner = new RemoteSandboxRunner();
 
 export function detectRunnerLanguage(
   files: Record<string, string>,
   activePath: string,
 ): RunnerLanguage {
+  if (/\.tsx?$/.test(activePath)) return "typescript";
   if (activePath.endsWith(".py") || Object.hasOwn(files, "main.py"))
     return "python";
-  if (/\.tsx?$/.test(activePath)) return "typescript";
   if (
     Object.hasOwn(files, "package.json") &&
     !Object.hasOwn(files, "web/index.html")
@@ -116,5 +162,6 @@ export function detectRunnerLanguage(
 }
 
 export function runnerFor(language: RunnerLanguage): CodeRunner {
+  if (typescriptRunner.supports(language)) return typescriptRunner;
   return browserRunner.supports(language) ? browserRunner : remoteSandboxRunner;
 }

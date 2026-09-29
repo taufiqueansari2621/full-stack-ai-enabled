@@ -34,5 +34,5 @@
 The version-1 sync snapshot remains the compatible write contract. Projections
 are queryable records, not independent conflicting sources of truth. Imported
 evidence and client quiz scores are learner-reported evidence, not a secure
-server judge. TypeScript execution, framework previews, and real SQL/AI lab
-engines are separate unfinished units.
+server judge. Standalone TypeScript and real SQL execution are now separate
+verified units; framework previews and richer AI evaluation remain unfinished.

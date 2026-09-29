@@ -101,6 +101,80 @@ try {
     await page.$eval(editor, (element) => element.value),
     "console.log();// retain this\n",
   );
+  await click("Open TypeScript exercise");
+  const tsEditor = 'textarea[aria-label="Editing src/exercise.ts"]';
+  await page.waitForSelector(tsEditor);
+  await click("Run tests");
+  await page.waitForFunction(
+    () =>
+      document
+        .querySelector(".terminal-output")
+        ?.textContent.includes("TypeScript type-check passed") ||
+      document.querySelector(".terminal-output .error"),
+    { timeout: 20000 },
+  );
+  assert.ok(
+    await page.$eval(".terminal-output", (element) =>
+      element.textContent.includes("TypeScript type-check passed"),
+    ),
+    await page.$eval(".terminal-output", (element) => element.textContent),
+  );
+  const editTypeScript = async (value) =>
+    page.$eval(
+      tsEditor,
+      (element, text) => {
+        Object.getOwnPropertyDescriptor(
+          HTMLTextAreaElement.prototype,
+          "value",
+        ).set.call(element, text);
+        element.dispatchEvent(new Event("input", { bubbles: true }));
+      },
+      value,
+    );
+  await editTypeScript(
+    'const value: number = "wrong"; console.log("SHOULD NOT RUN");',
+  );
+  await click("Run tests");
+  await page.waitForFunction(
+    () =>
+      document
+        .querySelector(".terminal-output")
+        ?.textContent.includes("TS2322"),
+    { timeout: 20000 },
+  );
+  assert.equal(
+    await page.$eval(".terminal-output", (element) =>
+      element.textContent.includes("SHOULD NOT RUN"),
+    ),
+    false,
+  );
+  await editTypeScript(
+    "function sum(numbers: number[]): number { return numbers.reduce((a, b) => a + b, 0); } console.log(sum([2,3,4]));",
+  );
+  await click("Run tests");
+  await page.waitForFunction(
+    () =>
+      document
+        .querySelector(".terminal-output")
+        ?.textContent.includes("TypeScript type-check passed"),
+    { timeout: 20000 },
+  );
+  await click("Tests");
+  await page.waitForFunction(() =>
+    document
+      .querySelector(".terminal-output")
+      ?.textContent.includes("3 passed"),
+  );
+  await editTypeScript("while (true) {}");
+  await click("Run tests");
+  await editTypeScript("console.log('newer edit');");
+  await page.waitForFunction(
+    () =>
+      document
+        .querySelector(".workspace-message")
+        ?.textContent.includes("Files changed during execution"),
+    { timeout: 20000 },
+  );
   for (const width of [1440, 768, 390, 320]) {
     await page.setViewport({ width, height: 900 });
     assert.equal(
@@ -170,7 +244,7 @@ try {
   );
   assert.deepEqual(errors, []);
   console.log(
-    "Editor verification passed: actual parser formatting, invalid-code preservation, highlighting alignment, cursor insertion, passing explanation, all challenge screens, and four viewport widths.",
+    "Editor verification passed: parser formatting, invalid-code preservation, highlighting alignment, cursor insertion, real TypeScript typechecking/execution and error recovery, passing explanation, persisted project notes, all challenge screens, and four viewport widths.",
   );
 } finally {
   await browser.close();

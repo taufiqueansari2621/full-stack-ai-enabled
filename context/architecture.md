@@ -138,6 +138,12 @@ Components must not read or write browser storage directly. Storage access belon
 
 ## Code Execution Boundary
 
+- Standalone TypeScript is type-checked and emitted inside an on-demand compiler
+  worker using bundled ES2022 libraries, bounded source, and a ten-second
+  deadline. Only error-free scripts enter the existing JavaScript runner.
+  Package modules and JSX remain outside this adapter. The 5,000 KiB compiler
+  budget is separate from app navigation bundles (current compiler: 4,014 KiB).
+
 - SQL teaching scripts execute against a fresh in-memory SQLite WASM database
   in a disposable browser worker. The worker alone allows WASM compilation;
   the application page keeps its existing script policy. A five-second deadline,

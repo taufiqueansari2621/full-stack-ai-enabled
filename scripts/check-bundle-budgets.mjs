@@ -12,6 +12,7 @@ const budgets = {
   // Parser bundles are fetched only after an explicit Format action in a worker.
   formatterJavaScript: 3_000 * kib,
   sqlRuntime: 1000 * kib,
+  typescriptRuntime: 5000 * kib,
 };
 
 const index = await readFile(path.join(dist, "index.html"), "utf8");
@@ -37,7 +38,8 @@ const jsFiles = files.filter(
   (file) =>
     file.endsWith(".js") &&
     !formatterFiles.includes(file) &&
-    !file.startsWith("sql-tool-"),
+    !file.startsWith("sql-tool-") &&
+    !file.startsWith("ts-tool-"),
 );
 const lazyFiles = jsFiles.filter((file) => file !== entryJavaScript);
 const largestLazy = lazyFiles.reduce(
@@ -46,6 +48,9 @@ const largestLazy = lazyFiles.reduce(
   lazyFiles[0],
 );
 const measurements = {
+  typescriptRuntime: files
+    .filter((file) => file.startsWith("ts-tool-"))
+    .reduce((sum, file) => sum + (sizes.get(file) ?? 0), 0),
   sqlRuntime: files
     .filter((file) => file.startsWith("sql-tool-") || file.endsWith(".wasm"))
     .reduce((sum, file) => sum + (sizes.get(file) ?? 0), 0),
@@ -74,6 +79,7 @@ console.log(
     `Total JavaScript: ${format(measurements.totalJavaScript)} / ${format(budgets.totalJavaScript)}`,
     `On-demand formatter: ${format(measurements.formatterJavaScript)} / ${format(budgets.formatterJavaScript)}`,
     `On-demand SQL runtime: ${format(measurements.sqlRuntime)} / ${format(budgets.sqlRuntime)}`,
+    `On-demand TypeScript compiler: ${format(measurements.typescriptRuntime)} / ${format(budgets.typescriptRuntime)}`,
   ].join("\n"),
 );
 if (failures.length)

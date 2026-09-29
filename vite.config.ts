@@ -8,9 +8,11 @@ export default defineConfig({
     rollupOptions: {
       output: {
         entryFileNames: (chunk) =>
-          chunk.name.startsWith("sql")
-            ? "assets/sql-tool-[name]-[hash].js"
-            : "assets/format-tool-[name]-[hash].js",
+          chunk.name.startsWith("typescript")
+            ? "assets/ts-tool-[name]-[hash].js"
+            : chunk.name.startsWith("sql")
+              ? "assets/sql-tool-[name]-[hash].js"
+              : "assets/format-tool-[name]-[hash].js",
         chunkFileNames: "assets/format-tool-[name]-[hash].js",
       },
     },

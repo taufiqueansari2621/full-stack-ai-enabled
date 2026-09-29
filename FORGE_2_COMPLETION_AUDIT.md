@@ -7,9 +7,9 @@ Git history.
 ## Executive Status
 
 - **Production URL:** <https://forge-ai-engineering.taufiqueansari895.workers.dev>
-- **Verified Worker version:** `4faf7405-7a1a-4795-b6b3-dfd912fb1b50`
+- **Verified Worker version:** `7ef90281-2270-474d-82fb-ce2983367e32`
 - **Current branch:** `main`, synchronized with the approved GitHub `origin`.
-- **Verified:** 53 focused runner/domain/security/migration/API-contract/repository/component/state tests, lint, strict
+- **Verified:** 56 focused runner/domain/security/migration/API-contract/repository/component/state tests, lint, strict
   TypeScript/Vite production build, complete local browser regression, 90
   primary responsive checks, six focused lesson viewport checks, live
   route/PWA/security audit, and authenticated production lifecycle.
@@ -33,8 +33,8 @@ capability is not implemented.
 |   7 | Interactive lessons               | **Complete** | Full Learning Mode provides continuous chapters, mental models, examples, prediction/reveal labs, mistakes, exercises, assessments, mastery studios, resources, notes, and next actions across 684 topics.                                                                                                                                                                             |
 |   8 | Video learning                    | **Complete** | Lessons can contain legitimate privacy-enhanced YouTube embeds plus official documentation and curated tutorials. Every resource is normalized with title, provider, URL, topic, difficulty, duration, type, review date, and quality status; direct-link fallbacks remain available and no third-party media is copied.                                                              |
 |   9 | Real coding workspace | **Partial** | The editor now has parser-based JavaScript/TypeScript/JSON/HTML/CSS formatting in a disposable worker, syntax highlighting, synchronized line numbers, cursor snippets, saved-state feedback, and post-pass explanations. Snippets are not semantic autocomplete; deeper language diagnostics and richer file/folder management remain. |
-|  10 | Multi-language practice           | **Complete** | The architecture progressively supports HTML/CSS/JavaScript preview plus typed runner selection for JavaScript, TypeScript, Node.js, and Python. All eight specified project starters exist. Only JavaScript executes today; unsupported languages route to the honest remote-sandbox boundary instead of unsafe or fake execution.                                                    |
-|  11 | JavaScript/TypeScript playground  | **Partial**  | JavaScript runs in a network-disabled external Worker with a 1.5-second timeout, bounded logs, reset, and deterministic tests. TypeScript transpilation/type diagnostics are not implemented.                                                                                                                                                                                          |
+|  10 | Multi-language practice           | **Complete** | The architecture progressively supports HTML/CSS/JavaScript preview plus typed runner selection for JavaScript, TypeScript, Node.js, and Python. All eight specified project starters exist. JavaScript and standalone TypeScript execute today; unsupported languages route to the honest remote-sandbox boundary instead of unsafe or fake execution.                                                    |
+|  11 | JavaScript/TypeScript playground | **Complete** | Standalone TypeScript is semantically type-checked and compiled in a disposable browser worker before running through the constrained JavaScript runner. Syntax/type diagnostics, error recovery, input bounds, compiler/execution deadlines, and real exercise tests are verified. Package modules and JSX belong to the still-partial framework preview capability. |
 |  12 | Frontend playground               | **Partial**  | Isolated HTML/CSS/JS live preview and multi-file templates work. React and Angular compilation/preview pipelines remain.                                                                                                                                                                                                                                                               |
 |  13 | Python/backend execution          | **Complete** | The specification explicitly permits an interface plus safe supported modes when arbitrary execution cannot be secured. `CodeRunner`, `BrowserRunner`, and `RemoteSandboxRunner` now enforce that boundary; Python/backend files remain editable/exportable and clearly report unavailable rather than executing in the primary Worker.                                                |
 |  14 | Challenge system                  | **Partial**  | Quick checks, prediction labs, debugging/mastery work, open-ended Easy/Medium/Hard drills, deterministic workspace tests, hints, attempts, and review scheduling exist. A generalized multi-language judge with authored hidden tests and per-test diagnostics remains.                                                                                                                |
@@ -89,8 +89,8 @@ capability is not implemented.
 
 ## Completion Totals
 
-- **Complete:** 53 numbered areas
-- **Partial:** 8 numbered areas
+- **Complete:** 54 numbered areas
+- **Partial:** 7 numbered areas
 - **Pending:** 0 numbered areas
 - **Overall final objective:** partial; it must not be represented as 100% complete.
 
@@ -113,8 +113,8 @@ expensive platform capabilities.
 
 3. Build remote Python/backend execution using a separately isolated sandbox;
    never run it in the application Worker.
-4. Add TypeScript compilation/diagnostics and React/Angular preview builds on
-   the same sandbox boundary.
+4. Add React/Angular and package-based preview builds on the isolated sandbox
+   boundary. Standalone TypeScript compilation, diagnostics, and execution are live.
 5. Extend the deployed real AI/RAG experiments with model-selected tools, richer
    workflow decisions, and evaluation beyond lexical heuristics. Real SQL is deployed.
 ### Product-completeness gaps

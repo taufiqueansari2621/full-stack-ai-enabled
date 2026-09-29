@@ -242,6 +242,19 @@ Update this file after every meaningful verified implementation change.
 
 ## In Progress
 
+- September 29: standalone TypeScript execution and stale-result protection are
+  deployed as Worker `7ef90281-2270-474d-82fb-ce2983367e32`. The live editor suite
+  verifies compilation, rejected type errors, recovery, and edits during execution;
+  the production route/PWA/security suite passes. Local gates pass 18 Node + 38
+  Vitest tests, lint, strict builds, and bundle budgets. Audit: 54 complete and 7
+  partial areas; this is not a claim of full specification completion.
+
+- Standalone TypeScript compiler unit now passes semantic/syntax diagnostic and
+  emission tests, real browser execution, type-error no-execution, recovery,
+  responsive editor checks, and preservation of existing project files. The
+  production-style Worker/browser test and a development-server rerun both pass;
+  the initial development run timed out. Compiler assets load only on demand.
+
 - September 29: deployed input-dependent AI experiments as Worker
   `4faf7405-7a1a-4795-b6b3-dfd912fb1b50`. Production account tests verify actual
   384-dimensional embeddings and grounded generation; public/PWA/security and
