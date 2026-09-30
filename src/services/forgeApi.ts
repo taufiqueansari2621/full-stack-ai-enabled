@@ -91,6 +91,23 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const forgeApi = {
+  activeSessions: (signal?: AbortSignal) =>
+    request<{
+      sessions: {
+        id: string;
+        createdAt: string;
+        expiresAt: string;
+        current: boolean;
+      }[];
+      truncated: boolean;
+    }>("/api/auth/sessions", { signal }),
+  revokeSessions: (
+    input: { scope: "others" } | { scope: "session"; id: string },
+  ) =>
+    request<{ ok: true }>("/api/auth/sessions/revoke", {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
   projectRecords: (after = "", signal?: AbortSignal) =>
     request<RecordPage<SavedProject>>(
       `/api/learning-records?kind=projects&after=${encodeURIComponent(after)}`,

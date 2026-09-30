@@ -114,6 +114,11 @@ Components must not read or write browser storage directly. Storage access belon
 
 ## Authentication and Access
 
+- The free-only session-management unit reuses the sessions table. Owner-scoped
+  bounded reads expose dates and current-session status, never tokens or hashes.
+  Same-origin revocations exclude the current token in SQL and invalidate future
+  requests. No device fingerprint, geolocation, provider, or new service is added.
+
 - The current MVP has explicit Local Learning Profiles for same-browser separation. They are not authentication and are presented as local-only profiles.
 - When accounts are introduced, the server—not the browser—establishes learner identity.
 - Every read and mutation derives ownership from the authenticated principal.

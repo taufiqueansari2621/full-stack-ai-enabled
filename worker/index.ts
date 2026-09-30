@@ -1,6 +1,7 @@
 import { authenticate } from "./auth";
 import { HttpError, apiError, json, type Route } from "./http";
 import { authRoutes } from "./routes/auth";
+import { sessionRoutes } from "./routes/sessions";
 import { progressRoutes } from "./routes/progress";
 import { profileRoutes } from "./routes/profile";
 import { workspaceRoutes } from "./routes/workspace";
@@ -32,6 +33,7 @@ const routes: Route[] = [
   },
   ...openApiRoutes,
   ...authRoutes,
+  ...sessionRoutes,
   ...progressRoutes,
   ...profileRoutes,
   ...workspaceRoutes,

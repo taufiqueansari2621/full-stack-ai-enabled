@@ -89,6 +89,37 @@ export const OPENAPI_DOCUMENT = {
     { name: "Certificates" },
   ],
   paths: {
+    "/auth/sessions": {
+      get: operation(
+        "listSessions",
+        "List up to 50 active owned sessions, current first",
+        "Authentication",
+        { authenticated: true },
+      ),
+    },
+    "/auth/sessions/revoke": {
+      post: operation(
+        "revokeSessions",
+        "Revoke an owned session or all other sessions; preserve current session",
+        "Authentication",
+        {
+          authenticated: true,
+          mutating: true,
+          requestSchema: {
+            type: "object",
+            required: ["scope"],
+            properties: {
+              scope: { type: "string", enum: ["session", "others"] },
+              id: {
+                type: "string",
+                maxLength: 100,
+                description: "Required when scope is session",
+              },
+            },
+          },
+        },
+      ),
+    },
     "/learning-records": {
       get: operation(
         "listLearningRecords",

@@ -7,11 +7,11 @@ Git history.
 ## Executive Status
 
 - **Production URL:** <https://forge-ai-engineering.taufiqueansari895.workers.dev>
-- **Verified Worker version:** `3bc0694e-d9e1-4b4c-98a6-2e8111912201`
-- **Current branch:** `main`. Releases are committed locally;
-  pushing is blocked by unavailable macOS Keychain credentials and no GitHub CLI
-  login. The deployed Worker is unaffected; GitHub synchronization remains pending.
-- **Verified:** 81 focused runner/domain/security/migration/API-contract/repository/component/state tests, lint, strict
+- **Verified Worker version:** `34af2a52-addc-40c8-8694-1bf011d5489f`
+- **Current branch:** `main`. Git push was rechecked successfully on September 30;
+  all six earlier commits are synchronized through `f4a566d`. The connected GitHub
+  account works even though the separate GitHub CLI is not signed in.
+- **Verified:** 87 focused runner/domain/security/migration/API-contract/repository/component/state tests, lint, strict
   TypeScript/Vite production build, complete local browser regression, 90
   primary responsive checks, six focused lesson viewport checks, live
   route/PWA/security audit, and authenticated production lifecycle.
@@ -104,9 +104,12 @@ expensive platform capabilities.
 
 ### Release-critical hardening
 
-1. Add email ownership verification, session/device management, Turnstile, and
+1. Add email ownership verification, Turnstile, and
    optional Google/GitHub OAuth after provider credentials and redirect domains
    are explicitly configured.
+   Active-session listing and confirmed revocation are deployed and live-verified using the
+   existing database; device fingerprints and locations are intentionally not
+   collected or invented.
 2. Add field Core Web Vitals monitoring and an operator-executed D1 restore
    drill. The checked-in production runbook now documents release, backup,
    restore, rollback, and incident procedures, while CI enforces bundle budgets.

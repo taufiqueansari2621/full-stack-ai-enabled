@@ -92,6 +92,7 @@ import {
 
 const ResourcesPage = lazy(() => import("./ResourcesPage"));
 const CloudLearningRecords = lazy(() => import("./CloudLearningRecords"));
+const AccountSessions = lazy(() => import("./AccountSessions"));
 const Workspace = lazy(() => import("./Workspace"));
 const AdvancedLabs = lazy(() => import("./AdvancedLabs"));
 const Portfolio = lazy(() =>
@@ -2950,6 +2951,7 @@ function LearningWorkspace({
         {cloudEnabled && (
           <Suspense fallback={<p role="status">Opening cloud records…</p>}>
             <CloudLearningRecords />
+            <AccountSessions />
           </Suspense>
         )}
       </>

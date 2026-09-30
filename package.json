@@ -19,6 +19,7 @@
     "test:editor": "node scripts/editor-smoke.mjs",
     "test:sql": "node scripts/sql-smoke.mjs",
     "test:account": "node scripts/account-smoke.mjs",
+    "test:sessions": "node scripts/session-smoke.mjs",
     "verify:bundle": "node scripts/check-bundle-budgets.mjs",
     "lint": "eslint ."
   },

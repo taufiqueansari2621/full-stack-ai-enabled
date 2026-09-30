@@ -242,6 +242,17 @@ Update this file after every meaningful verified implementation change.
 
 ## In Progress
 
+- September 30 free-only continuation: Git push succeeded and all six prior
+  commits are synchronized through `f4a566d`. Added bounded owner-scoped active
+  session listing and confirmed targeted/all-other revocation, protecting the
+  current session. Existing D1 schema only, no paid service or migration.
+  Local gate: 21 Node + 66 Vitest tests, lint/build/budgets and dedicated browser
+  checks pass, including actual second-context denial after revocation and four
+  viewport widths. No AI inference is invoked by the dedicated session suite.
+  Deployed as Worker `34af2a52-addc-40c8-8694-1bf011d5489f`; live session
+  revocation and public/PWA/security regressions pass. Audit remains 57 complete,
+  4 partial chapters; this closes a security subtask, not all provider gaps.
+
 - September 30 project/interview records: additive migration 0011, owner-scoped
   paginated read repositories, stable new interview-session IDs, and a lazy
   cloud-records view are implemented. Legacy answers remain individual records.
