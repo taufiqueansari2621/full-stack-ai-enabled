@@ -7,11 +7,11 @@ Git history.
 ## Executive Status
 
 - **Production URL:** <https://forge-ai-engineering.taufiqueansari895.workers.dev>
-- **Verified Worker version:** `c86797cc-a4ae-4dfd-b91d-9c3bf112b16b`
-- **Current branch:** `main`. The latest TypeScript release is committed locally;
+- **Verified Worker version:** `3bc0694e-d9e1-4b4c-98a6-2e8111912201`
+- **Current branch:** `main`. Releases are committed locally;
   pushing is blocked by unavailable macOS Keychain credentials and no GitHub CLI
   login. The deployed Worker is unaffected; GitHub synchronization remains pending.
-- **Verified:** 75 focused runner/domain/security/migration/API-contract/repository/component/state tests, lint, strict
+- **Verified:** 81 focused runner/domain/security/migration/API-contract/repository/component/state tests, lint, strict
   TypeScript/Vite production build, complete local browser regression, 90
   primary responsive checks, six focused lesson viewport checks, live
   route/PWA/security audit, and authenticated production lifecycle.
@@ -64,7 +64,7 @@ capability is not implemented.
 |  36 | Certificates                      | **Complete** | Authenticated D1 credential issuance verifies synchronized lessons, assessment, practice, project, and mastery evidence; public credential lookup and local offline labeling are implemented.                                                                                                                                                                                          |
 |  37 | Portfolio                         | **Complete** | Editable learner profile, evidence/project cards, preview, explicit publish/unpublish, anonymous public projection, privacy caching fix, and production authorization tests are live.                                                                                                                                                                                                  |
 |  38 | Notes 2.0                         | **Complete** | Safe Markdown/code rendering, tags, topic/project links, edit/search/favorites, flashcards, review actions, and note-aware Forge AI are deployed.                                                                                                                                                                                                                                      |
-|  39 | Database design | **Partial** | Ten migrations are live. Migration 0010 adds eight populated, indexed domain projections with atomic triggers and owner-scoped keys; SQLite behavior and production lifecycle tests pass. A verified Cloudflare recovery bookmark avoided exporting private data. Snapshot sync remains the write contract; independent project/milestone and interview-session repositories remain. |
+|  39 | Database design | **Complete** | Eleven migrations are live. Indexed owner-keyed domain projections synchronize atomically with compatible snapshots. Independent typed project/milestone and interview-session/answer read repositories expose bounded authenticated pages and a live-verified cloud-records view. Legacy answers are not assigned invented sessions. Backfill, isolation, pagination, reset, cascade and stale-write tests pass; managed recovery bookmarks avoid private exports. |
 |  40 | API design                        | **Complete** | Modular Worker routes use typed contracts, validation, consistent JSON errors, authentication, authorization, ownership checks, request IDs, and appropriate rate limits. Canonical `/api/v1` aliases, compatibility paths, discovery headers, and a route-complete OpenAPI 3.1 contract are production-verified.                                                                      |
 |  41 | Security                          | **Complete** | Authentication, authorization, ownership checks, PBKDF2 credentials, HttpOnly Secure SameSite sessions, same-origin mutation checks, validation/output encoding, rate/abuse limits, secret-safe AI, isolated code boundaries, size limits, CSP/HSTS, and server-verified certificate evidence are production-tested.                                                                   |
 |  42 | Cloudflare configuration          | **Complete** | Workers Static Assets, SPA routing, Worker-first headers, D1, Workers AI, remote migrations, persisted logs/traces, redacted query strings, and repeatable Wrangler deployment are active.                                                                                                                                                                                             |
@@ -91,8 +91,8 @@ capability is not implemented.
 
 ## Completion Totals
 
-- **Complete:** 56 numbered areas
-- **Partial:** 5 numbered areas
+- **Complete:** 57 numbered areas
+- **Partial:** 4 numbered areas
 - **Pending:** 0 numbered areas
 - **Overall final objective:** partial; it must not be represented as 100% complete.
 
@@ -122,9 +122,9 @@ expensive platform capabilities.
 
 ### Product-completeness gaps
 
-6. Extend the deployed notes, attempts, reviews, and mastery projections with
-   independent project/milestone and interview-session repositories where needed;
-   retain compatible snapshot sync and forward-only production migrations.
+6. Project/milestone and interview-session repositories are now deployed and
+   verified. Snapshot sync intentionally remains the compatible write contract;
+   separate domain mutation APIs are not claimed by this release.
 7. Continue low-risk legacy extraction from `src/App.tsx` and self-host fonts
    if measurements show the external font request harms real users; these are
    maintainability improvements rather than unimplemented product requirements.

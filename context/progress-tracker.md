@@ -242,6 +242,17 @@ Update this file after every meaningful verified implementation change.
 
 ## In Progress
 
+- September 30 project/interview records: additive migration 0011, owner-scoped
+  paginated read repositories, stable new interview-session IDs, and a lazy
+  cloud-records view are implemented. Legacy answers remain individual records.
+  Local verification passes 21 Node + 60 Vitest tests, lint, strict builds,
+  bundle budgets, and the full responsive browser regression. The account suite
+  passed after restarting the overnight local Worker connection. Migration 0011
+  is applied remotely after recording a managed recovery bookmark (no export).
+  Worker `3bc0694e-d9e1-4b4c-98a6-2e8111912201` passes production public/PWA/
+  security checks and authenticated account/AI/records/mobile checks. Audit:
+  57 complete, 4 partial areas; GitHub authentication remains a push blocker.
+
 - September 29 AI decisions: implemented authenticated plan/answer/evaluate,
   schema-constrained read-only tool choice, evidence-empty abstention, explicit
   stop, and groundedness review with exact quote-presence checks. Local baselines

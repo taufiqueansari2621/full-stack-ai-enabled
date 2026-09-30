@@ -91,6 +91,7 @@ import {
 } from "./Assessments";
 
 const ResourcesPage = lazy(() => import("./ResourcesPage"));
+const CloudLearningRecords = lazy(() => import("./CloudLearningRecords"));
 const Workspace = lazy(() => import("./Workspace"));
 const AdvancedLabs = lazy(() => import("./AdvancedLabs"));
 const Portfolio = lazy(() =>
@@ -2943,7 +2944,16 @@ function LearningWorkspace({
       />
     );
   else if (active === "progress")
-    view = <ProgressPage store={store} navigate={setActive} />;
+    view = (
+      <>
+        <ProgressPage store={store} navigate={setActive} />
+        {cloudEnabled && (
+          <Suspense fallback={<p role="status">Opening cloud records…</p>}>
+            <CloudLearningRecords />
+          </Suspense>
+        )}
+      </>
+    );
   else if (active === "certificates")
     view = (
       <CertificatesPage

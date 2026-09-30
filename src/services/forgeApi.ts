@@ -1,4 +1,10 @@
 import type { LabAction, LabModelResult } from "../domain/aiLabProtocol";
+import type {
+  RecordPage,
+  SavedProject,
+  SavedInterviewSession,
+  SavedInterviewAnswer,
+} from "../domain/learningRecords";
 
 export type AccountUser = {
   id: string;
@@ -85,6 +91,21 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const forgeApi = {
+  projectRecords: (after = "", signal?: AbortSignal) =>
+    request<RecordPage<SavedProject>>(
+      `/api/learning-records?kind=projects&after=${encodeURIComponent(after)}`,
+      { signal },
+    ),
+  interviewSessions: (after = "", signal?: AbortSignal) =>
+    request<RecordPage<SavedInterviewSession>>(
+      `/api/learning-records?kind=interviews&after=${encodeURIComponent(after)}`,
+      { signal },
+    ),
+  interviewAnswers: (id: string, after = "", signal?: AbortSignal) =>
+    request<RecordPage<SavedInterviewAnswer>>(
+      `/api/learning-records/interview?id=${encodeURIComponent(id)}&after=${encodeURIComponent(after)}`,
+      { signal },
+    ),
   labInference: (
     action: LabAction,
     input: string,

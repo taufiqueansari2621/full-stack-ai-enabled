@@ -33,6 +33,13 @@ export function validateProgress(state: unknown): string | null {
       if (field === "practiceAttempts" && typeof value.correct !== "boolean")
         return "Practice correctness must be boolean.";
       if (
+        field === "interviewResults" &&
+        value.sessionId !== undefined &&
+        (typeof value.sessionId !== "string" ||
+          !/^[a-zA-Z0-9_-]{1,100}$/.test(value.sessionId))
+      )
+        return "Interview session IDs must be bounded identifiers.";
+      if (
         ["interviewResults", "quizResults"].includes(field) &&
         (typeof value.score !== "number" ||
           !Number.isFinite(value.score) ||

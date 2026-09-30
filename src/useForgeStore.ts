@@ -33,6 +33,8 @@ export type KnowledgeEntry = {
 
 export type InterviewResult = {
   id: string;
+  sessionId?: string;
+  sessionQuestionCount?: number;
   questionId?: string;
   question: string;
   topic?: string;

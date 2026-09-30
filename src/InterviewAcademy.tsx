@@ -162,6 +162,7 @@ export default function InterviewAcademy({ store, notify }: PageProps) {
   const [filters, setFilters] = useState<InterviewFilters>(defaultFilters);
   const [page, setPage] = useState(0);
   const [session, setSession] = useState<InterviewQuestion[]>([]);
+  const [sessionId, setSessionId] = useState("");
   const [questionIndex, setQuestionIndex] = useState(0);
   const [answer, setAnswer] = useState("");
   const [result, setResult] = useState<AnswerResult | null>(null);
@@ -239,6 +240,7 @@ export default function InterviewAcademy({ store, notify }: PageProps) {
       return;
     }
     setSession(questions);
+    setSessionId(crypto.randomUUID());
     setQuestionIndex(0);
     setAnswer("");
     setResult(null);
@@ -259,6 +261,8 @@ export default function InterviewAcademy({ store, notify }: PageProps) {
     setResult(answerResult);
     setScores((current) => [...current, answerResult.score]);
     store.saveInterview({
+      sessionId,
+      sessionQuestionCount: session.length,
       questionId: activeQuestion.id,
       question: activeQuestion.prompt,
       topic: activeQuestion.topic,

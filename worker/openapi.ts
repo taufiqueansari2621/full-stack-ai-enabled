@@ -89,6 +89,46 @@ export const OPENAPI_DOCUMENT = {
     { name: "Certificates" },
   ],
   paths: {
+    "/learning-records": {
+      get: operation(
+        "listLearningRecords",
+        "Read owner-scoped project milestones or interview sessions",
+        "Progress",
+        {
+          authenticated: true,
+          parameters: [
+            query("kind", "projects or interviews"),
+            {
+              ...query(
+                "after",
+                "Last returned record ID; at most 50 records per page",
+              ),
+              required: false,
+            },
+          ],
+        },
+      ),
+    },
+    "/learning-records/interview": {
+      get: operation(
+        "listInterviewSessionAnswers",
+        "Read saved answers in an owned session",
+        "Progress",
+        {
+          authenticated: true,
+          parameters: [
+            query("id", "Session ID"),
+            {
+              ...query(
+                "after",
+                "Last returned answer ID; at most 50 answers per page",
+              ),
+              required: false,
+            },
+          ],
+        },
+      ),
+    },
     "/ai/lab": {
       post: operation(
         "runBoundedLabInference",

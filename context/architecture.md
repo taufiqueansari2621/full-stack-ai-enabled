@@ -184,6 +184,13 @@ race in a separate read-then-write revision check. The editor formatter runs in
 its own disposable worker with a deadline and language-specific parsers, fetched
 only on explicit use. Its bundle budget is distinct from navigation bundles.
 
+Migration 0011 adds owner-keyed project and interview-session projections with
+atomic snapshot triggers. Typed read repositories expose bounded cursor pages
+for projects, milestones, sessions, and answers without downloading a snapshot.
+Snapshot sync remains the compatible write contract. New interview sessions use
+stable identifiers; older ungrouped answers remain explicitly labelled legacy
+practice records. The lazy My Progress panel never awards additional mastery.
+
 1. A lesson-completed flag or submitted artifact alone never equals mastery.
 2. UI components never calculate final mastery or review dates; domain functions own those rules.
 3. External and persisted data is validated before entering trusted domain state.

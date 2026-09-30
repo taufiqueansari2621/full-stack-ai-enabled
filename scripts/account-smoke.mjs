@@ -34,6 +34,16 @@ try {
   };
   page.on("pageerror", (error) => errors.push(error.message));
   await page.goto(baseUrl, { waitUntil: "networkidle0" });
+  const anonymousRecords = await page.evaluate(async () =>
+    Promise.all(
+      [
+        "/api/learning-records?kind=projects",
+        "/api/learning-records/interview?id=records-smoke-session",
+      ].map(async (path) => (await fetch(path)).status),
+    ),
+  );
+  if (anonymousRecords.some((status) => status !== 401))
+    throw new Error("Cloud learning records must require authentication");
   const anonymousLabStatus = await page.evaluate(
     async () =>
       (
@@ -483,6 +493,85 @@ try {
   }, username);
   if (unpublish.saved !== 200 || unpublish.publicStatus !== 404)
     throw new Error(`Portfolio unpublish failed: ${JSON.stringify(unpublish)}`);
+  const recordCheck = await page.evaluate(async () => {
+    const current = await (await fetch("/api/progress")).json();
+    const date = new Date().toISOString();
+    const next = {
+      ...current.state,
+      projectTasks: {
+        ...current.state.projectTasks,
+        "records-smoke": ["milestone-one"],
+      },
+      interviewResults: [
+        ...(current.state.interviewResults ?? []),
+        ...[70, 90].map((score, index) => ({
+          id: `records-answer-${index}`,
+          sessionId: "records-smoke-session",
+          question: "Explain review",
+          answer: "Saved answer for cloud records verification",
+          score,
+          feedback: [],
+          createdAt: date,
+        })),
+      ],
+    };
+    const saved = await fetch("/api/progress", {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ state: next, revision: current.revision }),
+    });
+    const projects = await (
+      await fetch("/api/learning-records?kind=projects")
+    ).json();
+    const interviews = await (
+      await fetch("/api/learning-records?kind=interviews")
+    ).json();
+    const answers = await (
+      await fetch("/api/learning-records/interview?id=records-smoke-session")
+    ).json();
+    return {
+      status: saved.status,
+      project: projects.records?.find((item) => item.id === "records-smoke"),
+      interview: interviews.records?.find(
+        (item) => item.id === "records-smoke-session",
+      ),
+      answers: answers.records?.length,
+    };
+  });
+  if (
+    recordCheck.status !== 200 ||
+    recordCheck.project?.completedTaskIds[0] !== "milestone-one" ||
+    recordCheck.interview?.answerCount !== 2 ||
+    recordCheck.interview?.averageScore !== 80 ||
+    recordCheck.answers !== 2
+  )
+    throw new Error(
+      `Cloud record persistence failed: ${JSON.stringify(recordCheck)}`,
+    );
+  await page.goto(`${baseUrl}/progress`, { waitUntil: "networkidle0" });
+  await clickText("Load cloud records");
+  await page.waitForFunction(() =>
+    document
+      .querySelector(".cloud-learning-records")
+      ?.textContent.includes("Project records-smoke"),
+  );
+  await page.select('select[aria-label="Cloud record type"]', "interviews");
+  await clickText("Load cloud records");
+  await page.waitForFunction(() =>
+    document
+      .querySelector(".cloud-learning-records")
+      ?.textContent.includes("2 saved answers"),
+  );
+  await clickText("Show saved answers");
+  await page.waitForSelector('[aria-label="Saved interview answers"]');
+  for (const width of [1440, 768, 390, 320]) {
+    await page.setViewport({ width, height: 900 });
+    const fits = await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth + 1,
+    );
+    if (!fits) throw new Error(`Cloud records overflow at ${width}px`);
+  }
+  await page.setViewport({ width: 1440, height: 900 });
   await page.goto(`${baseUrl}/labs`, { waitUntil: "networkidle0" });
   await page.waitForSelector(".lab-tabs");
   await clickText("RAG");
