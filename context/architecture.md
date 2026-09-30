@@ -150,6 +150,16 @@ Components must not read or write browser storage directly. Storage access belon
 
 ## Code Execution Boundary
 
+- Free framework previews transpile bounded local modules in the existing
+  disposable compiler worker, then run bundled React or Angular JIT in an
+  opaque-origin iframe. Fixed framework imports and local modules/templates/CSS
+  are supported; arbitrary npm installs, backend APIs, AOT/full framework
+  typechecking and server-grade resource isolation are not. Preview CSP is
+  restricted to its canonical document route; application script policy remains
+  unchanged. Explicit Build/Stop and source-identity checks prevent stale output.
+  React/Angular runtimes are separate on-demand static assets (1,352 KiB total),
+  never imported by the application shell or service-worker offline precache.
+
 - Editor suggestions and diagnostics use the TypeScript language service in the
   same disposable, on-demand compiler worker. Analysis is current-file/ES2022
   only, never executes code, and has bounded input, output, and time. Pure file

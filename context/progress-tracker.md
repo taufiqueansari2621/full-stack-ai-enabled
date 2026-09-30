@@ -242,6 +242,19 @@ Update this file after every meaningful verified implementation change.
 
 ## In Progress
 
+- September 30 framework previews: real local React JSX/TSX and Angular
+  standalone JIT previews now render and update state/signals in an opaque
+  iframe. Local module/style/template resolution, package allowlisting,
+  compile errors, rebuild/stop, stale-output removal, and parent/fetch isolation
+  pass the dedicated local browser suite at four widths. 21 Node + 70 Vitest
+  tests, lint/build/budgets pass. No production dependency advisories reported.
+  No containers, external package CDN, paid services, or AI calls were used.
+  Canonical static URL redirect handling was corrected before release.
+  Deployed as Worker `20b3723e-ab8b-4cb3-ac1b-5cd6306da450`; dedicated live
+  React/Angular and public/PWA/security checks pass, as does the complete local
+  responsive regression. Preview documents/assets bypass service-worker caching.
+  Full npm audit reports four dev-tool findings; production-only audit is clean.
+
 - September 30 free-only continuation: Git push succeeded and all six prior
   commits are synchronized through `f4a566d`. Added bounded owner-scoped active
   session listing and confirmed targeted/all-other revocation, protecting the

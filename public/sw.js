@@ -57,6 +57,9 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(request.url);
   if (request.method !== "GET" || url.origin !== self.location.origin) return;
   if (url.pathname.startsWith("/api/")) return;
+  // Preview documents must never replace the offline app shell; runtimes are
+  // deliberately network-only to avoid stale framework/host protocol pairs.
+  if (url.pathname === "/preview" || url.pathname.startsWith("/preview/")) return;
   if (request.mode === "navigate") {
     event.respondWith(navigationResponse(request));
     return;

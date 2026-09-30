@@ -714,3 +714,7 @@
     font-size: 12px;
   }
 }
+.framework-preview { padding: var(--space-4, 16px); min-width: 0; }
+.framework-preview p, .framework-preview pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+.framework-preview button { min-height: 44px; margin: 4px; }
+.framework-preview iframe { width: 100%; height: 420px; background: white; border: 0; }

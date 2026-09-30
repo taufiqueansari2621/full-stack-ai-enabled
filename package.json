@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --config vite.config.ts",
-    "build": "tsc -b && tsc -p tsconfig.worker.json && vite build --config vite.config.ts",
+    "build": "tsc -b && tsc -p tsconfig.worker.json && vite build --config vite.config.ts && node scripts/build-previews.mjs",
     "predeploy:cloudflare": "npm run build",
     "deploy:cloudflare": "wrangler deploy",
     "verify:cloudflare": "node scripts/verify-cloudflare.mjs",
@@ -20,14 +20,20 @@
     "test:sql": "node scripts/sql-smoke.mjs",
     "test:account": "node scripts/account-smoke.mjs",
     "test:sessions": "node scripts/session-smoke.mjs",
+    "test:frameworks": "node scripts/framework-smoke.mjs",
     "verify:bundle": "node scripts/check-bundle-budgets.mjs",
     "lint": "eslint ."
   },
   "dependencies": {
+    "@angular/common": "22.2.0",
+    "@angular/compiler": "22.2.0",
+    "@angular/core": "22.2.0",
+    "@angular/platform-browser": "22.2.0",
     "@vitejs/plugin-react": "latest",
     "lucide-react": "latest",
     "react": "latest",
     "react-dom": "latest",
+    "rxjs": "7.8.2",
     "sql.js": "^1.14.2",
     "vite": "latest"
   },

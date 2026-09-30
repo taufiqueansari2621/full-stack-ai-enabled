@@ -120,7 +120,7 @@ try {
     !operations.serverTiming?.startsWith("forge;dur=") ||
     !operations.contentSecurityPolicy?.includes("frame-ancestors 'none'") ||
     !operations.contentSecurityPolicy?.includes(
-      "frame-src https://www.youtube-nocookie.com",
+      "frame-src 'self' https://www.youtube-nocookie.com",
     ) ||
     operations.contentSecurityPolicy?.includes("unsafe-eval") ||
     !operations.runnerContentSecurityPolicy?.includes("unsafe-eval") ||

@@ -29,6 +29,7 @@ import { formatInWorker } from "./services/formatInWorker";
 import { WorkspaceFileActions } from "./components/WorkspaceFileActions";
 import { EditorIntelligence } from "./components/EditorIntelligence";
 import { MAX_WORKSPACE_FILES } from "./domain/workspaceFiles";
+import { FrameworkPreview } from "./components/FrameworkPreview";
 import "./workspace.css";
 
 type Files = Record<string, string>;
@@ -966,6 +967,8 @@ export function Workspace({
             </button>
           </div>
           {panel === "preview" ? (
+            metadata?.template === "react" || metadata?.template === "angular" ?
+            <FrameworkPreview files={files} framework={metadata.template} /> :
             <iframe
               title="Isolated web preview"
               sandbox="allow-scripts"

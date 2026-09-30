@@ -13,6 +13,7 @@ const budgets = {
   formatterJavaScript: 3_000 * kib,
   sqlRuntime: 1000 * kib,
   typescriptRuntime: 5000 * kib,
+  frameworkRuntimes: 3500 * kib,
 };
 
 const index = await readFile(path.join(dist, "index.html"), "utf8");
@@ -48,6 +49,13 @@ const largestLazy = lazyFiles.reduce(
   lazyFiles[0],
 );
 const measurements = {
+  frameworkRuntimes: (
+    await Promise.all(
+      ["react.js", "angular.js"].map((file) =>
+        stat(path.join(dist, "preview", file)),
+      ),
+    )
+  ).reduce((sum, file) => sum + file.size, 0),
   typescriptRuntime: files
     .filter((file) => file.startsWith("ts-tool-"))
     .reduce((sum, file) => sum + (sizes.get(file) ?? 0), 0),
@@ -80,6 +88,7 @@ console.log(
     `On-demand formatter: ${format(measurements.formatterJavaScript)} / ${format(budgets.formatterJavaScript)}`,
     `On-demand SQL runtime: ${format(measurements.sqlRuntime)} / ${format(budgets.sqlRuntime)}`,
     `On-demand TypeScript compiler: ${format(measurements.typescriptRuntime)} / ${format(budgets.typescriptRuntime)}`,
+    `On-demand framework runtimes: ${format(measurements.frameworkRuntimes)} / ${format(budgets.frameworkRuntimes)}`,
   ].join("\n"),
 );
 if (failures.length)

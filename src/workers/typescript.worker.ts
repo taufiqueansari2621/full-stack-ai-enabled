@@ -1,5 +1,6 @@
 import { compileTypeScript } from "../services/typescriptCompiler";
 import { analyzeEditorSource } from "../services/editorIntelligence";
+import { compileFramework } from "../services/frameworkCompiler";
 
 const libraryModules = import.meta.glob<string>(
   [
@@ -17,21 +18,28 @@ const libraries = Object.fromEntries(
 self.onmessage = (
   event: MessageEvent<{
     source: string;
-    mode?: "analyze";
+    mode?: "analyze" | "framework";
+    files?: Record<string, string>;
+    framework?: "react" | "angular";
     path?: string;
     position?: number;
   }>,
 ) => {
   try {
     self.postMessage(
-      event.data.mode === "analyze"
-        ? analyzeEditorSource(
-            event.data.source,
-            event.data.path ?? "",
-            event.data.position ?? -1,
-            libraries,
+      event.data.mode === "framework"
+        ? compileFramework(
+            event.data.files ?? {},
+            event.data.framework ?? "react",
           )
-        : compileTypeScript(event.data.source, libraries),
+        : event.data.mode === "analyze"
+          ? analyzeEditorSource(
+              event.data.source,
+              event.data.path ?? "",
+              event.data.position ?? -1,
+              libraries,
+            )
+          : compileTypeScript(event.data.source, libraries),
     );
   } catch (error) {
     self.postMessage({

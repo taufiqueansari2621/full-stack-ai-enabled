@@ -7,11 +7,11 @@ Git history.
 ## Executive Status
 
 - **Production URL:** <https://forge-ai-engineering.taufiqueansari895.workers.dev>
-- **Verified Worker version:** `34af2a52-addc-40c8-8694-1bf011d5489f`
+- **Verified Worker version:** `20b3723e-ab8b-4cb3-ac1b-5cd6306da450`
 - **Current branch:** `main`. Git push was rechecked successfully on September 30;
   all six earlier commits are synchronized through `f4a566d`. The connected GitHub
   account works even though the separate GitHub CLI is not signed in.
-- **Verified:** 87 focused runner/domain/security/migration/API-contract/repository/component/state tests, lint, strict
+- **Verified:** 91 focused runner/domain/security/migration/API-contract/repository/component/state tests, lint, strict
   TypeScript/Vite production build, complete local browser regression, 90
   primary responsive checks, six focused lesson viewport checks, live
   route/PWA/security audit, and authenticated production lifecycle.
@@ -37,7 +37,7 @@ capability is not implemented.
 |   9 | Real coding workspace | **Complete** | Parser formatting, syntax highlighting, line numbers, snippets, console/tests, saving/export/history, hints and explanations are joined by compiler-backed JS/TS semantic suggestions and diagnostics, nested file creation, file/folder moves, and confirmed deletion with non-overwriting undo. Browser tests verify completion, persistence, path changes, error recovery and four viewport widths on production. Semantic assistance is bounded to the current file and ES2022 types, not installed packages. |
 |  10 | Multi-language practice           | **Complete** | The architecture progressively supports HTML/CSS/JavaScript preview plus typed runner selection for JavaScript, TypeScript, Node.js, and Python. All eight specified project starters exist. JavaScript and standalone TypeScript execute today; unsupported languages route to the honest remote-sandbox boundary instead of unsafe or fake execution.                                                    |
 |  11 | JavaScript/TypeScript playground | **Complete** | Standalone TypeScript is semantically type-checked and compiled in a disposable browser worker before running through the constrained JavaScript runner. Syntax/type diagnostics, error recovery, input bounds, compiler/execution deadlines, and real exercise tests are verified. Package modules and JSX belong to the still-partial framework preview capability. |
-|  12 | Frontend playground               | **Partial**  | Isolated HTML/CSS/JS live preview and multi-file templates work. React and Angular compilation/preview pipelines remain.                                                                                                                                                                                                                                                               |
+|  12 | Frontend playground | **Complete** | React JSX/TSX and Angular standalone JIT previews now run real bundled frameworks, relative workspace modules, templates/styles and interactive state in an opaque iframe. Explicit build/stop, errors/recovery and stale-output checks are live-verified. Fixed package allowlist; arbitrary npm installs, backend APIs and full typecheck/AOT are not claimed. |
 |  13 | Python/backend execution          | **Complete** | The specification explicitly permits an interface plus safe supported modes when arbitrary execution cannot be secured. `CodeRunner`, `BrowserRunner`, and `RemoteSandboxRunner` now enforce that boundary; Python/backend files remain editable/exportable and clearly report unavailable rather than executing in the primary Worker.                                                |
 |  14 | Challenge system                  | **Partial**  | Quick checks, prediction labs, debugging/mastery work, open-ended Easy/Medium/Hard drills, deterministic workspace tests, hints, attempts, and review scheduling exist. A generalized multi-language judge with authored hidden tests and per-test diagnostics remains.                                                                                                                |
 |  15 | Save user code                    | **Complete** | Local autosave, authenticated D1 workspace persistence, revision conflicts, offline preservation, export, and named snapshots are implemented and production-tested.                                                                                                                                                                                                                   |
@@ -91,8 +91,8 @@ capability is not implemented.
 
 ## Completion Totals
 
-- **Complete:** 57 numbered areas
-- **Partial:** 4 numbered areas
+- **Complete:** 58 numbered areas
+- **Partial:** 3 numbered areas
 - **Pending:** 0 numbered areas
 - **Overall final objective:** partial; it must not be represented as 100% complete.
 
@@ -118,8 +118,9 @@ expensive platform capabilities.
 
 3. Build remote Python/backend execution using a separately isolated sandbox;
    never run it in the application Worker.
-4. Add React/Angular and package-based preview builds on the isolated sandbox
-   boundary. Standalone TypeScript compilation, diagnostics, and execution are live.
+4. React/Angular browser previews are deployed using bundled packages and local
+   modules. Arbitrary package installation and backend previews remain an
+   optional separate sandbox expansion, not part of the free browser runtime.
 5. Add authored hidden challenge tests, per-test diagnostics, and a generalized
    judge across supported languages without exposing private judge cases.
 
