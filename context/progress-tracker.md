@@ -242,6 +242,14 @@ Update this file after every meaningful verified implementation change.
 
 ## In Progress
 
+- October 3 manual acceptance: after the live sign-in screenshot was provided
+  and Forge opened in the user's normal Chrome browser, the user reported
+  "succeeds" for the instructed security-check/account test. Record this as
+  user-reported successful manual acceptance, separate from automated provider
+  rendering/rejection checks. Human challenge testing is no longer a blocker;
+  no claim is made that every registration/recovery variant was manually tested.
+  Email/provider setup and private multi-language judging remain incomplete.
+
 - October 3 public test diagnostics: JS/TS workspace cases now show input,
   expected/actual results, bounded errors and pass/fail/not-run states. Worker
   payload validation rejects malformed/oversized results before UI state;

@@ -17,8 +17,9 @@ Git history.
 - **October 3 hardening:** real production Turnstile widget rendering and
   missing-token rejection on registration/login/recovery pass, together with
   client retry/expiry/token-reset tests and live framework-isolation checks.
-  Successful human challenge completion is still a manual acceptance check;
-  the earlier authenticated lifecycle predates this protection.
+  The user reported successful manual browser testing after opening the live
+  sign-in screen on October 3. This is user-reported acceptance, not a claim
+  that automation passed a human challenge or reverified every account flow.
 - **Toolchain hardening:** Wrangler 4.147.0 and patched locked dependencies are
   verified locally; the full dependency audit reports zero vulnerabilities.
 - **October 3 workspace feedback:** public JS/TS cases show per-case input,
@@ -123,7 +124,8 @@ expensive platform capabilities.
    collected or invented.
    Free managed Turnstile is now configured and deployed with mandatory
    server verification; real widget rendering and missing-token rejection are
-   production-tested. Successful human completion remains a manual check.
+   production-tested. The user subsequently confirmed the manual browser test
+   succeeds; this security acceptance step is no longer outstanding.
 2. Add field Core Web Vitals monitoring and an operator-executed D1 restore
    drill. The checked-in production runbook now documents release, backup,
    restore, rollback, and incident procedures, while CI enforces bundle budgets.

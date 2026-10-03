@@ -29,9 +29,15 @@ frame, public config containing only a site key, and missing-token rejection
 on all three routes. Live public/PWA/security and React/Angular isolation
 regressions pass. No real account was created by the dedicated security test.
 
-## Manual acceptance still required
+## Manual acceptance
 
-In a normal browser open the live site, choose Sign in to Forge and complete
+October 3 follow-up: the user reported "succeeds" after receiving the live
+sign-in screenshot and opening Forge in normal Chrome for the instructed
+security-check/account test. Manual acceptance is now recorded as user-reported
+success; no fake token or automated challenge bypass was used. This does not
+claim manual verification of every recovery/registration/error variant.
+
+For future release checks, in a normal browser open the live site, choose Sign in to Forge and complete
 the security check. Confirm login or registration succeeds with valid account
 input, and a failed credential attempt presents a fresh check. Headless widget
 rendering is not proof of successful human verification. Never add a fake token

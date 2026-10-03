@@ -39,10 +39,12 @@ or paid plan was used. Source and curriculum Markdown are preserved.
   and implementation; connected repository access is not an OAuth app client.
 - Email ownership/recovery still needs a verified sender and a configured mail
   transport. The user previously deferred purchasing/adding the sender domain.
-- Successful human Turnstile completion remains a manual acceptance check,
-  separate from rendering and missing-token rejection.
 - The audit also retains operational field-vitals and an operator-approved
   restore drill; no production restore was attempted as an automated test.
+
+Follow-up: the user subsequently reported the instructed manual browser
+security-check/account test "succeeds". This acceptance step is no longer
+outstanding; it remains user-reported, separate from automated coverage.
 
 Current platform constraints were checked against primary documentation:
 [Cloudflare Dynamic Workers pricing](https://developers.cloudflare.com/dynamic-workers/pricing/)
