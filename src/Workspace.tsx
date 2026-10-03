@@ -967,13 +967,16 @@ export function Workspace({
             </button>
           </div>
           {panel === "preview" ? (
-            metadata?.template === "react" || metadata?.template === "angular" ?
-            <FrameworkPreview files={files} framework={metadata.template} /> :
-            <iframe
-              title="Isolated web preview"
-              sandbox="allow-scripts"
-              srcDoc={preview}
-            />
+            metadata?.template === "react" ||
+            metadata?.template === "angular" ? (
+              <FrameworkPreview files={files} framework={metadata.template} />
+            ) : (
+              <iframe
+                title="Isolated web preview"
+                sandbox="allow-scripts"
+                srcDoc={preview}
+              />
+            )
           ) : (
             <div className="terminal-output">
               {panel === "output" && (
@@ -987,17 +990,13 @@ export function Workspace({
                   {result?.error && (
                     <code className="error">{result.error}</code>
                   )}
-                  {result && (
-                    <small>
-                      Execution: {result.executionMs} ms · Expected output: 9
-                    </small>
-                  )}
+                  {result && <small>Execution: {result.executionMs} ms</small>}
                 </>
               )}
               {panel === "tests" && (
                 <>
                   {result ? (
-                    <div className="test-summary">
+                    <div className="test-summary" role="status">
                       <span className="passed">
                         <CheckCircle2 />
                         {result.passed} passed
@@ -1006,9 +1005,56 @@ export function Workspace({
                         {result.failed ? <CircleX /> : <CheckCircle2 />}
                         {result.failed} failed
                       </span>
+                      {result.tests.some(
+                        (test) => test.status === "not-run",
+                      ) && (
+                        <span>
+                          {
+                            result.tests.filter(
+                              (test) => test.status === "not-run",
+                            ).length
+                          }{" "}
+                          not run
+                        </span>
+                      )}
                     </div>
                   ) : (
                     <p>No test run yet.</p>
+                  )}
+                  {result?.tests.length ? (
+                    <>
+                      <p>
+                        Public practice tests — these run in your browser, not a
+                        private judge.
+                      </p>
+                      <ul
+                        className="test-case-results"
+                        aria-label="Test case results"
+                      >
+                        {result.tests.map((test) => (
+                          <li key={test.name}>
+                            <strong>
+                              {test.name}:{" "}
+                              {test.status === "not-run"
+                                ? "Not run"
+                                : test.status === "passed"
+                                  ? "Passed"
+                                  : "Failed"}
+                            </strong>
+                            <p>
+                              Input: <code>{test.input}</code> · Expected:{" "}
+                              <code>{test.expected}</code> · Actual:{" "}
+                              <code>{test.actual}</code>
+                            </p>
+                            {test.detail && (
+                              <p className="error">{test.detail}</p>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    </>
+                  ) : (
+                    result?.error && <p className="error">{result.error}</p>
                   )}
                 </>
               )}

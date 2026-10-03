@@ -13,7 +13,93 @@ export type CodeRunResult = {
   passed: number;
   failed: number;
   executionMs: number;
+  tests: CodeTestResult[];
 };
+
+export type CodeTestResult = {
+  name: string;
+  status: "passed" | "failed" | "not-run";
+  input: string;
+  expected: string;
+  actual: string;
+  detail: string | null;
+};
+const publicCases = [
+  { name: "adds positive numbers", input: "[2,3,4]", expected: "9" },
+  { name: "supports negative numbers", input: "[-2,5,-1]", expected: "2" },
+  { name: "handles an empty array", input: "[]", expected: "0" },
+];
+function stoppedResult(error: string, executionMs = 0): CodeRunResult {
+  return {
+    logs: [],
+    error,
+    passed: 0,
+    failed: 0,
+    executionMs,
+    tests: publicCases.map((test) => ({
+      ...test,
+      status: "not-run",
+      actual: "Not run",
+      detail: error,
+    })),
+  };
+}
+export function parseRunnerMessage(value: unknown): CodeRunResult {
+  const invalid = () =>
+    stoppedResult(
+      "Execution returned invalid or oversized test data. Run again.",
+    );
+  if (!value || typeof value !== "object") return invalid();
+  const data = value as Record<string, unknown>;
+  const boundedText = (text: unknown, max = 2000): text is string =>
+    typeof text === "string" && text.length <= max;
+  if (
+    !Array.isArray(data.logs) ||
+    data.logs.length > 80 ||
+    !data.logs.every((line) => boundedText(line)) ||
+    !(data.error === null || boundedText(data.error)) ||
+    typeof data.executionMs !== "number" ||
+    !Number.isFinite(data.executionMs) ||
+    data.executionMs < 0 ||
+    data.executionMs > 60000 ||
+    !Array.isArray(data.results)
+  )
+    return invalid();
+  if (data.error !== null) {
+    if (data.results.length) return invalid();
+    return { ...stoppedResult(data.error, data.executionMs), logs: data.logs };
+  }
+  if (data.results.length !== publicCases.length) return invalid();
+  const tests: CodeTestResult[] = [];
+  for (const [index, value] of data.results.entries()) {
+    if (!value || typeof value !== "object") return invalid();
+    const result = value as Record<string, unknown>;
+    const spec = publicCases[index];
+    if (
+      result.name !== spec.name ||
+      result.input !== spec.input ||
+      result.expected !== spec.expected ||
+      typeof result.passed !== "boolean" ||
+      !boundedText(result.actual) ||
+      !(result.detail === null || boundedText(result.detail))
+    )
+      return invalid();
+    tests.push({
+      ...spec,
+      status: result.passed ? "passed" : "failed",
+      actual: result.actual,
+      detail: result.detail,
+    });
+  }
+  return {
+    logs: data.logs,
+    error: null,
+    tests,
+    passed: tests.filter((test) => test.status === "passed").length,
+    failed: tests.filter((test) => test.status === "failed").length,
+    executionMs: Math.round(data.executionMs * 100) / 100,
+  };
+}
 
 export interface CodeRunner {
   readonly id: string;
@@ -29,7 +115,8 @@ export class BrowserRunner implements CodeRunner {
   }
 
   async run(request: CodeRunRequest): Promise<CodeRunResult> {
-    const worker = new Worker("/runner-worker.js");
+    // Keep stale service-worker cache entries from crossing protocol versions.
+    const worker = new Worker("/runner-worker.js?protocol=2");
     const timeoutMs = Math.min(
       Math.max(request.timeoutMs ?? 1_500, 250),
       1_500,
@@ -37,42 +124,22 @@ export class BrowserRunner implements CodeRunner {
     return new Promise((resolve) => {
       const timeout = window.setTimeout(() => {
         worker.terminate();
-        resolve({
-          logs: [],
-          error: `Execution stopped after ${timeoutMs / 1_000} seconds.`,
-          passed: 0,
-          failed: 3,
-          executionMs: timeoutMs,
-        });
+        resolve(
+          stoppedResult(
+            `Execution stopped after ${timeoutMs / 1_000} seconds.`,
+            timeoutMs,
+          ),
+        );
       }, timeoutMs);
-      worker.onmessage = (
-        event: MessageEvent<{
-          logs: string[];
-          results: { passed: boolean }[];
-          error: string | null;
-          executionMs: number;
-        }>,
-      ) => {
+      worker.onmessage = (event: MessageEvent<unknown>) => {
         window.clearTimeout(timeout);
         worker.terminate();
-        resolve({
-          logs: event.data.logs,
-          error: event.data.error,
-          passed: event.data.results.filter((test) => test.passed).length,
-          failed: event.data.results.filter((test) => !test.passed).length,
-          executionMs: Math.round(event.data.executionMs * 100) / 100,
-        });
+        resolve(parseRunnerMessage(event.data));
       };
       worker.onerror = (event) => {
         window.clearTimeout(timeout);
         worker.terminate();
-        resolve({
-          logs: [],
-          error: event.message,
-          passed: 0,
-          failed: 3,
-          executionMs: 0,
-        });
+        resolve(stoppedResult(event.message.slice(0, 2000)));
       };
       worker.postMessage({ code: request.files[request.entryPath] ?? "" });
     });
@@ -93,6 +160,7 @@ export class RemoteSandboxRunner implements CodeRunner {
       passed: 0,
       failed: 0,
       executionMs: 0,
+      tests: [],
     };
   }
 }
@@ -110,13 +178,7 @@ export class TypeScriptRunner implements CodeRunner {
         request.files[request.entryPath] ?? "",
       );
       if (compiled.diagnostics.length)
-        return {
-          logs: [],
-          error: compiled.diagnostics.join("\n"),
-          passed: 0,
-          failed: 0,
-          executionMs: 0,
-        };
+        return stoppedResult(compiled.diagnostics.join("\n").slice(0, 2000));
       const result = await browserRunner.run({
         ...request,
         language: "javascript",
@@ -130,16 +192,11 @@ export class TypeScriptRunner implements CodeRunner {
         ],
       };
     } catch (error) {
-      return {
-        logs: [],
-        error:
-          error instanceof Error
-            ? error.message
-            : "TypeScript failed to start.",
-        passed: 0,
-        failed: 0,
-        executionMs: 0,
-      };
+      return stoppedResult(
+        error instanceof Error
+          ? error.message.slice(0, 2000)
+          : "TypeScript failed to start.",
+      );
     }
   }
 }

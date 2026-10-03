@@ -160,6 +160,11 @@ Components must not read or write browser storage directly. Storage access belon
 
 ## Code Execution Boundary
 
+- Public JS/TS exercise feedback carries bounded individual case results through
+  a validated Worker-message boundary. Summaries derive from cases; compilation,
+  startup and deadline failures explicitly mark cases not run. Browser cases
+  remain inspectable and tamperable, never private or server-authoritative.
+
 - Free framework previews transpile bounded local modules in the existing
   disposable compiler worker, then run bundled React or Angular JIT in an
   opaque-origin iframe. Fixed framework imports and local modules/templates/CSS

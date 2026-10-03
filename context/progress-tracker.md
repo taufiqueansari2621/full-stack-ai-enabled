@@ -242,6 +242,22 @@ Update this file after every meaningful verified implementation change.
 
 ## In Progress
 
+- October 3 public test diagnostics: JS/TS workspace cases now show input,
+  expected/actual results, bounded errors and pass/fail/not-run states. Worker
+  payload validation rejects malformed/oversized results before UI state;
+  counts derive from the three public cases. A versioned runner URL prevents
+  stale offline cache entries mixing message protocols. 27 Node + 91 Vitest
+  tests, lint/build/budgets, full responsive learning regression, dedicated local
+  diagnostic cases and production-style editor/TypeScript regression pass.
+  Early browser attempts exposed a test label/lazy-mount timing mismatch and a
+  development-server compiler timeout; corrected diagnostics and built-runtime
+  checks pass. Live diagnostics (including intentionally stale cached runner),
+  public/PWA/security regression and managed-widget/missing-token checks pass
+  on Worker `b057958b-3d8d-40ca-9619-5b5c0dca7a99`. No migration, provider,
+  inference call or paid service. Audit remains 58 complete, 3 partial areas;
+  private judging, provider credentials/email sender, and human challenge
+  completion are not claimed. See the release record for unresolved inputs.
+
 - October 3 toolchain hardening: pinned Wrangler 4.147.0 and updated its locked
   runtime dependencies plus brace-expansion 5.0.12. Full npm audit now reports
   zero vulnerabilities, resolving all four prior development-tool findings.

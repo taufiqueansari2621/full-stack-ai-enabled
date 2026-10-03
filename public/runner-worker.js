@@ -37,15 +37,34 @@ self.onmessage = (event) => {
     );
     const sum = getSum();
     const tests = [
-      ["adds positive numbers", () => sum && sum([2, 3, 4]) === 9],
-      ["supports negative numbers", () => sum && sum([-2, 5, -1]) === 2],
-      ["handles an empty array", () => sum && sum([]) === 0],
+      { name: "adds positive numbers", input: [2, 3, 4], expected: 9 },
+      { name: "supports negative numbers", input: [-2, 5, -1], expected: 2 },
+      { name: "handles an empty array", input: [], expected: 0 },
     ];
-    const results = tests.map(([name, test]) => {
+    const results = tests.map(({ name, input, expected }) => {
       try {
-        return { name, passed: Boolean(test()) };
+        if (typeof sum !== "function")
+          throw new Error(
+            "Define a function named sum before running the tests.",
+          );
+        const actual = sum([...input]);
+        return {
+          name,
+          passed: actual === expected,
+          input: JSON.stringify(input),
+          expected: String(expected),
+          actual: (format(actual) ?? String(actual)).slice(0, 2000),
+          detail: null,
+        };
       } catch (error) {
-        return { name, passed: false, detail: String(error) };
+        return {
+          name,
+          passed: false,
+          input: JSON.stringify(input),
+          expected: String(expected),
+          actual: "No result",
+          detail: String(error).slice(0, 2000),
+        };
       }
     });
     self.postMessage({
@@ -58,7 +77,7 @@ self.onmessage = (event) => {
     self.postMessage({
       logs,
       results: [],
-      error: String(error),
+      error: String(error).slice(0, 2000),
       executionMs: performance.now() - started,
     });
   }

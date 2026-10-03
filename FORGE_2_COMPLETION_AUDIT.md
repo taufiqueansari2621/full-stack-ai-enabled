@@ -7,10 +7,10 @@ Git history.
 ## Executive Status
 
 - **Production URL:** <https://forge-ai-engineering.taufiqueansari895.workers.dev>
-- **Verified Worker version:** `eeab0d3c-bb95-4c39-ac1f-f870e526b5cd`
+- **Verified Worker version:** `b057958b-3d8d-40ca-9619-5b5c0dca7a99`
 - **Current branch:** `main`. The October 3 account-security release is committed
   and pushed as `507c12e`. GitHub push works through the connected credentials.
-- **Verified:** 112 focused runner/domain/security/migration/API-contract/repository/component/state tests, lint, strict
+- **Verified:** 118 focused runner/domain/security/migration/API-contract/repository/component/state tests, lint, strict
   TypeScript/Vite production build, complete local browser regression, 90
   primary responsive checks, six focused lesson viewport checks, live
   route/PWA/security audit, and authenticated production lifecycle.
@@ -21,6 +21,11 @@ Git history.
   the earlier authenticated lifecycle predates this protection.
 - **Toolchain hardening:** Wrangler 4.147.0 and patched locked dependencies are
   verified locally; the full dependency audit reports zero vulnerabilities.
+- **October 3 workspace feedback:** public JS/TS cases show per-case input,
+  expected/actual, failures and not-run states. Worker output is validated and
+  bounded, and a versioned runner URL prevents stale offline-cache protocol
+  mixing. Dedicated local/live diagnostic and local editor/TypeScript checks
+  pass. These are public browser tests, not private server judging.
 - **Assessment:** the core account-based learning product is real and deployed,
   but the complete Forge 2.0 specification is **not yet 100% complete**.
 
@@ -45,7 +50,7 @@ capability is not implemented.
 |  11 | JavaScript/TypeScript playground  | **Complete** | Standalone TypeScript is semantically type-checked and compiled in a disposable browser worker before running through the constrained JavaScript runner. Syntax/type diagnostics, error recovery, input bounds, compiler/execution deadlines, and real exercise tests are verified. Package modules and JSX belong to the still-partial framework preview capability.                                                                                                                                             |
 |  12 | Frontend playground               | **Complete** | React JSX/TSX and Angular standalone JIT previews now run real bundled frameworks, relative workspace modules, templates/styles and interactive state in an opaque iframe. Explicit build/stop, errors/recovery and stale-output checks are live-verified. Fixed package allowlist; arbitrary npm installs, backend APIs and full typecheck/AOT are not claimed.                                                                                                                                                  |
 |  13 | Python/backend execution          | **Complete** | The specification explicitly permits an interface plus safe supported modes when arbitrary execution cannot be secured. `CodeRunner`, `BrowserRunner`, and `RemoteSandboxRunner` now enforce that boundary; Python/backend files remain editable/exportable and clearly report unavailable rather than executing in the primary Worker.                                                                                                                                                                           |
-|  14 | Challenge system                  | **Partial**  | Quick checks, prediction labs, debugging/mastery work, open-ended Easy/Medium/Hard drills, deterministic workspace tests, hints, attempts, and review scheduling exist. A generalized multi-language judge with authored hidden tests and per-test diagnostics remains.                                                                                                                                                                                                                                           |
+|  14 | Challenge system                  | **Partial**  | Quick checks, prediction labs, debugging/mastery work, open-ended Easy/Medium/Hard drills, deterministic workspace tests, hints, attempts, and review scheduling exist. Public JS/TS cases have real per-test diagnostics and bounded message validation. A generalized multi-language judge with authored hidden tests remains. |
 |  15 | Save user code                    | **Complete** | Local autosave, authenticated D1 workspace persistence, revision conflicts, offline preservation, export, and named snapshots are implemented and production-tested.                                                                                                                                                                                                                                                                                                                                              |
 |  16 | Project workspace                 | **Complete** | Projects are working environments with progress and tasks plus all 16 required brief sections: problem, requirements, user stories, architecture, data model, API design, security, accessibility, performance, milestones, acceptance criteria, tests, deployment, documentation, and retrospective. The linked workspace supplies files, editor, preview, tests, AI mentor, snapshots, and export.                                                                                                              |
 |  17 | Project creation                  | **Complete** | New Project accepts a name, description, goals, and one of all specified starters: Blank, HTML/CSS/JavaScript, React, Angular, Node.js, Full Stack, Python, or AI/RAG. It generates editable files, README guidance, and typed metadata.                                                                                                                                                                                                                                                                          |
@@ -130,8 +135,9 @@ expensive platform capabilities.
 4. React/Angular browser previews are deployed using bundled packages and local
    modules. Arbitrary package installation and backend previews remain an
    optional separate sandbox expansion, not part of the free browser runtime.
-5. Add authored hidden challenge tests, per-test diagnostics, and a generalized
-   judge across supported languages without exposing private judge cases.
+5. Add authored hidden challenge tests and a generalized judge across supported
+   languages without exposing private judge cases. Public JS/TS per-case
+   diagnostics are now deployed and verified; browser tests cannot be private.
 
 ### Product-completeness gaps
 
