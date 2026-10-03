@@ -23,6 +23,11 @@
 - Screenshot review caught inherited modal styles; a scoped follow-up adds
   horizontal checkbox layout and readable 14/12px copy, guarded by actual
   computed-style browser assertions. Final follow-up version recorded below.
+  Commit `770608f` is pushed and final Worker
+  `ef1afda1-ced2-43db-b951-cc6653cbe792` is live. Final production browser flow,
+  opt-out, readable text/horizontal checkbox and all four widths pass; refreshed
+  screenshot captured. Transient network push/upload failures resolved on
+  retry; no data or billing change. CSS 148.4 KiB remains within budget.
   Email sender, optional OAuth, isolated private judge and D1 restore drill
   remain separate work; no claim of 100% completion.
 

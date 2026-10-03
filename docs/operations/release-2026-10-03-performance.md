@@ -36,5 +36,15 @@ Local full gates still pass; final layout rollout/version is recorded below
 after deployment. Screenshot uses a disposable local test profile, not an
 account or real learner records.
 
+Follow-up commit `770608f` is pushed and deployed as Worker
+`ef1afda1-ced2-43db-b951-cc6653cbe792`. The first push and asset upload failed
+transiently; retry succeeded without changing billing, configuration or data.
+Final live browser checks passed consent/no-SDK defaults, native INP/CLS HTTP
+200, opt-out persistence, keyboard, all four widths, horizontal checkbox and
+14/12px computed text sizes. Screenshot was refreshed from this final live
+version. Earlier live verification also observed LCP; missing metrics are
+expected for some visits and never fabricated. Final CSS 148.4 KiB; budgets
+still pass. Local test servers were stopped after verification.
+
 Email/domain configuration, optional OAuth registration, separate isolated
 private judge and operator D1 restore drill are not implemented by this unit.
