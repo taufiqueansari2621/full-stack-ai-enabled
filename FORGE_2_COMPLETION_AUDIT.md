@@ -8,9 +8,8 @@ Git history.
 
 - **Production URL:** <https://forge-ai-engineering.taufiqueansari895.workers.dev>
 - **Verified Worker version:** `eeab0d3c-bb95-4c39-ac1f-f870e526b5cd`
-- **Current branch:** `main`. Git push was rechecked successfully on September 30;
-  all six earlier commits are synchronized through `f4a566d`. The connected GitHub
-  account works even though the separate GitHub CLI is not signed in.
+- **Current branch:** `main`. The October 3 account-security release is committed
+  and pushed as `507c12e`. GitHub push works through the connected credentials.
 - **Verified:** 112 focused runner/domain/security/migration/API-contract/repository/component/state tests, lint, strict
   TypeScript/Vite production build, complete local browser regression, 90
   primary responsive checks, six focused lesson viewport checks, live
@@ -20,6 +19,8 @@ Git history.
   client retry/expiry/token-reset tests and live framework-isolation checks.
   Successful human challenge completion is still a manual acceptance check;
   the earlier authenticated lifecycle predates this protection.
+- **Toolchain hardening:** Wrangler 4.147.0 and patched locked dependencies are
+  verified locally; the full dependency audit reports zero vulnerabilities.
 - **Assessment:** the core account-based learning product is real and deployed,
   but the complete Forge 2.0 specification is **not yet 100% complete**.
 

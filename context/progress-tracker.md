@@ -242,6 +242,14 @@ Update this file after every meaningful verified implementation change.
 
 ## In Progress
 
+- October 3 toolchain hardening: pinned Wrangler 4.147.0 and updated its locked
+  runtime dependencies plus brace-expansion 5.0.12. Full npm audit now reports
+  zero vulnerabilities, resolving all four prior development-tool findings.
+  Reverified 21 Node + 91 Vitest tests, lint, strict builds, bundle budgets,
+  Wrangler deploy dry run, and local real session-revocation/security browser
+  flows. No broad audit fix, application dependency update, migration or new
+  production deployment was needed; live security release remains unchanged.
+
 - October 3: free hostname-restricted managed Turnstile is deployed as Worker
   `eeab0d3c-bb95-4c39-ac1f-f870e526b5cd`. Registration, login and recovery enforce
   bounded tokens, exact host/action checks and a ten-second provider deadline;
