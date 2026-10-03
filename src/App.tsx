@@ -1,3 +1,4 @@
+import { PerformancePreference } from "./PerformancePreference";
 import {
   lazy,
   Suspense,
@@ -2238,6 +2239,7 @@ function SettingsOverlay({
             {dark ? "Use light" : "Use dark"}
           </button>
         </div>
+        <PerformancePreference />
         <div className="setting-row">
           <div>
             <b>Where your work is saved</b>

@@ -126,9 +126,11 @@ expensive platform capabilities.
    server verification; real widget rendering and missing-token rejection are
    production-tested. The user subsequently confirmed the manual browser test
    succeeds; this security acceptance step is no longer outstanding.
-2. Add field Core Web Vitals monitoring and an operator-executed D1 restore
-   drill. The checked-in production runbook now documents release, backup,
-   restore, rollback, and incident procedures, while CI enforces bundle budgets.
+2. Execute an operator-controlled D1 restore drill. Default-off opt-in field
+   Core Web Vitals monitoring is implemented and locally browser-verified;
+   production rollout evidence belongs in the October 3 release notes. The
+   runbook documents sampling/privacy limitations, release, backup, restore,
+   rollback and incident procedures, while CI enforces bundle budgets.
 
 ### Core capability gaps
 

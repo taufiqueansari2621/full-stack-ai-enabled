@@ -85,6 +85,14 @@ Do not perform a large mechanical reorganization. Move code into these boundarie
 
 ## State Model
 
+Performance diagnostics are a separate, default-off browser preference, not
+learner progress. An opted-in document lazily loads standard web-vitals once;
+opt-out immediately latches reporting off until reload. The same-origin,
+credential-free collector accepts only strict coarse measurements and emits
+structured Worker logs. It reuses existing hashed-IP rate limits; no private
+content, identity, raw URL, DOM attribution or metric database is introduced.
+See spec 44 for sampling, consent and provider-metadata limitations.
+
 Separate state by lifetime:
 
 - **Ephemeral UI state:** active tab, open panel, selected filter, modal state.

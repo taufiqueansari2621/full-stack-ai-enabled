@@ -11,6 +11,7 @@ import { aiLabRoutes } from "./routes/aiLab";
 import { learningRecordRoutes } from "./routes/learningRecords";
 import { portfolioRoutes } from "./routes/portfolio";
 import { certificateRoutes } from "./routes/certificates";
+import { webVitalRoutes } from "./routes/webVitals";
 import { openApiRoutes } from "./openapi";
 import { API_VERSION, normalizeApiPath } from "./apiVersion";
 import type { Env } from "./types";
@@ -43,6 +44,7 @@ const routes: Route[] = [
   ...learningRecordRoutes,
   ...portfolioRoutes,
   ...certificateRoutes,
+  ...webVitalRoutes,
 ];
 
 function findRoute(method: string, pathname: string) {

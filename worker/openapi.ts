@@ -1,4 +1,5 @@
 import { json, type Route } from "./http.ts";
+import { VITAL_ROUTES } from "../src/domain/webVitals.ts";
 
 const jsonContent = (schema: Record<string, unknown>) => ({
   "application/json": { schema },
@@ -218,6 +219,39 @@ export const OPENAPI_DOCUMENT = {
     },
     "/health": {
       get: operation("getHealth", "Check Worker and D1 health", "Operations"),
+    },
+    "/metrics/web-vitals": {
+      post: {
+        ...operation(
+          "reportWebVital",
+          "Report an opted-in browser performance sample",
+          "Operations",
+          {
+            requestSchema: {
+              type: "object",
+              additionalProperties: false,
+              required: [
+                "version",
+                "consent",
+                "name",
+                "value",
+                "route",
+                "device",
+              ],
+              properties: {
+                version: { const: 1 },
+                consent: { const: true },
+                name: { enum: ["LCP", "CLS", "INP"] },
+                value: { type: "number", minimum: 0, maximum: 60000 },
+                route: { enum: VITAL_ROUTES },
+                device: { enum: ["mobile", "tablet", "desktop"] },
+              },
+            },
+          },
+        ),
+        description:
+          "Exact same-origin Origin and application/json required. Maximum body 4096 bytes; CLS <= 10, LCP/INP <= 60000ms. 60 reports per IP-hash quota hour. No cookies needed. Client-reported diagnostic samples, not authoritative population scores.",
+      },
     },
     "/openapi.json": {
       get: operation(

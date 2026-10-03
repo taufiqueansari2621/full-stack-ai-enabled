@@ -2,6 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { ErrorBoundary } from "./app/ErrorBoundary";
 import { ForgeRoot } from "./app/ForgeRoot";
+import { startPerformanceMonitoring } from "./services/performanceMonitoring";
 import "./styles.css";
 import "./functional.css";
 import "./fixes.css";
@@ -13,6 +14,8 @@ createRoot(document.getElementById("root")!).render(
     </ErrorBoundary>
   </StrictMode>,
 );
+
+void startPerformanceMonitoring();
 
 if ("serviceWorker" in navigator && import.meta.env.PROD) {
   window.addEventListener("load", () => {

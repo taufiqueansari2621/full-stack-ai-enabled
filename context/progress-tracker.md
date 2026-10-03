@@ -1,5 +1,25 @@
 # Progress Tracker
 
+## 2026-10-03 — Opt-in field performance monitoring (local verification)
+
+- Added default-off browser-local Settings consent, lazy standard web-vitals
+  measurements, credential-free bounded reporting and immediate opt-out.
+- Same-origin strict collector logs only coarse client-reported measurements,
+  using existing IP-hash quotas; no metric table, migration or paid service.
+- 27 Node tests + 128 Vitest tests pass. Lint, production builds, bundle gates
+  and npm audit pass (zero vulnerabilities). Entry JS 465.9 KiB, total app JS
+  757.8 KiB; separate vitals chunk 5.26 kB raw.
+- Production-style Chrome emitted real native INP/CLS samples accepted by the
+  local Worker. Default off, reload-to-enable, cookie/referrer omission, strict
+  payload keys, keyboard checkbox, immediate opt-out, persisted off and
+  375/768/1280/1440px layout passed without page errors. Existing full learner
+  regression also passed 90 responsive and six focused lesson checks.
+- Spec 44 and runbook document sampling, provider metadata, Free log limits
+  and December pricing re-check. These samples do not prove population p75.
+- Production rollout/live verification will be recorded after deployment.
+  Email sender, optional OAuth, isolated private judge and D1 restore drill
+  remain separate work; no claim of 100% completion.
+
 ## 2026-09-19 — Cloudflare account migration
 
 - Moved the live Forge deployment from the Valorled Cloudflare account to `taufiqueansari895@gmail.com`.

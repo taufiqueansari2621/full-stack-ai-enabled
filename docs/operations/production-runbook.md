@@ -132,3 +132,45 @@ history or restore an old database over current learner data.
 - Certificate issuance is naturally idempotent per learner and certificate.
 - Collection responses are bounded server-side; future unbounded collections
   must add opaque cursor pagination before release.
+## Opt-in field performance samples
+
+Learner Settings → **Share performance** is off by default, browser-local and
+not part of cloud progress. Enable and reload to start; disable to immediately
+abort pending sends and block further reporting until reload. Storage failures
+fail closed. The standard, pinned web-vitals 5.3 library is self-hosted in a
+5.26 kB lazy chunk; it is not loaded while sharing is off.
+
+In Cloudflare → Workers & Pages → `forge-ai-engineering` → Observability, filter
+structured custom logs by `event = client_web_vital`. Group samples by `name`,
+`route`, `device`, and `rating`; inspect numeric `value`. LCP/INP are milliseconds,
+CLS is unitless. `clientReported = true` explicitly marks untrusted diagnostics.
+Keep exported reports to these fields; do not dump request headers or other
+logs containing private data. For a safe browser check, run:
+
+```sh
+FORGE_VITALS_TEST_URL=https://forge-ai-engineering.taufiqueansari895.workers.dev npm run test:vitals
+```
+
+Only the first reported metric value per library ID is sent, capped at 30 per
+document (including BFCache restorations). Initial coarse document route and
+viewport category are fixed; SPA transitions do not create new visits. No SDK
+IDs, DOM attribution, full URLs, queries, usernames, account identifiers or
+learning content are submitted. Missing/unsupported metrics, including INP
+without interaction, are not fabricated. Fetch omits credentials and referrer,
+has a five-second deadline and no retry or offline queue. Collector requires
+exact Origin, JSON <= 4096 bytes, strict schema, explicit consent and the
+existing 60/hour IP-hash quota; no metrics table or migration is added.
+
+These opt-in first-report samples are not representative population p75, final
+full-visit measurements, or evidence that the site's Core Web Vitals pass.
+Browser measurements can be forged; do not use them for learner scoring. The
+existing quota stores an IP-derived hash, and Cloudflare invocation metadata
+still exists: do not promise absolute anonymity. Existing account and Worker
+logging policies remain unchanged.
+
+As checked October 3, 2026, Workers Free includes 200,000 log events/day and
+three-day retention; no paid plan or separate analytics service was enabled.
+Quota exhaustion can drop observations. Cloudflare announces pricing changes
+from December 1, 2026; re-check before that date. Sources:
+[Google web-vitals](https://github.com/GoogleChrome/web-vitals) and
+[Cloudflare Workers Logs](https://developers.cloudflare.com/workers/observability/logs/workers-logs/).
