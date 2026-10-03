@@ -127,8 +127,8 @@ expensive platform capabilities.
    production-tested. The user subsequently confirmed the manual browser test
    succeeds; this security acceptance step is no longer outstanding.
 2. Execute an operator-controlled D1 restore drill. Default-off opt-in field
-   Core Web Vitals monitoring is implemented and locally browser-verified;
-   production rollout evidence belongs in the October 3 release notes. The
+   Core Web Vitals monitoring is deployed and live browser/log-verified;
+   production evidence is in the October 3 performance release notes. The
    runbook documents sampling/privacy limitations, release, backup, restore,
    rollback and incident procedures, while CI enforces bundle budgets.
 

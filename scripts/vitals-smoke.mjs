@@ -122,6 +122,32 @@ try {
         (label) => label.getBoundingClientRect().height >= 44,
       ),
     );
+    assert.ok(
+      await page.$eval(
+        ".performance-control",
+        (label) => Number.parseFloat(getComputedStyle(label).fontSize) >= 14,
+      ),
+    );
+    assert.ok(
+      await page.$eval(
+        ".performance-preference span",
+        (text) => Number.parseFloat(getComputedStyle(text).fontSize) >= 12,
+      ),
+    );
+    assert.equal(
+      await page.$eval(
+        ".performance-control",
+        (label) => getComputedStyle(label).display,
+      ),
+      "flex",
+    );
+    assert.equal(
+      await page.$eval(
+        ".performance-control",
+        (label) => getComputedStyle(label).flexDirection,
+      ),
+      "row",
+    );
   }
   assert.equal(
     reports.length,

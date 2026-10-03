@@ -2912,21 +2912,33 @@ h3 {
 .performance-preference {
   flex-wrap: wrap;
 }
-.performance-control {
+.performance-preference .performance-control {
   display: flex;
+  flex-direction: row;
   align-items: center;
   gap: var(--space-2, 8px);
   min-height: 44px;
   cursor: pointer;
   color: var(--text);
+  font-size: 14px;
 }
-.performance-control input {
+.performance-preference .performance-control input {
   width: 18px;
   height: 18px;
   accent-color: var(--teal);
+  padding: 0;
+  margin: 0;
+  flex: 0 0 18px;
 }
-.performance-control:focus-within {
+.performance-preference .performance-control:focus-within {
   outline: 2px solid var(--teal);
   outline-offset: 4px;
   border-radius: var(--radius-sm, 8px);
+}
+.setting-row.performance-preference b {
+  font-size: 14px;
+}
+.setting-row.performance-preference span {
+  font-size: 12px;
+  line-height: 1.6;
 }

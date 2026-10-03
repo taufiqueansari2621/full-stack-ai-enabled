@@ -1,6 +1,6 @@
 # Progress Tracker
 
-## 2026-10-03 — Opt-in field performance monitoring (local verification)
+## 2026-10-03 — Opt-in field performance monitoring
 
 - Added default-off browser-local Settings consent, lazy standard web-vitals
   measurements, credential-free bounded reporting and immediate opt-out.
@@ -16,7 +16,13 @@
   regression also passed 90 responsive and six focused lesson checks.
 - Spec 44 and runbook document sampling, provider metadata, Free log limits
   and December pricing re-check. These samples do not prove population p75.
-- Production rollout/live verification will be recorded after deployment.
+- Implementation commit `2f93d12` is pushed and deployed on Worker
+  `1bcfdffb-8d3d-4aca-9c21-28b2c4f81040`. Live native LCP/INP/CLS each received
+  HTTP 200, and filtered tail confirmed the custom event without exposing
+  request metadata. Live public/PWA/offline and Turnstile checks pass.
+- Screenshot review caught inherited modal styles; a scoped follow-up adds
+  horizontal checkbox layout and readable 14/12px copy, guarded by actual
+  computed-style browser assertions. Final follow-up version recorded below.
   Email sender, optional OAuth, isolated private judge and D1 restore drill
   remain separate work; no claim of 100% completion.
 
