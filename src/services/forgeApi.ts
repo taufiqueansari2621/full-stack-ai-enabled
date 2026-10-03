@@ -91,6 +91,10 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const forgeApi = {
+  accountSecurityConfig: (signal?: AbortSignal) =>
+    request<{ turnstileSiteKey: string | null }>("/api/auth/config", {
+      signal,
+    }),
   activeSessions: (signal?: AbortSignal) =>
     request<{
       sessions: {
@@ -148,17 +152,27 @@ export const forgeApi = {
     password: string;
     fullName: string;
     username: string;
+    turnstileToken?: string;
   }) =>
     request<{ user: AccountUser; recoveryCode: string }>("/api/auth/register", {
       method: "POST",
       body: JSON.stringify(input),
     }),
-  login: (input: { email: string; password: string }) =>
+  login: (input: {
+    email: string;
+    password: string;
+    turnstileToken?: string;
+  }) =>
     request<{ user: AccountUser }>("/api/auth/login", {
       method: "POST",
       body: JSON.stringify(input),
     }),
-  recover: (input: { email: string; recoveryCode: string; password: string }) =>
+  recover: (input: {
+    email: string;
+    recoveryCode: string;
+    password: string;
+    turnstileToken?: string;
+  }) =>
     request<{ ok: true; recoveryCode: string }>("/api/auth/recover", {
       method: "POST",
       body: JSON.stringify(input),

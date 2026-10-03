@@ -24,6 +24,7 @@
   "vars": {
     "ENVIRONMENT": "production",
     "REGISTRATION_MODE": "open",
+    "TURNSTILE_SITE_KEY": "0x4AAAAAAFM2wSBxiz25F4qk",
   },
   "observability": {
     "enabled": true,

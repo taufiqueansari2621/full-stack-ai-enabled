@@ -55,7 +55,7 @@ function findRoute(method: string, pathname: string) {
 
 const SECURITY_HEADERS = {
   "content-security-policy":
-    "default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self' data: https://fonts.gstatic.com; form-action 'self'; frame-ancestors 'none'; frame-src 'self' https://www.youtube-nocookie.com; img-src 'self' data:; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; worker-src 'self'",
+    "default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self' data: https://fonts.gstatic.com; form-action 'self'; frame-ancestors 'none'; frame-src 'self' https://www.youtube-nocookie.com https://challenges.cloudflare.com; img-src 'self' data:; object-src 'none'; script-src 'self' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; worker-src 'self'",
   "cross-origin-opener-policy": "same-origin",
   "referrer-policy": "strict-origin-when-cross-origin",
   "strict-transport-security": "max-age=31536000; includeSubDomains",
@@ -177,12 +177,18 @@ export default {
         RUNNER_CONTENT_SECURITY_POLICY,
       );
     secured.headers.set("x-request-id", requestId);
-    if (["/preview/index.html", "/preview/", "/preview"].includes(url.pathname)) {
-      secured.headers.set("content-security-policy", `default-src 'none'; base-uri 'none'; connect-src 'none'; form-action 'none'; frame-ancestors 'self'; script-src ${url.origin}/preview/ 'unsafe-eval'; style-src 'unsafe-inline'; img-src data:; sandbox allow-scripts`);
+    if (
+      ["/preview/index.html", "/preview/", "/preview"].includes(url.pathname)
+    ) {
+      secured.headers.set(
+        "content-security-policy",
+        `default-src 'none'; base-uri 'none'; connect-src 'none'; form-action 'none'; frame-ancestors 'self'; script-src ${url.origin}/preview/ 'unsafe-eval'; style-src 'unsafe-inline'; img-src data:; sandbox allow-scripts`,
+      );
       secured.headers.set("x-frame-options", "SAMEORIGIN");
       secured.headers.set("cache-control", "no-store");
     }
-    if (url.pathname.startsWith("/preview/")) secured.headers.set("cache-control", "no-store");
+    if (url.pathname.startsWith("/preview/"))
+      secured.headers.set("cache-control", "no-store");
     if (/^\/assets\/sql-tool-sql\.worker-[\w-]+\.js$/.test(url.pathname))
       secured.headers.set(
         "content-security-policy",

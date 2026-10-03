@@ -21,6 +21,7 @@
     "test:account": "node scripts/account-smoke.mjs",
     "test:sessions": "node scripts/session-smoke.mjs",
     "test:frameworks": "node scripts/framework-smoke.mjs",
+    "test:security": "node scripts/turnstile-smoke.mjs",
     "verify:bundle": "node scripts/check-bundle-budgets.mjs",
     "lint": "eslint ."
   },

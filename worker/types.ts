@@ -18,6 +18,8 @@ export interface Env {
   ASSETS: { fetch(request: Request): Promise<Response> };
   ENVIRONMENT?: string;
   REGISTRATION_MODE?: string;
+  TURNSTILE_SITE_KEY?: string;
+  TURNSTILE_SECRET_KEY?: string;
   AI: {
     run(
       model: string,

@@ -242,6 +242,20 @@ Update this file after every meaningful verified implementation change.
 
 ## In Progress
 
+- October 3: free hostname-restricted managed Turnstile is deployed as Worker
+  `eeab0d3c-bb95-4c39-ac1f-f870e526b5cd`. Registration, login and recovery enforce
+  bounded tokens, exact host/action checks and a ten-second provider deadline;
+  failures close safely. Secrets are stored directly in Cloudflare, never source
+  or browser config. The account UI handles load, expiry, retry, cleanup and
+  fresh tokens after every attempt. Local gate: 21 Node + 91 Vitest tests,
+  lint/build/budgets, mock-client browser checks and full responsive regression
+  pass. Live real widget rendering, missing-token rejection on all three routes,
+  four account viewport widths, PWA/public/security and framework-isolation
+  regressions pass. Human challenge completion is not asserted. Email delivery
+  is deferred per user until a sender domain is available; optional OAuth and
+  a private multi-language judge remain incomplete. Audit stays 58 complete,
+  3 partial broad areas. No paid services, database migration or AI calls.
+
 - September 30 framework previews: real local React JSX/TSX and Angular
   standalone JIT previews now render and update state/signals in an opaque
   iframe. Local module/style/template resolution, package allowlisting,

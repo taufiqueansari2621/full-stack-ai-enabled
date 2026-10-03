@@ -23,6 +23,18 @@ npm run verify:cloudflare
 FORGE_ACCOUNT_TEST_URL=https://forge-ai-engineering.taufiqueansari895.workers.dev npm run test:account
 ```
 
+Since October 3, production account creation/login/recovery require real
+Turnstile tokens. The old unattended account/session lifecycle scripts cannot
+complete a human challenge: use them locally with an empty site-key override,
+and do not introduce production test-key bypasses. Run the real-widget and
+missing-token rejection suite, then manually verify successful account access:
+
+```bash
+FORGE_SECURITY_TEST_URL=https://forge-ai-engineering.taufiqueansari895.workers.dev FORGE_SECURITY_LIVE=1 npm run test:security
+```
+
+See `release-2026-10-03-security.md` for exact automated/manual coverage.
+
 The API health response must report `status: ok`, `database: connected`, and a
 finite D1 latency. The response must also contain `x-request-id`,
 `x-forge-api-version: 1`, and `server-timing` headers.

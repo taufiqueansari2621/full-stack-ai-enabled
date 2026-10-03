@@ -114,6 +114,16 @@ Components must not read or write browser storage directly. Storage access belon
 
 ## Authentication and Access
 
+- Cloud account registration, login, and recovery require managed Turnstile
+  verification on the configured production hostname. A public no-store config
+  exposes only the site key. The secret remains a Worker secret. Siteverify has
+  a ten-second deadline and checks success, exact hostname and exact action;
+  missing tokens, replay/provider rejection and outages fail closed. Existing
+  rate limits and session/revocation behavior remain unchanged. The SDK is only
+  loaded on account forms, tokens are renewed after every attempt, and local
+  learning remains independent. Unconfigured local development can override
+  `TURNSTILE_SITE_KEY` to empty; production never uses test keys or bypasses.
+
 - The free-only session-management unit reuses the sessions table. Owner-scoped
   bounded reads expose dates and current-session status, never tokens or hashes.
   Same-origin revocations exclude the current token in SQL and invalidate future

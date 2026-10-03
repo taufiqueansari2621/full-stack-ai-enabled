@@ -60,6 +60,12 @@ const objectBody = {
   type: "object",
   additionalProperties: true,
 };
+const challengeToken = {
+  type: "string",
+  maxLength: 2048,
+  description:
+    "Required when account challenge is configured; use a fresh token for this action.",
+};
 
 const query = (name: string, description: string) => ({
   name,
@@ -89,6 +95,13 @@ export const OPENAPI_DOCUMENT = {
     { name: "Certificates" },
   ],
   paths: {
+    "/auth/config": {
+      get: operation(
+        "accountSecurityConfig",
+        "Read public account challenge site key",
+        "Authentication",
+      ),
+    },
     "/auth/sessions": {
       get: operation(
         "listSessions",
@@ -228,6 +241,11 @@ export const OPENAPI_DOCUMENT = {
               fullName: { type: "string", minLength: 2, maxLength: 80 },
               username: { type: "string", minLength: 3, maxLength: 30 },
               password: { type: "string", minLength: 10, maxLength: 128 },
+              turnstileToken: {
+                type: "string",
+                maxLength: 2048,
+                description: "Required when account challenge is configured",
+              },
             },
             additionalProperties: false,
           },
@@ -240,13 +258,35 @@ export const OPENAPI_DOCUMENT = {
         "recoverAccount",
         "Rotate a password with a recovery code",
         "Authentication",
-        { mutating: true, requestSchema: objectBody },
+        {
+          mutating: true,
+          requestSchema: {
+            type: "object",
+            required: ["email", "recoveryCode", "password"],
+            properties: {
+              email: { type: "string", format: "email" },
+              recoveryCode: { type: "string" },
+              password: { type: "string", minLength: 10, maxLength: 128 },
+              turnstileToken: challengeToken,
+            },
+            additionalProperties: false,
+          },
+        },
       ),
     },
     "/auth/login": {
       post: operation("login", "Create a session", "Authentication", {
         mutating: true,
-        requestSchema: objectBody,
+        requestSchema: {
+          type: "object",
+          required: ["email", "password"],
+          properties: {
+            email: { type: "string", format: "email" },
+            password: { type: "string" },
+            turnstileToken: challengeToken,
+          },
+          additionalProperties: false,
+        },
       }),
     },
     "/auth/logout": {

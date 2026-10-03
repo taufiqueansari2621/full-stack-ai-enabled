@@ -16,6 +16,7 @@ import {
 } from "../security";
 import type { AuthUser, Env } from "../types";
 import { enforceRateLimit } from "../rateLimit";
+import { verifyAccountChallenge } from "../turnstile";
 
 type UserRow = AuthUser & { passwordHash: string; passwordSalt: string };
 
@@ -42,6 +43,13 @@ async function createSession(env: Env, userId: string, request: Request) {
 
 export const authRoutes: Route[] = [
   {
+    method: "GET",
+    pattern: "/api/auth/config",
+    async handler({ env }) {
+      return json({ turnstileSiteKey: env.TURNSTILE_SITE_KEY ?? null });
+    },
+  },
+  {
     method: "POST",
     pattern: "/api/auth/register",
     async handler({ request, env }) {
@@ -58,6 +66,12 @@ export const authRoutes: Route[] = [
       const username = field(body.username).toLowerCase();
       const password = typeof body.password === "string" ? body.password : "";
       await enforceRateLimit(env, request, "register", email, 3, 60 * 60);
+      await verifyAccountChallenge(
+        env,
+        request,
+        body.turnstileToken,
+        "register",
+      );
       if (!EMAIL.test(email) || email.length > 254)
         throw new HttpError(
           400,
@@ -137,6 +151,12 @@ export const authRoutes: Route[] = [
       const recoveryCode = field(body.recoveryCode);
       const password = typeof body.password === "string" ? body.password : "";
       await enforceRateLimit(env, request, "recover", email, 5, 60 * 60);
+      await verifyAccountChallenge(
+        env,
+        request,
+        body.turnstileToken,
+        "recover",
+      );
       if (password.length < 10 || password.length > 128)
         throw new HttpError(
           400,
@@ -189,6 +209,7 @@ export const authRoutes: Route[] = [
       const email = field(body.email).toLowerCase();
       const password = typeof body.password === "string" ? body.password : "";
       await enforceRateLimit(env, request, "login", email, 10, 15 * 60);
+      await verifyAccountChallenge(env, request, body.turnstileToken, "login");
       const user = await env.DB.prepare(
         `SELECT u.id, u.email, u.password_hash AS passwordHash, u.password_salt AS passwordSalt,
                 p.full_name AS fullName, p.username

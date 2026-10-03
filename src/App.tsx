@@ -1,4 +1,11 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from "react";
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import {
   Activity,
   ArrowRight,
@@ -84,6 +91,7 @@ import {
 import { catalogLessonId } from "./topicIds";
 import { buildNotifications } from "./domain/notifications";
 import { useDialogFocus } from "./hooks/useDialogFocus";
+import { AccountChallenge } from "./AccountChallenge";
 import {
   CertificateVerification,
   CertificatesPage,
@@ -2311,6 +2319,20 @@ function Welcome({
     username: "",
     recoveryCode: "",
   });
+  const [challengeAttempt, setChallengeAttempt] = useState(0);
+  const challengeKey = `${mode}:${challengeAttempt}`;
+  const [challenge, setChallenge] = useState<{
+    key: string;
+    token: string | null;
+  }>({ key: "", token: null });
+  const receiveChallenge = useCallback(
+    (token: string | null) => {
+      setChallenge({ key: challengeKey, token });
+    },
+    [challengeKey],
+  );
+  const challengeReady =
+    challenge.key === challengeKey && challenge.token !== null;
   const [form, setForm] = useState({
     fullName: "",
     username: "",
@@ -2374,19 +2396,28 @@ function Welcome({
           className="profile-card panel"
           onSubmit={async (event) => {
             event.preventDefault();
-            if (creating) await account.register(accountForm);
-            else if (recovering) {
-              const recovered = await account.recover({
-                email: accountForm.email,
-                recoveryCode: accountForm.recoveryCode,
-                password: accountForm.password,
-              });
-              if (recovered) setMode("account-login");
-            } else
-              await account.login({
-                email: accountForm.email,
-                password: accountForm.password,
-              });
+            if (!challengeReady || account.loading) return;
+            const turnstileToken = challenge.token ?? "";
+            try {
+              if (creating)
+                await account.register({ ...accountForm, turnstileToken });
+              else if (recovering) {
+                const recovered = await account.recover({
+                  email: accountForm.email,
+                  recoveryCode: accountForm.recoveryCode,
+                  password: accountForm.password,
+                  turnstileToken,
+                });
+                if (recovered) setMode("account-login");
+              } else
+                await account.login({
+                  email: accountForm.email,
+                  password: accountForm.password,
+                  turnstileToken,
+                });
+            } finally {
+              setChallengeAttempt((value) => value + 1);
+            }
           }}
         >
           <button
@@ -2504,10 +2535,15 @@ function Welcome({
               />
             </label>
           </div>
+          <AccountChallenge
+            key={challengeKey}
+            action={creating ? "register" : recovering ? "recover" : "login"}
+            onVerified={receiveChallenge}
+          />
           <button
             className="primary-button"
             type="submit"
-            disabled={account.loading}
+            disabled={account.loading || !challengeReady}
           >
             {account.loading
               ? "Please wait…"
