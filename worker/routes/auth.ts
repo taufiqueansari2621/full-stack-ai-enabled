@@ -17,6 +17,8 @@ import {
 import type { AuthUser, Env } from "../types";
 import { enforceRateLimit } from "../rateLimit";
 import { verifyAccountChallenge } from "../turnstile";
+import { issueAccountEmail } from "./accountEmail";
+import { mailConfigured } from "../mail/gmail";
 
 type UserRow = AuthUser & { passwordHash: string; passwordSalt: string };
 
@@ -46,7 +48,7 @@ export const authRoutes: Route[] = [
     method: "GET",
     pattern: "/api/auth/config",
     async handler({ env }) {
-      return json({ turnstileSiteKey: env.TURNSTILE_SITE_KEY ?? null });
+      return json({ turnstileSiteKey: env.TURNSTILE_SITE_KEY || null });
     },
   },
   {
@@ -134,6 +136,17 @@ export const authRoutes: Route[] = [
         .bind(crypto.randomUUID(), userId, await sha256(recoveryCode), now)
         .run();
       const cookie = await createSession(env, userId, request);
+      if (mailConfigured(env)) {
+        try {
+          await issueAccountEmail(
+            env,
+            { id: userId, email, verified: null },
+            "verify",
+          );
+        } catch {
+          /* Registration stays usable when delivery is unavailable. */
+        }
+      }
       return json(
         { user: { id: userId, email, fullName, username }, recoveryCode },
         201,
@@ -178,6 +191,9 @@ export const authRoutes: Route[] = [
         );
       const next = await hashPassword(password);
       const now = new Date().toISOString();
+      await env.DB.prepare("DELETE FROM account_email_tokens WHERE user_id = ?")
+        .bind(record.userId)
+        .run();
       await env.DB.prepare(
         "UPDATE users SET password_hash = ?, password_salt = ?, updated_at = ? WHERE id = ?",
       )

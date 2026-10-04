@@ -6,6 +6,7 @@ export type RequestContext = {
   env: Env;
   url: URL;
   user: AuthUser | null;
+  waitUntil?: (task: Promise<unknown>) => void;
 };
 
 export type Route = {

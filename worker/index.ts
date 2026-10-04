@@ -1,6 +1,7 @@
 import { authenticate } from "./auth";
 import { HttpError, apiError, json, type Route } from "./http";
 import { authRoutes } from "./routes/auth";
+import { accountEmailRoutes } from "./routes/accountEmail";
 import { sessionRoutes } from "./routes/sessions";
 import { progressRoutes } from "./routes/progress";
 import { profileRoutes } from "./routes/profile";
@@ -34,6 +35,7 @@ const routes: Route[] = [
   },
   ...openApiRoutes,
   ...authRoutes,
+  ...accountEmailRoutes,
   ...sessionRoutes,
   ...progressRoutes,
   ...profileRoutes,
@@ -87,7 +89,12 @@ function operationalLog(
   else console.info(entry);
 }
 
-async function handleApi(request: Request, env: Env, requestId: string) {
+async function handleApi(
+  request: Request,
+  env: Env,
+  requestId: string,
+  waitUntil?: (task: Promise<unknown>) => void,
+) {
   const url = new URL(request.url);
   const route = findRoute(request.method, url.pathname);
   if (!route) return apiError(404, "NOT_FOUND", "API route not found.");
@@ -95,7 +102,14 @@ async function handleApi(request: Request, env: Env, requestId: string) {
     const user = await authenticate(request, env);
     if (route.auth && !user)
       return apiError(401, "AUTH_REQUIRED", "Log in to continue.");
-    return await route.handler({ request, requestId, env, url, user });
+    return await route.handler({
+      request,
+      requestId,
+      env,
+      url,
+      user,
+      waitUntil,
+    });
   } catch (error) {
     if (error instanceof HttpError)
       return apiError(error.status, error.code, error.message);
@@ -114,7 +128,11 @@ async function handleApi(request: Request, env: Env, requestId: string) {
 }
 
 export default {
-  async fetch(request: Request, env: Env) {
+  async fetch(
+    request: Request,
+    env: Env,
+    execution?: { waitUntil(task: Promise<unknown>): void },
+  ) {
     const requestId = crypto.randomUUID();
     const startedAt = Date.now();
     const url = new URL(request.url);
@@ -122,7 +140,12 @@ export default {
     let response: Response;
     try {
       response = apiRequest
-        ? await handleApi(request, env, requestId)
+        ? await handleApi(
+            request,
+            env,
+            requestId,
+            execution?.waitUntil.bind(execution),
+          )
         : await env.ASSETS.fetch(request);
     } catch (error) {
       operationalLog("error", "worker_unhandled_error", {

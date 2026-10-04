@@ -1,5 +1,30 @@
 # Progress Tracker
 
+## 2026-10-04 — Gmail verification and email recovery
+
+- Added fixed-host TLS Gmail submission using the existing server-only
+  `GMAIL_APP_PASSWORD` secret; no secret values read or paid provider enabled.
+- Additive migration 0012 is applied locally and remotely after production
+  Time Travel bookmark
+  `0000003f-00000000-000050fa-86b23018ccb0292c5f9a9773b6b04f8c`.
+  Tokens are hashed, expiring, purpose-bound and atomically single-use. Password
+  reset revokes sessions and rotates recovery codes; old code recovery remains.
+- Added authenticated verification status/resend, verification on registration,
+  Turnstile-protected anonymous reset requests/confirmation, atomic owner/hour
+  and global/day email caps, fixed canonical fragment links and explicit
+  confirmation. Reset mail runs in waitUntil to avoid exposing SMTP timing.
+- Local full gate passes: 32 Node + 145 Vitest tests, lint, strict build and
+  bundle budgets (entry 471.1 KiB; total 763.0 KiB; CSS 149.1 KiB).
+  Actual local Worker Chrome tests pass verification, scanner-safe visits,
+  fragment stripping, expiry, replay, reset, revoked session, new-password
+  login, keyboard and 375/768/1280/1440px layouts. Synthetic fixtures removed.
+- Broad account smoke reached AI lab execution but failed on an upstream
+  non-JSON Cloudflare response; that full AI regression is not a pass.
+  Provider SMTP acceptance, inbox receipt and human production email/Turnstile
+  acceptance remain unverified at this checkpoint. Deployment follows.
+- Optional OAuth registrations and an approved isolated private multi-language
+  judge remain external prerequisites; the whole product is not claimed 100%.
+
 ## 2026-10-04 — Managed recovery drill
 
 - Created an unbound synthetic-only D1 database and applied all eleven current

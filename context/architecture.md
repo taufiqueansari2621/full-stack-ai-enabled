@@ -122,6 +122,15 @@ Components must not read or write browser storage directly. Storage access belon
 
 ## Authentication and Access
 
+- Gmail account mail is submitted server-side to a fixed TLS SMTP endpoint using
+  a Worker secret. Migration 0012 stores hashed, purpose-bound expiring links;
+  explicit POST consumption atomically verifies an inbox or resets credentials,
+  revokes sessions and rotates recovery codes. Fragment links avoid request-URL
+  logging. Only verified accounts receive reset mail; anonymous responses do not
+  disclose account existence. Atomic owner/hour and global/day quotas bound mail
+  submissions. Delivery failures preserve registration and recovery-code access.
+  SMTP acceptance is not proof of inbox receipt. See spec 46.
+
 - Cloud account registration, login, and recovery require managed Turnstile
   verification on the configured production hostname. A public no-store config
   exposes only the site key. The secret remains a Worker secret. Siteverify has

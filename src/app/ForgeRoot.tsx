@@ -1,4 +1,5 @@
 import App from "../App";
+import { EmailLinkPage } from "../features/account/AccountEmail";
 
 export function ForgeRoot() {
   if (
@@ -7,5 +8,9 @@ export function ForgeRoot() {
     new URLSearchParams(window.location.search).has("forge-error-boundary-test")
   )
     throw new Error("Intentional local error-boundary verification");
-  return <App />;
+  return window.location.pathname === "/account/email" ? (
+    <EmailLinkPage />
+  ) : (
+    <App />
+  );
 }

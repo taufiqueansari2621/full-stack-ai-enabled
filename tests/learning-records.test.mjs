@@ -8,11 +8,11 @@ import {
   INTERVIEW_ANSWERS_SQL,
 } from "../worker/repositories/learningRecords.ts";
 
+const migrationNames = (await readdir("migrations"))
+  .filter((file) => file.endsWith(".sql"))
+  .sort();
 const migrations = await Promise.all(
-  (await readdir("migrations"))
-    .filter((file) => file.endsWith(".sql"))
-    .sort()
-    .map((file) => readFile(`migrations/${file}`, "utf8")),
+  migrationNames.map((file) => readFile(`migrations/${file}`, "utf8")),
 );
 const now = "2026-09-29T09:00:00.000Z";
 const answer = (id, sessionId) => ({
@@ -25,14 +25,14 @@ const answer = (id, sessionId) => ({
 });
 function setup() {
   const db = new DatabaseSync(":memory:");
-  for (const sql of migrations.slice(0, -1)) db.exec(sql);
+  const projectionIndex = migrationNames.findIndex((file) =>
+    file.startsWith("0011_"),
+  );
+  for (const sql of migrations.slice(0, projectionIndex)) db.exec(sql);
   for (const id of ["alice", "bob"])
-    db.prepare("INSERT INTO users VALUES(?,?,'hash','salt',?,?)").run(
-      id,
-      `${id}@test.invalid`,
-      now,
-      now,
-    );
+    db.prepare(
+      "INSERT INTO users(id,email,password_hash,password_salt,created_at,updated_at) VALUES(?,?,'hash','salt',?,?)",
+    ).run(id, `${id}@test.invalid`, now, now);
   const state = {
     version: 1,
     projectTasks: { p05: ["m1", "m2"] },
@@ -53,7 +53,7 @@ function setup() {
     0,
     now,
   );
-  db.exec(migrations.at(-1));
+  for (const sql of migrations.slice(projectionIndex)) db.exec(sql);
   const adapter = {
     prepare(sql) {
       let params = [];

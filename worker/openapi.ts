@@ -96,6 +96,60 @@ export const OPENAPI_DOCUMENT = {
     { name: "Certificates" },
   ],
   paths: {
+    "/auth/email": {
+      get: operation(
+        "emailStatus",
+        "Read your email verification status",
+        "Authentication",
+        { authenticated: true },
+      ),
+    },
+    "/auth/email/verify/request": {
+      post: operation(
+        "sendVerification",
+        "Send a verification email",
+        "Authentication",
+        { authenticated: true, mutating: true },
+      ),
+    },
+    "/auth/email/reset/request": {
+      post: operation(
+        "requestEmailReset",
+        "Request a reset link for a verified inbox",
+        "Authentication",
+        {
+          mutating: true,
+          requestSchema: {
+            type: "object",
+            required: ["email"],
+            properties: {
+              email: { type: "string", format: "email" },
+              turnstileToken: challengeToken,
+            },
+          },
+        },
+      ),
+    },
+    "/auth/email/consume": {
+      post: operation(
+        "consumeEmail",
+        "Explicitly consume a single-use verification or reset link",
+        "Authentication",
+        {
+          mutating: true,
+          requestSchema: {
+            type: "object",
+            required: ["token", "purpose"],
+            properties: {
+              token: { type: "string", minLength: 43, maxLength: 43 },
+              purpose: { enum: ["verify", "reset"] },
+              password: { type: "string", minLength: 10, maxLength: 128 },
+              turnstileToken: challengeToken,
+            },
+          },
+        },
+      ),
+    },
     "/auth/config": {
       get: operation(
         "accountSecurityConfig",

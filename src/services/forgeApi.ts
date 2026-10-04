@@ -91,6 +91,32 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const forgeApi = {
+  emailStatus: (signal?: AbortSignal) =>
+    request<{
+      email: string;
+      verifiedAt: string | null;
+      deliveryConfigured: boolean;
+    }>("/api/auth/email", { signal }),
+  sendVerification: () =>
+    request<{ ok: true }>("/api/auth/email/verify/request", {
+      method: "POST",
+      body: "{}",
+    }),
+  requestEmailReset: (email: string, turnstileToken: string) =>
+    request<{ ok: true; message: string }>("/api/auth/email/reset/request", {
+      method: "POST",
+      body: JSON.stringify({ email, turnstileToken }),
+    }),
+  consumeEmail: (input: {
+    token: string;
+    purpose: "verify" | "reset";
+    password?: string;
+    turnstileToken?: string;
+  }) =>
+    request<{ ok: true; recoveryCode?: string }>("/api/auth/email/consume", {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
   accountSecurityConfig: (signal?: AbortSignal) =>
     request<{ turnstileSiteKey: string | null }>("/api/auth/config", {
       signal,

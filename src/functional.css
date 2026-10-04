@@ -3515,6 +3515,47 @@ h3,
 .account-form {
   grid-template-columns: 1fr;
 }
+.account-email-form,
+.account-email-form form,
+.account-email-setting {
+  display: grid;
+  gap: var(--space-4, 16px);
+  min-width: 0;
+}
+.account-email-form p,
+.account-email-setting p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.account-email-setting {
+  padding-block: var(--space-4, 16px);
+  border-bottom: 1px solid var(--line);
+}
+.account-email-form label {
+  display: grid;
+  gap: var(--space-2, 8px);
+  font-size: 14px;
+}
+.account-email-form input {
+  width: 100%;
+  min-height: 46px;
+  padding: 0 13px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm, 8px);
+  color: var(--text);
+  background: var(--panel-2);
+  font: inherit;
+}
+.account-email-form input:focus {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
+}
+.account-email-form .back-link {
+  min-height: 44px;
+  font-size: 14px;
+}
 .account-error {
   margin-top: 18px;
   padding: 12px 14px;

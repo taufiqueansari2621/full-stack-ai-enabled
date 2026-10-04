@@ -1,5 +1,9 @@
 import { PerformancePreference } from "./PerformancePreference";
 import {
+  EmailResetRequest,
+  EmailVerificationPanel,
+} from "./features/account/AccountEmail";
+import {
   lazy,
   Suspense,
   useCallback,
@@ -2180,6 +2184,7 @@ export function PlaceholderPage({
 }
 
 function SettingsOverlay({
+  cloudEnabled,
   close,
   store,
   dark,
@@ -2189,6 +2194,7 @@ function SettingsOverlay({
   logout,
   startOver,
 }: {
+  cloudEnabled: boolean;
   close: () => void;
   store: ForgeStore;
   dark: boolean;
@@ -2240,6 +2246,7 @@ function SettingsOverlay({
           </button>
         </div>
         <PerformancePreference />
+        {cloudEnabled && <EmailVerificationPanel />}
         <div className="setting-row">
           <div>
             <b>Where your work is saved</b>
@@ -2313,6 +2320,7 @@ function Welcome({
     | "account-login"
     | "account-create"
     | "account-recover"
+    | "account-email-reset"
   >("welcome");
   const [accountForm, setAccountForm] = useState({
     email: "",
@@ -2385,6 +2393,8 @@ function Welcome({
         </div>
       </main>
     );
+  if (mode === "account-email-reset")
+    return <EmailResetRequest onBack={() => setMode("account-login")} />;
   if (
     mode === "account-login" ||
     mode === "account-create" ||
@@ -2567,6 +2577,15 @@ function Welcome({
               ? "Already have an account? Sign in"
               : "New to Forge? Create an account"}
           </button>
+          {!creating && !recovering && (
+            <button
+              className="text-button account-mode-switch"
+              type="button"
+              onClick={() => setMode("account-email-reset")}
+            >
+              Email a password-reset link
+            </button>
+          )}
           {!creating && !recovering && (
             <button
               className="text-button account-mode-switch"
@@ -3172,6 +3191,7 @@ function LearningWorkspace({
       )}{" "}
       {settingsOpen && (
         <SettingsOverlay
+          cloudEnabled={cloudEnabled}
           close={() => setSettingsOpen(false)}
           store={store}
           dark={dark}

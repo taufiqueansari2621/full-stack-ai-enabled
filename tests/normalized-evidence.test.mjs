@@ -17,17 +17,17 @@ const sql = await Promise.all(
 const now = "2026-09-27T12:00:00.000Z";
 function setup(backfill = false) {
   const db = new DatabaseSync(":memory:");
-  for (const statement of sql.slice(0, -1)) db.exec(statement);
+  const projectionIndex = migrationFiles.findIndex((file) =>
+    file.startsWith("0010_"),
+  );
+  for (const statement of sql.slice(0, projectionIndex)) db.exec(statement);
   for (const id of ["alice", "bob"])
-    db.prepare("INSERT INTO users VALUES(?, ?, 'hash', 'salt', ?, ?)").run(
-      id,
-      `${id}@example.com`,
-      now,
-      now,
-    );
+    db.prepare(
+      "INSERT INTO users(id,email,password_hash,password_salt,created_at,updated_at) VALUES(?, ?, 'hash', 'salt', ?, ?)",
+    ).run(id, `${id}@example.com`, now, now);
   if (backfill)
     db.prepare(SAVE_PROGRESS_SQL).get("alice", JSON.stringify(state()), 0, now);
-  db.exec(sql.at(-1));
+  for (const statement of sql.slice(projectionIndex)) db.exec(statement);
   return db;
 }
 function state() {

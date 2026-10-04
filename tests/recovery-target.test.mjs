@@ -18,7 +18,7 @@ test("recovery fixture projects real notes and topics and supports post-restore 
     for (const file of readdirSync("migrations").sort())
       db.exec(readFileSync(`migrations/${file}`, "utf8"));
     db.exec(
-      "INSERT INTO users VALUES ('drill-user','fixture@example.invalid','synthetic','synthetic','2026-10-04','2026-10-04')",
+      "INSERT INTO users(id,email,password_hash,password_salt,created_at,updated_at) VALUES ('drill-user','fixture@example.invalid','synthetic','synthetic','2026-10-04','2026-10-04')",
     );
     db.prepare(
       "INSERT INTO progress_snapshots VALUES (?, ?, 1, '2026-10-04')",
