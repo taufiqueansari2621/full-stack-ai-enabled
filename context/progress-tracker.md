@@ -34,6 +34,18 @@
   provider replies, addresses, tokens or credentials. No automatic mail retry.
   Local test repeat runs isolate synthetic IP quotas; the legitimate ten/hour
   consume limit had blocked a repeat run. Inbox delivery is still not complete.
+- Final diagnostics Worker `59afb279-9173-47aa-acdd-6fe9475b0849` is live;
+  follow-up `e1323b4` is pushed. Non-secret configuration probe reports valid
+  app-password structure, without connecting to SMTP or sending again. That is
+  not proof of Google authorization. The initial generic failure does not
+  establish whether authentication or transport failed; it is not retried.
+- Final 32 Node + 146 Vitest tests, lint, build and bundle gates pass. Fresh
+  local browser flow passes after waiting for rendered app readiness instead
+  of unrelated background network idleness. Live email status/resend require
+  authentication, and email reset rejects a missing challenge. Human inbox/link
+  acceptance and real Gmail delivery remain pending; request Google app-password
+  authorization review without exposing credentials. The implementation is
+  deployed, but this integration is not declared production-complete.
 
 ## 2026-10-04 — Managed recovery drill
 

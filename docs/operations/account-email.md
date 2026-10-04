@@ -1,5 +1,17 @@
 # Gmail account email operations
 
+## Release status — October 4, 2026
+
+Implementation and additive migration 0012 are deployed. Local verification and
+reset pass through the real Worker/browser; 178 automated tests, lint, production
+build and bundle budgets pass. The real one-message production submission failed
+with `MAIL_UNAVAILABLE`. A subsequent configuration-only check found a valid
+app-password format, not valid Google authorization. Both exact synthetic
+principals were removed. No automatic mail retry or inbox receipt is claimed.
+The integration remains pending Google authorization/transport investigation and
+successful delivery plus human inbox/link acceptance. Review Google app-password
+authorization in the account dashboard, never paste the credential into chat.
+
 The Worker sends fixed verification/reset templates through TLS Gmail SMTP on
 port 465 as `zerotoaiforge@gmail.com`. Only `GMAIL_APP_PASSWORD` is a secret;
 never copy it into chat, source files, logs or browser configuration. Google

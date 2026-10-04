@@ -33,14 +33,16 @@ try {
     "cf-connecting-ip": `192.0.2.${(marker % 254) + 1}`,
   });
   const visitLink = async (fragment) => {
-    await page.goto("about:blank");
+    await page.goto("about:blank", { waitUntil: "domcontentloaded" });
     await page.goto(`${base}/account/email#${fragment}`, {
-      waitUntil: "networkidle0",
+      waitUntil: "domcontentloaded",
     });
+    await page.waitForSelector(".account-email-form");
+    await page.waitForFunction(() => window.location.hash === "");
   };
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
-  await page.goto(base, { waitUntil: "networkidle0" });
+  await page.goto(base, { waitUntil: "domcontentloaded" });
   const registration = await page.evaluate(async (marker) => {
     const response = await fetch("/api/auth/register", {
       method: "POST",
