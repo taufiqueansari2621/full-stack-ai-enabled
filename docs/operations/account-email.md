@@ -1,5 +1,18 @@
 # Gmail account email operations
 
+## October 5 follow-up
+
+The account and real-AI regression now passes. Gmail delivery is still not
+confirmed. `scripts/email-delivery-diagnose.mjs --send-one-to-owned-mailbox`
+starts a filtered tail and one explicit synthetic-mail probe, printing only
+allowlisted stage/status metadata. Never automatically repeat an ambiguous
+submission. A missing stage is inconclusive, not proof of Google rejection.
+Today the probe exited unsuccessfully but no stage was captured. Before a new
+send, review Google app-password authorization privately; Google documents
+that changing the main account password revokes app passwords:
+https://support.google.com/accounts/answer/185833?hl=en
+Do not send any password or token to this chat.
+
 ## Release status — October 4, 2026
 
 Implementation and additive migration 0012 are deployed. Local verification and

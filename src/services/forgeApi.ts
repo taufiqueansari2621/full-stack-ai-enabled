@@ -80,7 +80,16 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
       ...init?.headers,
     },
   });
-  const data = (await response.json()) as T & ApiErrorBody;
+  let data: T & ApiErrorBody;
+  try {
+    data = (await response.json()) as T & ApiErrorBody;
+  } catch {
+    throw new ForgeApiError(
+      response.ok ? 502 : response.status,
+      "UNREADABLE_RESPONSE",
+      "Forge received an unreadable service response. Retry later; no result was accepted.",
+    );
+  }
   if (!response.ok)
     throw new ForgeApiError(
       response.status,

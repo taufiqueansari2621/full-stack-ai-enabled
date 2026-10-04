@@ -1,5 +1,30 @@
 # Progress Tracker
 
+## 2026-10-05 — Remaining integration review and upstream recovery
+
+- Fresh full local account smoke passes with actual Workers AI: embeddings,
+  RAG, tool calling, agent workflow, evaluation and the existing account,
+  workspace, portfolio/certificate, recovery and authorization flows. This
+  closes the October 4 failed AI-regression check; it does not prove provider
+  uptime or human production Turnstile acceptance.
+- Fixed the client API boundary so non-JSON upstream failures become a safe
+  typed `UNREADABLE_RESPONSE`, never raw HTML/provider details or confusing
+  JSON-parser messages. Two new tests plus actual Chrome mocked-outage checks
+  pass, including retry availability, keyboard and four responsive widths.
+- Full local gate: 32 Node + 148 Vitest tests, lint, strict build, bundle
+  budgets. Entry 471.3 KiB, total app JS 763.2 KiB, CSS 149.1 KiB.
+- Secret-name-only inspection still finds Gmail and Turnstile secrets, not
+  OAuth or sandbox credentials. Asked for registered provider applications and
+  an existing free isolated host. Neither may be invented or replaced with an
+  unsafe shared app-process runner.
+- Explicit Gmail diagnostic collector first sent nothing because JSON tails
+  omit CLI readiness text. Corrected readiness mode; one operator probe then
+  ran and exited unsuccessfully, but no failure-stage event was captured.
+  This does not establish authentication versus transport failure or inbox
+  delivery. No automatic retry, secret retrieval, paid service or migration.
+  The collector now also reports sanitized probe status and cleanup confirmation
+  when available; null stage is deliberately inconclusive.
+
 ## 2026-10-04 — Gmail verification and email recovery
 
 - Added fixed-host TLS Gmail submission using the existing server-only

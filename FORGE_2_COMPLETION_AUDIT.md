@@ -119,6 +119,10 @@ expensive platform capabilities.
 1. Add email ownership verification and
    optional Google/GitHub OAuth after provider credentials and redirect domains
    are explicitly configured.
+   October 5 update: email verification/reset implementation and migration 0012
+   are deployed and locally verified, but real Gmail delivery remains unresolved.
+   Gmail secret format alone is not provider authorization. Optional OAuth app
+   registrations/credentials and an existing free isolated judge host are absent.
    Active-session listing and confirmed revocation are deployed and live-verified using the
    existing database; device fingerprints and locations are intentionally not
    collected or invented.
@@ -164,6 +168,8 @@ The following cannot be safely invented from source code alone:
 - Authorized transactional email transport for account verification/recovery:
   a verified provider/domain or explicitly authorized Gmail sending. Providing
   `zerotoaiforge@gmail.com` alone does not authorize automated sends.
+  The user subsequently authorized Gmail and configured an app-password secret;
+  the implementation is deployed, but successful SMTP/inbox acceptance is not.
 - Sandbox/container cost ceiling, supported package policy, network policy, and
   required Python/Node versions.
 

@@ -12,6 +12,39 @@ afterEach(() => {
 });
 
 describe("Forge API repository", () => {
+  it("turns non-JSON upstream failures into a safe typed error without leaking the body", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValue(
+          new Response(
+            "Your worker exceeded a limit; internal upstream detail",
+            { status: 503 },
+          ),
+        ),
+    );
+    await expect(forgeApi.session()).rejects.toMatchObject({
+      status: 503,
+      code: "UNREADABLE_RESPONSE",
+      message:
+        "Forge received an unreadable service response. Retry later; no result was accepted.",
+    });
+  });
+  it("rejects malformed successful responses rather than accepting a result", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValue(
+          new Response("<html>upstream</html>", { status: 200 }),
+        ),
+    );
+    await expect(forgeApi.session()).rejects.toMatchObject({
+      status: 502,
+      code: "UNREADABLE_RESPONSE",
+    });
+  });
   it("sends workspace saves through the authenticated JSON boundary", async () => {
     const fetchMock = vi
       .fn()
@@ -21,7 +54,11 @@ describe("Forge API repository", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     await expect(
-      forgeApi.saveWorkspace({ "src/main.js": "console.log('safe')" }, "src/main.js", 6),
+      forgeApi.saveWorkspace(
+        { "src/main.js": "console.log('safe')" },
+        "src/main.js",
+        6,
+      ),
     ).resolves.toEqual({ revision: 7, updatedAt: "2026-09-25T00:00:00.000Z" });
 
     expect(fetchMock).toHaveBeenCalledOnce();
@@ -42,15 +79,19 @@ describe("Forge API repository", () => {
   it("preserves structured API failures for the interface to recover from", async () => {
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue(
-        jsonResponse(
-          { error: { code: "UNAUTHORIZED", message: "Please sign in." } },
-          401,
+      vi
+        .fn()
+        .mockResolvedValue(
+          jsonResponse(
+            { error: { code: "UNAUTHORIZED", message: "Please sign in." } },
+            401,
+          ),
         ),
-      ),
     );
 
-    await expect(forgeApi.session()).rejects.toMatchObject<Partial<ForgeApiError>>({
+    await expect(forgeApi.session()).rejects.toMatchObject<
+      Partial<ForgeApiError>
+    >({
       name: "Error",
       status: 401,
       code: "UNAUTHORIZED",
