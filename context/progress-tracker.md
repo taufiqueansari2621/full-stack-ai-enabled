@@ -24,6 +24,12 @@
   delivery. No automatic retry, secret retrieval, paid service or migration.
   The collector now also reports sanitized probe status and cleanup confirmation
   when available; null stage is deliberately inconclusive.
+- Implementation `db7335f` is committed and pushed; Worker
+  `603820a1-21d9-4919-b485-8748b622a9eb` is live. Final production
+  health/assets/security-header/public/PWA/offline/browser verification passes.
+  Count-only remote check confirms zero remaining synthetic mail-probe accounts.
+  No existing learner account was used or removed. No production migration or
+  new paid service. Remaining OAuth/isolated-host questions await user input.
 
 ## 2026-10-04 — Gmail verification and email recovery
 
