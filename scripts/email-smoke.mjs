@@ -28,6 +28,10 @@ const issue = (purpose, expired = false) => {
 };
 try {
   const page = await browser.newPage();
+  // Isolate repeat runs from previous synthetic IP rate-limit buckets.
+  await page.setExtraHTTPHeaders({
+    "cf-connecting-ip": `192.0.2.${(marker % 254) + 1}`,
+  });
   const visitLink = async (fragment) => {
     await page.goto("about:blank");
     await page.goto(`${base}/account/email#${fragment}`, {

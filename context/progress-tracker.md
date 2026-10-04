@@ -24,6 +24,16 @@
   acceptance remain unverified at this checkpoint. Deployment follows.
 - Optional OAuth registrations and an approved isolated private multi-language
   judge remain external prerequisites; the whole product is not claimed 100%.
+- Implementation `d2ef7f9` is pushed; Worker
+  `260b63c8-7af8-4107-8460-3e958dd64acd` is deployed. Live public/PWA/offline
+  and account challenge rejection checks pass. The one-message SMTP probe
+  returned `503 MAIL_UNAVAILABLE`, not provider acceptance. Its exact synthetic
+  account and cascading records were removed; no existing learner was used.
+- Follow-up validates app-password structure without exposing its value and
+  logs only allowlisted failure-stage codes for future troubleshooting, never
+  provider replies, addresses, tokens or credentials. No automatic mail retry.
+  Local test repeat runs isolate synthetic IP quotas; the legitimate ten/hour
+  consume limit had blocked a repeat run. Inbox delivery is still not complete.
 
 ## 2026-10-04 — Managed recovery drill
 

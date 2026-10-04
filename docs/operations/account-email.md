@@ -38,6 +38,12 @@ existing learner, bypass application Turnstile, or retry an ambiguous send.
 Its diagnostic link intentionally becomes inactive after cleanup. Provider
 acceptance still requires the owner to confirm actual inbox receipt.
 
+`--check-config-only` on the same operator script instead reads only the
+authenticated configuration boolean, never connects to SMTP or sends mail.
+It validates the normalized 16-character app-password format without returning
+the value. Structural validity does not prove Google accepts authorization.
+Mail failures log only fixed allowlisted stage codes, never raw SMTP responses.
+
 Before any future additive production migration, record a fresh D1 Time Travel
 bookmark. Do not export private learner rows or restore production without an
 incident-specific decision. Keep migrations even if rolling back Worker code.

@@ -1,6 +1,8 @@
 // @vitest-environment node
 import { describe, expect, it, vi } from "vitest";
 import { submitGmail, type MailConnector } from "../worker/mail/smtp";
+import { mailConfigured } from "../worker/mail/gmail";
+import type { Env } from "../worker/types";
 
 function fixture(rejectAuth = false) {
   const commands: string[] = [];
@@ -47,6 +49,15 @@ function fixture(rejectAuth = false) {
   return { connect, commands, connections, isClosed: () => closed };
 }
 describe("fixed Gmail SMTP transport", () => {
+  it("configuration metadata checks format without exposing a secret", () => {
+    expect(
+      mailConfigured({ GMAIL_APP_PASSWORD: "abcd efgh ijkl mnop" } as Env),
+    ).toBe(true);
+    expect(mailConfigured({ GMAIL_APP_PASSWORD: "placeholder" } as Env)).toBe(
+      false,
+    );
+    expect(mailConfigured({} as Env)).toBe(false);
+  });
   it("bounds a stalled connection to twenty seconds", async () => {
     vi.useFakeTimers();
     try {
@@ -119,7 +130,7 @@ describe("fixed Gmail SMTP transport", () => {
         "Subject",
         "body",
       ),
-    ).rejects.toThrow("MAIL_PROVIDER_REJECTED");
+    ).rejects.toThrow("MAIL_AUTH_REJECTED");
     expect(socket.commands.some((value) => value.startsWith("DATA"))).toBe(
       false,
     );

@@ -3,7 +3,9 @@ import { HttpError } from "../http";
 import type { Env } from "../types";
 
 export function mailConfigured(env: Env) {
-  return Boolean(env.GMAIL_APP_PASSWORD);
+  return /^[A-Za-z0-9]{16}$/.test(
+    (env.GMAIL_APP_PASSWORD ?? "").replace(/\s/g, ""),
+  );
 }
 export async function sendAccountMail(
   env: Env,
@@ -35,9 +37,26 @@ export async function sendAccountMail(
       subject,
       text,
     );
-  } catch {
+  } catch (error) {
     // No SMTP responses, recipient, tokens or credentials enter logs/errors.
-    console.warn({ event: "account_mail_unavailable" });
+    const safeReasons = new Set([
+      "MAIL_CONFIGURATION_INVALID",
+      "MAIL_TIMEOUT",
+      "MAIL_CONNECTION_FAILED",
+      "MAIL_REPLY_TOO_LARGE",
+      "MAIL_GREETING_REJECTED",
+      "MAIL_EHLO_REJECTED",
+      "MAIL_AUTH_REJECTED",
+      "MAIL_SENDER_REJECTED",
+      "MAIL_RECIPIENT_REJECTED",
+      "MAIL_DATA_REJECTED",
+      "MAIL_SUBMISSION_REJECTED",
+    ]);
+    const reason =
+      error instanceof Error && safeReasons.has(error.message)
+        ? error.message
+        : "MAIL_TRANSPORT_FAILED";
+    console.warn({ event: "account_mail_unavailable", reason });
     throw new HttpError(
       503,
       "MAIL_UNAVAILABLE",

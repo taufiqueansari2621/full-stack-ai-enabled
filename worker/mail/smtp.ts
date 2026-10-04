@@ -47,6 +47,7 @@ export async function submitGmail(
   const encoder = new TextEncoder();
   let buffered = "";
   let timedOut = false;
+  let stage = "GREETING";
   let deadline: ReturnType<typeof setTimeout>;
   const timeout = new Promise<never>((_, reject) => {
     deadline = setTimeout(() => {
@@ -77,21 +78,26 @@ export async function submitGmail(
         size > 16384 ||
         !new RegExp(`^${expected}[ -]`).test(line)
       )
-        throw new Error("MAIL_PROVIDER_REJECTED");
+        throw new Error(`MAIL_${stage}_REJECTED`);
       if (line[3] === " ") return;
     }
   }
-  const command = async (line: string, code: number) => {
+  const command = async (line: string, code: number, nextStage: string) => {
+    stage = nextStage;
     await writer.write(encoder.encode(line + "\r\n"));
     await reply(code);
   };
   const transaction = async () => {
     await reply(220);
-    await command("EHLO forge-ai-engineering.workers.dev", 250);
-    await command("AUTH PLAIN " + btoa(`\0${GMAIL_SENDER}\0${secret}`), 235);
-    await command(`MAIL FROM:<${GMAIL_SENDER}>`, 250);
-    await command(`RCPT TO:<${recipient}>`, 250);
-    await command("DATA", 354);
+    await command("EHLO forge-ai-engineering.workers.dev", 250, "EHLO");
+    await command(
+      "AUTH PLAIN " + btoa(`\0${GMAIL_SENDER}\0${secret}`),
+      235,
+      "AUTH",
+    );
+    await command(`MAIL FROM:<${GMAIL_SENDER}>`, 250, "SENDER");
+    await command(`RCPT TO:<${recipient}>`, 250, "RECIPIENT");
+    await command("DATA", 354, "DATA");
     const encoded =
       btoa(String.fromCharCode(...encoder.encode(body)))
         .match(/.{1,76}/g)
@@ -99,6 +105,7 @@ export async function submitGmail(
     await command(
       `From: Forge <${GMAIL_SENDER}>\r\nTo: <${recipient}>\r\nSubject: ${subject}\r\nDate: ${new Date().toUTCString()}\r\nMessage-ID: <${crypto.randomUUID()}@gmail.com>\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n${encoded}\r\n.`,
       250,
+      "SUBMISSION",
     );
   };
   try {

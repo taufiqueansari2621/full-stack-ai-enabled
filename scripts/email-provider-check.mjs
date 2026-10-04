@@ -3,7 +3,11 @@ import { randomBytes, randomUUID, createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import assert from "node:assert/strict";
 
-if (process.argv[2] !== "--send-one-to-owned-mailbox")
+if (
+  !["--send-one-to-owned-mailbox", "--check-config-only"].includes(
+    process.argv[2],
+  )
+)
   throw new Error("Explicit one-message probe flag required.");
 const origin = "https://forge-ai-engineering.taufiqueansari895.workers.dev";
 const id = randomUUID();
@@ -23,26 +27,36 @@ try {
   sql(`INSERT INTO users(id,email,password_hash,password_salt,created_at,updated_at) VALUES('${id}','${email}','${hash(randomBytes(32).toString("hex"))}','synthetic-no-login','${now}','${now}');
     INSERT INTO profiles(user_id,full_name,username,created_at,updated_at) VALUES('${id}','Forge SMTP Check','mailcheck_${suffix}','${now}','${now}');
     INSERT INTO sessions(id,user_id,token_hash,expires_at,created_at) VALUES('${randomUUID()}','${id}','${hash(session)}','${new Date(Date.now() + 600000).toISOString()}','${now}');`);
-  const response = await fetch(`${origin}/api/auth/email/verify/request`, {
-    method: "POST",
-    headers: {
-      origin,
-      "content-type": "application/json",
-      cookie: `__Host-forge_session=${session}`,
+  const configOnly = process.argv[2] === "--check-config-only";
+  const response = await fetch(
+    `${origin}${configOnly ? "/api/auth/email" : "/api/auth/email/verify/request"}`,
+    {
+      method: configOnly ? "GET" : "POST",
+      headers: {
+        origin,
+        "content-type": "application/json",
+        cookie: `__Host-forge_session=${session}`,
+      },
+      ...(configOnly ? {} : { body: "{}" }),
+      signal: AbortSignal.timeout(30000),
     },
-    body: "{}",
-    signal: AbortSignal.timeout(30000),
-  });
+  );
   const result = await response.json();
   assert.equal(
     response.status,
     200,
     `SMTP probe rejected: ${result.error?.code ?? response.status}`,
   );
-  assert.equal(result.ok, true);
-  console.log(
-    "Gmail accepted one production SMTP submission to the owner's tagged inbox. Inbox receipt is not confirmed. The diagnostic link becomes inactive when the synthetic account is removed.",
-  );
+  if (configOnly) {
+    console.log(
+      `Gmail app-password configuration structurally valid: ${result.deliveryConfigured === true}. No SMTP connection or message sent; no secret value retrieved.`,
+    );
+  } else {
+    assert.equal(result.ok, true);
+    console.log(
+      "Gmail accepted one production SMTP submission to the owner's tagged inbox. Inbox receipt is not confirmed. The diagnostic link becomes inactive when the synthetic account is removed.",
+    );
+  }
 } finally {
   sql(`DELETE FROM users WHERE id='${id}' AND email='${email}';`);
   console.log(
