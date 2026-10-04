@@ -7,10 +7,10 @@ Git history.
 ## Executive Status
 
 - **Production URL:** <https://forge-ai-engineering.taufiqueansari895.workers.dev>
-- **Verified Worker version:** `b057958b-3d8d-40ca-9619-5b5c0dca7a99`
-- **Current branch:** `main`. The October 3 account-security release is committed
-  and pushed as `507c12e`. GitHub push works through the connected credentials.
-- **Verified:** 118 focused runner/domain/security/migration/API-contract/repository/component/state tests, lint, strict
+- **Verified Worker version:** `ef1afda1-ced2-43db-b951-cc6653cbe792`
+- **Current branch:** `main`. Performance monitoring code is pushed through
+  `770608f`; later documentation/Git synchronization is tracked in release notes.
+- **Verified:** 160 focused tests in the October 4 recovery gate; lint, strict
   TypeScript/Vite production build, complete local browser regression, 90
   primary responsive checks, six focused lesson viewport checks, live
   route/PWA/security audit, and authenticated production lifecycle.
@@ -126,9 +126,12 @@ expensive platform capabilities.
    server verification; real widget rendering and missing-token rejection are
    production-tested. The user subsequently confirmed the manual browser test
    succeeds; this security acceptance step is no longer outstanding.
-2. Execute an operator-controlled D1 restore drill. Default-off opt-in field
-   Core Web Vitals monitoring is deployed and live browser/log-verified;
-   production evidence is in the October 3 performance release notes. The
+2. Managed D1 recovery is now verified on a synthetic-only unbound database
+   with all current migrations, restored fixture records, trigger recovery and
+   integrity checks. This is not a private production export/import or live
+   production restore. Evidence: October 4 recovery release notes. Default-off
+   field Core Web Vitals monitoring is deployed and live browser/log-verified;
+   evidence is in the October 3 performance release notes. The
    runbook documents sampling/privacy limitations, release, backup, restore,
    rollback and incident procedures, while CI enforces bundle budgets.
 
@@ -158,8 +161,9 @@ The following cannot be safely invented from source code alone:
 
 - Google/GitHub OAuth client IDs, secrets, approved callback URLs, and chosen
   providers.
-- Verified transactional email provider/domain for account verification and
-  email recovery.
+- Authorized transactional email transport for account verification/recovery:
+  a verified provider/domain or explicitly authorized Gmail sending. Providing
+  `zerotoaiforge@gmail.com` alone does not authorize automated sends.
 - Sandbox/container cost ceiling, supported package policy, network policy, and
   required Python/Node versions.
 

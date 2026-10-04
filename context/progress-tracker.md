@@ -1,5 +1,29 @@
 # Progress Tracker
 
+## 2026-10-04 — Managed recovery drill
+
+- Created an unbound synthetic-only D1 database and applied all eleven current
+  migrations. Actual Cloudflare Time Travel restore returned the fictional
+  account, profile, note, completed topic and workspace; seven triggers,
+  foreign-key check, quick_check and a post-restore projection write passed.
+  Restore plus checks: 9,738ms. See the exact bookmarks and correction history
+  in `docs/operations/release-2026-10-04-recovery.md`.
+- Guarded operator script rejects production/name/UUID/account mismatches,
+  nonempty tables and incomplete output. Dedicated binding-free configuration
+  targets only a validated UUID. No production learner records or exports,
+  billing change, app deployment or production migration.
+- Scratch UUID `af3efec1-361e-48ee-b4dc-c81574d8be60` remains unbound with only
+  fictional fixtures, pending exact-ID cleanup. Earlier empty bootstrap tables
+  and the incorrect fictional fixture were removed only from this scratch DB.
+- Live production/public/PWA/offline/security-header/browser regression passes;
+  existing visual application and Worker release are unchanged. Local full gate
+  passes: 32 Node + 128 Vitest tests, lint, strict production build and all bundle
+  budgets. Git synchronization is retried at handoff; prior documentation-only
+  push was blocked by macOS credential access.
+- Email needs authorized sending (Gmail OAuth/transport or verified provider),
+  optional OAuth needs registered clients, and private Python/backend judging
+  needs an approved isolated host. These external integrations are not complete.
+
 ## 2026-10-03 — Opt-in field performance monitoring
 
 - Added default-off browser-local Settings consent, lazy standard web-vitals

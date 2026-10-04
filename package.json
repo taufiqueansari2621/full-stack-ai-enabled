@@ -24,6 +24,7 @@
     "test:security": "node scripts/turnstile-smoke.mjs",
     "test:diagnostics": "node scripts/diagnostics-smoke.mjs",
     "test:vitals": "node scripts/vitals-smoke.mjs",
+    "verify:recovery": "node scripts/d1-recovery-drill.mjs",
     "verify:bundle": "node scripts/check-bundle-budgets.mjs",
     "lint": "eslint ."
   },

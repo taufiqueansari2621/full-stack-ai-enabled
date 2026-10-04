@@ -73,19 +73,33 @@ location in the incident or release record.
 
 ## Restore drill
 
-Never test a restore against the production database. Create a temporary D1
-database, import the export, and inspect critical row counts and schema there:
+Never test a restore against production or export learner records just to run
+a routine drill. Use a fresh, synthetic-only unbound database and the guarded
+managed recovery script:
 
 ```bash
-npx wrangler d1 create forge-restore-drill
-npx wrangler d1 execute forge-restore-drill --remote --file backups/forge-production-YYYY-MM-DD.sql
-npx wrangler d1 execute forge-restore-drill --remote --command "SELECT name FROM sqlite_schema WHERE type='table' ORDER BY name"
+npx wrangler d1 create forge-restore-drill-YYYYMMDD --update-config=false
+npm run verify:recovery -- forge-restore-drill-YYYYMMDD EXACT_NEW_DATABASE_UUID
 ```
 
-Use a temporary Wrangler configuration that binds the drill database before
-running application-level checks. Delete the drill database only after the
-validation record is complete and an authorized operator has confirmed the
-exact database ID.
+Replace the date and UUID with the actual newly created target. The script
+checks the Forge account, exact remote name/UUID and empty database, rejects
+production, imports the current migrations, captures a managed bookmark,
+deletes only its fictional fixture, restores and checks records, projections,
+foreign keys, `quick_check` and a post-restore write. It uses a binding-free
+operator config and targets the UUID, never the application `DB` binding.
+It never exports production, resets existing data or deletes databases.
+
+For a manually preloaded but empty schema, append `--preloaded-empty-schema`;
+all migration object names/types and zero rows in every table must match before
+seeding. Stop on failure and inspect only the scratch target; do not blindly
+retry a nonempty database. See `release-2026-10-04-recovery.md` for the actual
+successful provider drill and its limited synthetic coverage.
+
+The small unbound scratch database is retained as evidence until an operator
+confirms its exact ID for cleanup. Importing a real private backup, restoring
+production or testing application account traffic against copied real data
+requires separate incident-specific authorization and protected storage.
 
 ## Worker rollback
 
